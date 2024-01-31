@@ -1,0 +1,29 @@
+{
+  "name": "umanit/saml-bundle",
+  "description": "Saml connection",
+  "type": "symfony-bundle",
+  "keywords": [
+    "saml",
+    "saml2",
+    "symfony",
+    "sso"
+  ],
+  "homepage": "https://github.com/umanit/saml-bundle",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "UmanIT",
+      "email": "contact@umanit.fr"
+    }
+  ],
+  "require": {
+    "php": "^8.2",
+    "symfony/framework-bundle": "^6.4"
+  },
+  "minimum-stability": "stable",
+  "autoload": {
+    "psr-4": {
+      "Umanit\\SamlBundle\\": ""
+    }
+  }
+}
