@@ -1,0 +1,3 @@
+umanit_saml:
+    resource: '@'
+    type: attribute
