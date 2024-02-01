@@ -13,6 +13,4 @@ services:
     # Services
     umanit_saml.service.configuration_service:
         class: Umanit\SamlBundle\Service\ConfigurationService
-        arguments:
-            - '%umanit_saml%'
     Umanit\SamlBundle\Service\ConfigurationServiceInterface: '@umanit_saml.service.configuration_service'

@@ -13,15 +13,19 @@ class UmanitSamlExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container)
     {
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
+        $loader->load('services.yaml');
+
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
+
+        // Injection de la configuration dans le service
+        $container->getDefinition('umanit_saml.service.configuration_service')
+            ->setArgument(0, $config);
 
         $rootName = Configuration::NAME;
         $container->setParameter($rootName, $config);
         $this->setConfigAsParameters($container, $config, $rootName);
-
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
-        $loader->load('services.yaml');
     }
 
     /**
