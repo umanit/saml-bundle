@@ -4,5 +4,6 @@ services:
         autoconfigure: false
 
     # Controller
-    Umanit\SamlBundle\src\Controller\RedirectionAction:
-        class: Umanit\SamlBundle\src\Controller\RedirectionAction
+    Umanit\SamlBundle\Controller\RedirectionAction:
+        class: Umanit\SamlBundle\Controller\RedirectionAction
+        tags: ['controller.service_arguments']
