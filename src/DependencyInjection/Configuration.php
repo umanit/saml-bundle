@@ -9,9 +9,11 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Configuration implements ConfigurationInterface
 {
+    public const NAME = 'umanit_saml';
+
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder('umanit_saml');
+        $treeBuilder = new TreeBuilder(self::NAME);
 
         // @formatter:off
 

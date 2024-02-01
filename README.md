@@ -8,7 +8,7 @@
 
 ### PHPStan
 ```bash
- symfony php vendor/bin/phpstan analyse -c phpstan.neon --level 12 src/ tests/
+ symfony php vendor/bin/phpstan analyse -c phpstan.neon --level 7 src/ tests/
 ```
 
 ### PHPCS

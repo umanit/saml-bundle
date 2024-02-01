@@ -1,0 +1,8 @@
+services:
+    _defaults:
+        autowire: false
+        autoconfigure: false
+
+    # Controller
+    Umanit\SamlBundle\src\Controller\RedirectionAction:
+        class: Umanit\SamlBundle\src\Controller\RedirectionAction
