@@ -1,0 +1,1 @@
+{"version":1,"defects":{"Unit\\Service\\ConfigurationTest::testGetByProvider":8},"times":{"Unit\\Service\\ConfigurationTest::testGetByProvider":0.035,"Unit\\Service\\ConfigurationTest::testGetByProvider#0":0.035,"Unit\\Service\\ConfigurationTest::testGetByProvider#1":0.001}}
