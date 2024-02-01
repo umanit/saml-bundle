@@ -6,4 +6,6 @@ services:
     # Controller
     Umanit\SamlBundle\Controller\RedirectionAction:
         class: Umanit\SamlBundle\Controller\RedirectionAction
-        tags: ['controller.service_arguments']
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags: ['controller.service_arguments', 'container.service_subscriber']
