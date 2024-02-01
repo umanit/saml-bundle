@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class RedirectionAction extends AbstractController
 {
-    #[Route('saml/redirection', name: 'umanit_saml_redirection')]
+    #[Route('redirection', name: 'umanit_saml_redirection')]
     public function __invoke(): Response
     {
         return $this->render('redirection.html.twig');
