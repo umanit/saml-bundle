@@ -7,7 +7,7 @@
 ```
 
 ```bash
- symfony php vendor/bin/phpunit  --coverage-html build
+ symfony php vendor/bin/phpunit  -c phpunit-ci.xml --coverage-html build
 ```
 
 ### PHPStan

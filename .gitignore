@@ -3,3 +3,4 @@
 
 phpunit-report.xml
 /build
+junit.xml
