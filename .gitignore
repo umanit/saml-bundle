@@ -4,3 +4,5 @@
 phpunit-report.xml
 /build
 junit.xml
+*.cache
+*.log
