@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
+
+    <arg name="basepath" value="."/>
+    <arg name="cache" value=".phpcs-cache"/>
+    <arg name="colors"/>
+    <arg name="extensions" value="php"/>
+
+    <rule ref="PSR12">
+        <!-- Désactivation temporaire de trois règles le temps que PHPCS supporte les classes readonly -->
+        <exclude name="PSR1.Files.SideEffects.FoundWithSymbols" />
+        <exclude name="PSR12.Files.FileHeader.SpacingAfterBlock" />
+        <exclude name="PSR12.Files.FileHeader.IncorrectOrder" />
+    </rule>
+
+    <!-- Désactive le contrôle de longueur de ligne sur les fichiers de configuration des bundles -->
+    <rule ref="Generic.Files.LineLength">
+        <exclude-pattern>src/DependencyInjection/Configuration\.php</exclude-pattern>
+    </rule>
+
+    <file>src/</file>
+    <file>tests/</file>
+</ruleset>

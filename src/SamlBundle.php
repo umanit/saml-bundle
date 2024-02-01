@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Umanit\SamlBundle\src;
+namespace Umanit\SamlBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
