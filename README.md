@@ -6,6 +6,10 @@
  symfony php vendor/bin/phpunit -c phpunit.xml.dist --group unit --log-junit phpunit-report.xml 
 ```
 
+```bash
+ symfony php vendor/bin/phpunit  --coverage-html build
+```
+
 ### PHPStan
 ```bash
  symfony php vendor/bin/phpstan analyse -c phpstan.neon --level 7 src/ tests/
