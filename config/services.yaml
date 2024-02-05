@@ -10,6 +10,12 @@ services:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags: ['controller.service_arguments', 'container.service_subscriber']
 
+    Umanit\SamlBundle\Controller\MetadataAction:
+        class: Umanit\SamlBundle\Controller\MetadataAction
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags: ['controller.service_arguments', 'container.service_subscriber']
+
     # Services
     umanit_saml.service.configuration_service:
         class: Umanit\SamlBundle\Service\ConfigurationService
@@ -22,3 +28,9 @@ services:
         arguments:
             - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
     Umanit\SamlBundle\Service\SamlAuthnRequestServiceInterface: '@umanit_saml.service.saml_anthn_request_service'
+
+    umanit_saml.service.metadata_service:
+        class: Umanit\SamlBundle\Service\MetadataService
+        arguments:
+            - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
+    Umanit\SamlBundle\Service\MetadataServiceInterface: '@umanit_saml.service.metadata_service'
