@@ -13,4 +13,12 @@ services:
     # Services
     umanit_saml.service.configuration_service:
         class: Umanit\SamlBundle\Service\ConfigurationService
+        arguments:
+            - ~
     Umanit\SamlBundle\Service\ConfigurationServiceInterface: '@umanit_saml.service.configuration_service'
+
+    umanit_saml.service.saml_anthn_request_service:
+        class: Umanit\SamlBundle\Service\SamlAuthnRequestService
+        arguments:
+            - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
+    Umanit\SamlBundle\Service\SamlAuthnRequestServiceInterface: '@umanit_saml.service.saml_anthn_request_service'
