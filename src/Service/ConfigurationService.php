@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Service;
 
-class ConfigurationService
+class ConfigurationService implements ConfigurationServiceInterface
 {
     protected array $config;
 
