@@ -15,6 +15,6 @@ class ConfigurationService implements ConfigurationServiceInterface
 
     public function getByProvider(string $provider): ?array
     {
-        return $this->config[$provider] ?? null;
+        return $this->config['providers'][$provider] ?? null;
     }
 }
