@@ -1,0 +1,27 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+|#white|Controller|
+start;
+
+:Request GET /saml2/metadata/provider_id;
+
+if (Is the request valid?) then (yes)
+  |#white|Service|
+  :Service Get Config for the Provider ID;
+
+    if (Is the Provider ID valid?) then (yes)
+        #lightblue:Service Generate Entity Descriptor;
+        #lightblue:Serialize the Entity Descriptor to XML;
+        |#white|Controller|
+        #lightgreen:Controller Return the metadata XML;
+        stop
+    else (no)
+    endif
+else (no)
+endif
+|#white|Controller|
+#lightpink:Return an error;
+stop
+
+@enduml
