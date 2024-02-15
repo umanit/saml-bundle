@@ -6,5 +6,6 @@ namespace Umanit\SamlBundle\Service;
 
 interface MetadataServiceInterface
 {
+    // todo provider en params
     public function generate(): string;
 }

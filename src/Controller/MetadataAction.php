@@ -14,7 +14,10 @@ class MetadataAction extends AbstractController
     #[Route('metadata', name: 'umanit_saml_metadata')]
     public function __invoke(MetadataServiceInterface $metadataService): Response
     {
+        // revoie un object metadata
         $metadataService->generate();
+
+        // TOTO ici on return la Response avec l'objet
         return new Response("metadata");
     }
 }

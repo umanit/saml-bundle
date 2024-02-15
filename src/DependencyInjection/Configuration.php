@@ -6,6 +6,7 @@ namespace Umanit\SamlBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Umanit\SamlBundle\Enum\SamlConnexionMode;
 
 class Configuration implements ConfigurationInterface
 {
@@ -28,7 +29,7 @@ class Configuration implements ConfigurationInterface
                             ->enumNode('type')
                                 ->isRequired()
                                 ->cannotBeEmpty()
-                                ->values(['spinitiated', 'idpinitiated'])
+                                ->values([SamlConnexionMode::SPINITIATED, SamlConnexionMode::IDPINITIATED])
                                 ->info('Type de SAML à utiliser (SP Initiated ; IdP Initiated)')
                             ->end()
                             ->arrayNode('assertionConsumerService')
