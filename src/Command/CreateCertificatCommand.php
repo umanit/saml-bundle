@@ -9,6 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Process\Process;
 
 class CreateCertificatCommand extends Command
 {
@@ -73,7 +74,24 @@ class CreateCertificatCommand extends Command
         $io->text('The certificate will be stored in ' . $certStoragePath);
         $io->newLine();
 
+        $question = 'The name chosen for the PEM files already exist. Would you like to overwrite existing PEM files?';
+        $filesNotExists = !file_exists($keyStoragePath) && !file_exists($certStoragePath);
 
-        return Command::SUCCESS;
+        if ($filesNotExists || $io->confirm($question)) {
+            $process = new Process([
+                'openssl', 'req', '-x509', '-nodes',
+                '-days', $days,
+                '-newkey', 'rsa:2048',
+                '-keyout', $keyStoragePath,
+                '-out', $certStoragePath
+            ]);
+            $process->setTty(true);
+            $process->run();
+
+            return Command::SUCCESS;
+        }
+
+        $io->error('The certificate or the private key already exists');
+        return Command::FAILURE;
     }
 }
