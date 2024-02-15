@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Command;
 
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -29,10 +30,33 @@ class CreateCertificatCommand extends Command
             // the full command description shown when running the command with
             // the "--help" option
             ->setHelp('This command allows you to create a new X509 certificate and private key')
-            ->addArgument('name', InputOption::VALUE_REQUIRED, 'Name of the certificate')
-            ->addOption('days', null, InputOption::VALUE_OPTIONAL, 'Number of days the certificate is valid', 365)
-            ->addOption('keyname', null, InputOption::VALUE_OPTIONAL, 'Name of the private key file', 'saml.key')
-            ->addOption('certname', null, InputOption::VALUE_OPTIONAL, 'Name of the certificate file', 'saml.crt');
+            ->addArgument(
+                'name',
+                InputOption::VALUE_REQUIRED,
+                'Name of the certificate'
+            )
+            ->addOption(
+                'days',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Number of days the certificate is valid',
+                365
+            )
+            ->addOption(
+                'keyname',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Name of the private key file',
+                'saml.key'
+            )
+            ->addOption(
+                'certname',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Name of the certificate file',
+                'saml.crt'
+            )
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -40,7 +64,7 @@ class CreateCertificatCommand extends Command
         $name = $input->getArgument('name');
 
         if (str_contains($name, '/') || str_contains($name, '\\') || str_contains($name, '.')) {
-            throw new \RuntimeException('The name of the certificate cannot contain a slash or a dot.');
+            throw new RuntimeException('The name of the certificate cannot contain a slash or a dot.');
         }
 
         $days = $input->getOption('days');
@@ -61,7 +85,7 @@ class CreateCertificatCommand extends Command
             !mkdir($concurrentDirectory = $storagePath, 0755, true) &&
             !is_dir($concurrentDirectory)
         ) {
-            throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
         }
 
         $keyStoragePath = $storagePath . DIRECTORY_SEPARATOR . $keyname;
@@ -79,11 +103,18 @@ class CreateCertificatCommand extends Command
 
         if ($filesNotExists || $io->confirm($question)) {
             $process = new Process([
-                'openssl', 'req', '-x509', '-nodes',
-                '-days', $days,
-                '-newkey', 'rsa:2048',
-                '-keyout', $keyStoragePath,
-                '-out', $certStoragePath
+                'openssl',
+                'req',
+                '-x509',
+                '-nodes',
+                '-days',
+                $days,
+                '-newkey',
+                'rsa:2048',
+                '-keyout',
+                $keyStoragePath,
+                '-out',
+                $certStoragePath,
             ]);
             $process->setTty(true);
             $process->run();
@@ -92,6 +123,7 @@ class CreateCertificatCommand extends Command
         }
 
         $io->error('The certificate or the private key already exists');
+
         return Command::FAILURE;
     }
 }
