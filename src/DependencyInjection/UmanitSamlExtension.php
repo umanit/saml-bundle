@@ -15,6 +15,7 @@ class UmanitSamlExtension extends Extension
     {
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('services.yaml');
+        $loader->load('commands.yaml');
 
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
@@ -23,7 +24,6 @@ class UmanitSamlExtension extends Extension
         $container->getDefinition('umanit_saml.service.configuration_service')
             ->setArgument(0, $config);
 
-        dd($config);
         $rootName = Configuration::NAME;
         $container->setParameter($rootName, $config);
         $this->setConfigAsParameters($container, $config, $rootName);

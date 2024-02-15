@@ -1,0 +1,10 @@
+services:
+    _defaults:
+        autowire: false
+        autoconfigure: false
+
+    umanit.command.create_certificat_command:
+        class: Umanit\SamlBundle\Command\CreateCertificatCommand
+        arguments:
+            - '%umanit.certificat_path%'
+        tags: ['console.command']

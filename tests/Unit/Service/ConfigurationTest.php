@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Unit\Service;
 
+use PHPUnit\Framework\TestCase;
 use Umanit\SamlBundle\Service\ConfigurationService;
 
 /**
  * @group unit
  */
-class ConfigurationTest extends \PHPUnit\Framework\TestCase
+class ConfigurationTest extends TestCase
 {
     public static function getByProviderDataProvider(): array
     {
@@ -19,7 +20,9 @@ class ConfigurationTest extends \PHPUnit\Framework\TestCase
         $dataset[] = [
             'provider' => 'test',
             'config' => [
-                'test' => []
+                'providers' => [
+                    'test' => []
+                ]
             ],
             'expected' => []
         ];
@@ -28,7 +31,9 @@ class ConfigurationTest extends \PHPUnit\Framework\TestCase
         $dataset[] = [
             'provider' => 'test',
             'config' => [
-                'KO' => []
+                'providers' => [
+                    'KO' => []
+                ]
             ],
             'expected' => null
         ];
