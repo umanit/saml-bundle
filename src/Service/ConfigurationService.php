@@ -17,4 +17,9 @@ class ConfigurationService implements ConfigurationServiceInterface
     {
         return $this->config['providers'][$provider] ?? null;
     }
+
+    public function getProviderNames(): array
+    {
+        return array_keys($this->config['providers']);
+    }
 }

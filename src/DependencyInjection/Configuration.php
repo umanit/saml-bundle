@@ -47,6 +47,9 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->arrayNode('idp')
                                 ->children()
+                                    ->scalarNode('entity_id')->info('Optional entity id, by default the first of the metadata')->end()
+                                    ->scalarNode('metadata')->info('Metadata (XML String, File or URL)')->isRequired()->end()
+
                                     ->arrayNode('SingleSignOnService')
                                         ->children()
                                             ->scalarNode('url')->isRequired()->end()
@@ -65,7 +68,6 @@ class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
             ->end();
-
 
         return $treeBuilder;
     }

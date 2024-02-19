@@ -8,3 +8,10 @@ services:
         arguments:
             - '%umanit_saml.certificat_path%'
         tags: ['console.command']
+
+    umanit.command.refresh_idp_metadata_command:
+        class: Umanit\SamlBundle\Command\RefreshIdpMetadataCommand
+        arguments:
+            - '@umanit_saml.service.idp_metadata_service'
+            - '@umanit_saml.service.configuration_service'
+        tags: ['console.command']

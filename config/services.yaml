@@ -34,3 +34,11 @@ services:
         arguments:
             - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
     Umanit\SamlBundle\Service\MetadataServiceInterface: '@umanit_saml.service.metadata_service'
+
+    umanit_saml.service.idp_metadata_service:
+        class: Umanit\SamlBundle\Service\IdpMetadataService
+        arguments:
+            - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
+            - '@http_client'
+            - '@cache.app.taggable'
+    Umanit\SamlBundle\Service\IdpMetadataServiceInterface: '@umanit_saml.service.idp_metadata_service'
