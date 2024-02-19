@@ -94,7 +94,7 @@ class IdpMetadataService implements IdpMetadataServiceInterface
         }
 
         $tokenId = $this->getTokenId($idpConfig);
-        $metadataTtl = $idpConfig['metadata_ttl'] ?? 3600;
+        $metadataTtl = (int) floor($idpConfig['metadata_cache_duration'] ?? self::DEFAULT_METADATA_CACHE_DURATION);
         $cacheKey = sha1($url);
 
         if ($this->cache->hasItem($cacheKey)) {

@@ -6,6 +6,8 @@ namespace Umanit\SamlBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Umanit\SamlBundle\Service\IdpMetadataService;
+use Umanit\SamlBundle\Service\IdpMetadataServiceInterface;
 
 class Configuration implements ConfigurationInterface
 {
@@ -43,12 +45,17 @@ class Configuration implements ConfigurationInterface
                                             ->scalarNode('url')->isRequired()->end()
                                         ->end()
                                     ->end()
+                                    ->scalarNode('privateKey')->isRequired()->end()
                                 ->end()
                             ->end()
                             ->arrayNode('idp')
                                 ->children()
-                                    ->scalarNode('entity_id')->info('Optional entity id, by default the first of the metadata')->end()
-                                    ->scalarNode('metadata')->info('Metadata (XML String, File or URL)')->isRequired()->end()
+                                    ->scalarNode('entity_id')->info('Entity id, by default the first of the metadata')->end()
+                                    ->scalarNode('metadata')->info('Metadata URL, File or XML string')->isRequired()->end()
+                                    ->scalarNode('metadata_cache_duration')
+                                        ->info('Metadata cache duration in seconds')
+                                        ->defaultValue(IdpMetadataServiceInterface::DEFAULT_METADATA_CACHE_DURATION)
+                                        ->end()
 
                                     ->arrayNode('SingleSignOnService')
                                         ->children()
