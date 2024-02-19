@@ -92,6 +92,47 @@ class IdpMetadataServiceTest extends TestCase
             ],
         ];
 
+        # Dataset  2 : Load from string
+        $contactPerson = new ContactPerson();
+        $contactPerson->setContactType('test2');
+        $contactPerson->setCompany('test2');
+        $contactPerson->setGivenName('test2');
+        $contactPerson->setSurName('test2');
+        $contactPerson->setEmailAddress('test2@example.com');
+
+        $organization = new Organization();
+        $organization->setOrganizationName('test2');
+        $organization->setOrganizationDisplayName('test2 Org');
+        $organization->setOrganizationURL('https://test2.com/');
+        $organization->setLang('en-US');
+
+        $dataset[] = [
+            'provider' => 'test',
+            'config'   => [
+                'providers' => [
+                    'test' => [
+                        'idp' => [
+                            'metadata' => self::getMetadata(
+                                'https://idp.identityserver',
+                                $contactPerson,
+                                $organization
+                            ),
+                        ],
+                    ],
+                    'test2' => [
+                        'idp' => [
+                            'metadata' => 'https://idp2.identityserver',
+                        ],
+                    ],
+                ],
+            ],
+            'expected' => [
+                'contactPerson' => $contactPerson,
+                'organization' => $organization,
+                'entityId' => 'https://idp.identityserver',
+            ],
+        ];
+
         return $dataset;
     }
 
@@ -107,7 +148,7 @@ class IdpMetadataServiceTest extends TestCase
 
         $mockedHttpClient = new MockHttpClient(
             new MockResponse(
-                $this->getMetadata(
+                self::getMetadata(
                     $expected['entityId'],
                     $expected['contactPerson'],
                     $expected['organization']
@@ -131,7 +172,7 @@ class IdpMetadataServiceTest extends TestCase
         $this->assertEquals($expected['entityId'], $result->getEntityID());
     }
 
-    protected function getMetadata(
+    protected static function getMetadata(
         string $entityId,
         ContactPerson $contactPerson,
         Organization $organization
