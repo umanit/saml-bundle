@@ -7,4 +7,9 @@ namespace Umanit\SamlBundle\Service;
 interface ConfigurationServiceInterface
 {
     public function getByProvider(string $provider): ?array;
+
+    /**
+     * @return array<int, string>
+     */
+    public function getProviderNames(): array;
 }

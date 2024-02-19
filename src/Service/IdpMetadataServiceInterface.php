@@ -9,4 +9,6 @@ use LightSaml\Model\Metadata\EntityDescriptor;
 interface IdpMetadataServiceInterface
 {
     public function getEntityDescriptor(string $provider): EntityDescriptor;
+
+    public function clearCache(string $provider): void;
 }

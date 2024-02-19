@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Service;
 
+use Exception;
 use LightSaml\Model\Context\DeserializationContext;
 use LightSaml\Model\Metadata\EntitiesDescriptor;
 use LightSaml\Model\Metadata\EntityDescriptor;
 use LightSaml\Model\Metadata\Metadata;
 use Psr\Cache\InvalidArgumentException;
 use RuntimeException;
+use Symfony\Component\Cache\CacheItem;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -26,17 +28,18 @@ class IdpMetadataService implements IdpMetadataServiceInterface
     {
         $config = $this->configurationService->getByProvider($provider);
         $idpConfig = $config['idp'];
-        $idpEntityId = $idpConfig['entityId'] ?? null;
+        $idpEntityId = $idpConfig['entity_id'] ?? null;
+        $metadata = $idpConfig['metadata'] ?? null;
 
-        if (isset($idpConfig['metadata'])) {
-            return $this->getEntityDescriptorFromXml($idpConfig['metadata'], $idpEntityId);
+        if (null === $metadata) {
+            throw new RuntimeException('No metadata found');
         }
 
-        if (isset($idpConfig['metadata_url'])) {
-            return $this->getEntityDescriptorFromUrl($idpConfig['metadata_url'], $idpConfig);
+        if (filter_var($metadata, FILTER_VALIDATE_URL) !== false) {
+            return $this->getEntityDescriptorFromUrl($metadata, $idpConfig);
         }
 
-        throw new RuntimeException('No metadata found');
+        return $this->getEntityDescriptorFromXml($metadata, $idpEntityId);
     }
 
     /**
@@ -44,10 +47,15 @@ class IdpMetadataService implements IdpMetadataServiceInterface
      * @param string|null $entityId
      *
      * @return EntityDescriptor
-     * @throws \Exception
+     * @throws Exception
      */
     protected function getEntityDescriptorFromXml(string $xml, ?string $entityId): EntityDescriptor
     {
+        // If the metadata is a file, we read it
+        if (file_exists($xml) && is_readable($xml)) {
+            $xml = file_get_contents($xml);
+        }
+
         /** @var EntitiesDescriptor|EntityDescriptor $metadata */
         $metadata = Metadata::fromXML($xml, new DeserializationContext());
 
@@ -85,23 +93,49 @@ class IdpMetadataService implements IdpMetadataServiceInterface
             throw new RuntimeException('Invalid URL');
         }
 
-        $entityId = $idpConfig['entityId'] ?? null;
+        $tokenId = $this->getTokenId($idpConfig);
         $metadataTtl = $idpConfig['metadata_ttl'] ?? 3600;
         $cacheKey = sha1($url);
 
         if ($this->cache->hasItem($cacheKey)) {
-            $xml = $this->cache->get($cacheKey)->get();
+            $xml = $this->cache->getItem($cacheKey)->get();
         } else {
-            $this->cache->get($cacheKey, function ($item) use ($entityId, $url, $metadataTtl): string {
+            $xml = $this->cache->get($cacheKey, function (CacheItem $item) use ($tokenId, $url, $metadataTtl): string {
                 $item->expiresAfter((int) $metadataTtl);
                 $xml = $this->client->request('GET', $url)->getContent();
+
                 $item->set($xml);
-                $item->tag($entityId);
+                $item->tag($tokenId);
 
                 return $xml;
             });
         }
 
-        return $this->getEntityDescriptorFromXml($xml, $entityId);
+        return $this->getEntityDescriptorFromXml($xml, ($idpConfig['entity_id'] ?? null));
+    }
+
+    public function clearCache(string $provider): void
+    {
+        $config = $this->configurationService->getByProvider($provider);
+        $idpConfig = $config['idp'];
+
+        if (empty($idpConfig['metadata'])) {
+            return;
+        }
+
+        $cacheKey = sha1($idpConfig['metadata']);
+
+        $this->cache->delete($cacheKey);
+    }
+
+    protected function getTokenId(array $idpConfig = []): string
+    {
+        $str = $idpConfig['metadata'] ?? '';
+
+        if (empty($str)) {
+            throw new RuntimeException('Impossible to generate token ID, for metadata');
+        }
+
+        return sha1($str);
     }
 }
