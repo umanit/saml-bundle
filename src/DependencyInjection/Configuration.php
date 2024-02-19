@@ -45,6 +45,7 @@ class Configuration implements ConfigurationInterface
                                             ->scalarNode('url')->isRequired()->end()
                                         ->end()
                                     ->end()
+                                    ->scalarNode('privateKey')->isRequired()->end()
                                 ->end()
                             ->end()
                             ->arrayNode('idp')
