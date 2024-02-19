@@ -21,21 +21,28 @@ class ConfigurationTest extends TestCase
             'provider' => 'test',
             'config' => [
                 'providers' => [
-                    'test' => []
+                    'test' => [
+                        'test' => 'test'
+                    ]
                 ]
             ],
-            'expected' => []
+            'expected' => [ 'test' => 'test' ]
         ];
 
         # Dataset 2
         $dataset[] = [
-            'provider' => 'test',
+            'provider' => 'test2',
             'config' => [
                 'providers' => [
-                    'KO' => []
+                    'test2' => [
+                        'test' => 'test'
+                    ],
+                    'test3' => [
+                        'test' => 'test'
+                    ],
                 ]
             ],
-            'expected' => null
+            'expected' => [ 'test' => 'test' ]
         ];
 
         return $dataset;
@@ -54,5 +61,79 @@ class ConfigurationTest extends TestCase
     {
         $configurationService = new ConfigurationService($config);
         $this->assertSame($expected, $configurationService->getByProvider($provider));
+    }
+
+    public static function getProviderNamesDataProvider(): array
+    {
+        $dataset = [];
+
+        # Dataset 0
+        $dataset[] = [
+            'config' => [
+                'providers' => [
+                    'test' => []
+                ]
+            ],
+            'expected' => ['test']
+        ];
+
+        # Dataset 1
+        $dataset[] = [
+            'config' => [
+                'providers' => [
+                    'test1' => [],
+                    'test2' => [],
+                ]
+            ],
+            'expected' => ['test1', 'test2']
+        ];
+
+        return $dataset;
+    }
+
+    /**
+     * @dataProvider getProviderNamesDataProvider
+     */
+    public function testGetProviderNames(array $config, array $expected): void
+    {
+        $configurationService = new ConfigurationService($config);
+        $this->assertSame($expected, $configurationService->getProviderNames());
+    }
+
+    public static function getByProviderExceptionDataProvider(): array
+    {
+        $dataset = [];
+
+        # Dataset 0
+        $dataset[] = [
+            'provider' => 'test',
+            'config' => [
+                'providers' => [
+                    'KO' => []
+                ]
+            ],
+            'expected' => \RuntimeException::class
+        ];
+
+        # Dataset 1
+        $dataset[] = [
+            'provider' => 'test2',
+            'config' => [
+                'providers' => []
+            ],
+            'expected' => \RuntimeException::class
+        ];
+
+        return $dataset;
+    }
+
+    /**
+     * @dataProvider getByProviderExceptionDataProvider
+     */
+    public function testGetByProviderException(string $provider, array $config, string $expected): void
+    {
+        $this->expectException($expected);
+        $configurationService = new ConfigurationService($config);
+        $configurationService->getByProvider($provider);
     }
 }

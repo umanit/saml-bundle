@@ -13,9 +13,15 @@ class ConfigurationService implements ConfigurationServiceInterface
         $this->config = $config;
     }
 
-    public function getByProvider(string $provider): ?array
+    public function getByProvider(string $provider): array
     {
-        return $this->config['providers'][$provider] ?? null;
+        $config = $this->config['providers'][$provider] ?? null;
+
+        if (empty($config)) {
+            throw new \RuntimeException(sprintf('Provider "%s" not found', $provider));
+        }
+
+        return $config;
     }
 
     public function getProviderNames(): array

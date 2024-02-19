@@ -95,12 +95,11 @@ class IdpMetadataService implements IdpMetadataServiceInterface
 
         $tokenId = $this->getTokenId($idpConfig);
         $metadataTtl = (int) floor($idpConfig['metadata_cache_duration'] ?? self::DEFAULT_METADATA_CACHE_DURATION);
-        $cacheKey = sha1($url);
 
-        if ($this->cache->hasItem($cacheKey)) {
-            $xml = $this->cache->getItem($cacheKey)->get();
+        if ($this->cache->hasItem($tokenId)) {
+            $xml = $this->cache->getItem($tokenId)->get();
         } else {
-            $xml = $this->cache->get($cacheKey, function (CacheItem $item) use ($tokenId, $url, $metadataTtl): string {
+            $xml = $this->cache->get($tokenId, function (CacheItem $item) use ($tokenId, $url, $metadataTtl): string {
                 $item->expiresAfter((int) $metadataTtl);
                 $xml = $this->client->request('GET', $url)->getContent();
 
@@ -119,13 +118,9 @@ class IdpMetadataService implements IdpMetadataServiceInterface
         $config = $this->configurationService->getByProvider($provider);
         $idpConfig = $config['idp'];
 
-        if (empty($idpConfig['metadata'])) {
-            return;
-        }
+        $tokenId = $this->getTokenId($idpConfig);
 
-        $cacheKey = sha1($idpConfig['metadata']);
-
-        $this->cache->delete($cacheKey);
+        $this->cache->delete($tokenId);
     }
 
     protected function getTokenId(array $idpConfig = []): string
