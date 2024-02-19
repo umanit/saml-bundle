@@ -48,7 +48,8 @@ class Configuration implements ConfigurationInterface
                                         ->end()
                                     ->end()
                                     ->scalarNode('x509cert')->isRequired()->info('X509 Certificat')->end()
-                                    ->scalarNode('private_key')->isRequired()->info('Private Key')->end()
+                                    ->scalarNode('private_key')->info('Private Key')->end()
+                                    ->scalarNode('private_key_passphrase')->info('Private Key Passphrase')->end()
                                 ->end()
                             ->end()
                             ->arrayNode('idp')
@@ -71,10 +72,29 @@ class Configuration implements ConfigurationInterface
                                             ->scalarNode('binding')->end()
                                         ->end()
                                     ->end()
+                                    ->scalarNode('private_key')->info('Private Key')->end()
+                                    ->scalarNode('private_key_passphrase')->info('Private Key Passphrase')->end()
                                 ->end()
                             ->end()
                         ->end()
                     ->end()
+                    ->validate()
+                    ->ifTrue(function (array $providers) {
+                        foreach ($providers as $data) {
+                            $isSpInitiated = $data['type'] === Mode::SP_INITIATED;
+
+                            if ($isSpInitiated && empty($data['sp']['private_key'])) {
+                                return true;
+                            }
+
+                            if (!$isSpInitiated && empty($data['idp']['private_key'])) {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    })
+                    ->thenInvalid('Provider %s must have private_key')
                 ->end()
             ->end();
 
