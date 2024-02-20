@@ -53,6 +53,8 @@ services:
             - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
             - '@umanit_saml.service.idp_metadata_service'
             - '@umanit_saml.service.sp_metadata_service'
+            - '@umanit_saml.service.x509_certificat_service'
+            - '@request_stack'
     Umanit\SamlBundle\Service\SamlAuthnRequestServiceInterface: '@umanit_saml.service.saml_anthn_request_service'
 
     umanit_saml.service.send_message_service:
@@ -60,3 +62,9 @@ services:
         arguments:
             - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
     Umanit\SamlBundle\Service\SendMessageServiceInterface: '@umanit_saml.service.send_message_service'
+
+    umanit_saml.service.x509_certificat_service:
+        class: Umanit\SamlBundle\Service\X509CertificatService
+        arguments:
+            - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
+    Umanit\SamlBundle\Service\X509CertificatServiceInterface: '@umanit_saml.service.x509_certificat_service'

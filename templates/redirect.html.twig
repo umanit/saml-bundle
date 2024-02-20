@@ -12,12 +12,9 @@
         press the button below once to proceed.</p>
     </noscript>
 
-    {#  Conditionner pour renvoyer vers SSO de l'idp  #}
-    <form method="post" action="http://destination.com">
+    <form method="post" action="{{ destination }}">
       <input type="submit" style="display:none;" />
-
-      {#  Conditionner la valeur encodé en BASE64 en fonction de l'idp (xml de Auth&Request)  #}
-      <input type="hidden" name="SAMLRequest" value="BASE64.ENCODED.MESSAGE=" />
+      <input type="hidden" name="SAMLRequest" value="{{ xml_base_64 }}" />
 
       <noscript>
         <input type="submit" value="Submit" />

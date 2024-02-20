@@ -10,5 +10,5 @@ interface SpMetadataServiceInterface
 {
     public function getEntityDescriptor(string $provider): EntityDescriptor;
 
-    public function entityDescriptorToXML(EntityDescriptor $entityDescriptor): string;
+    public function toXML(EntityDescriptor $entityDescriptor): string;
 }

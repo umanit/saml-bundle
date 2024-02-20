@@ -9,4 +9,6 @@ use LightSaml\Model\Protocol\AuthnRequest;
 interface SamlAuthnRequestServiceInterface
 {
     public function generate(string $provider): AuthnRequest;
+
+    public function toXML(AuthnRequest $authnRequest): string;
 }

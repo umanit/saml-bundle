@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Umanit\SamlBundle\Service;
+
+use LightSaml\Credential\X509Credential;
+use LightSaml\Model\XmlDSig\SignatureWriter;
+
+interface X509CertificatServiceInterface
+{
+    public function getSpCredential(string $provider): ?X509Credential;
+
+    public function getIdpCredential(string $provider): ?X509Credential;
+
+    public function getX509Credentials(array $config): ?X509Credential;
+
+    public function getSignature(X509Credential $credential): SignatureWriter;
+}

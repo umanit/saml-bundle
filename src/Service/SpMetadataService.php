@@ -88,7 +88,7 @@ class SpMetadataService implements SpMetadataServiceInterface
         return $entityDescriptor;
     }
 
-    public function entityDescriptorToXML(EntityDescriptor $entityDescriptor): string
+    public function toXML(EntityDescriptor $entityDescriptor): string
     {
         $serializationContext = new SerializationContext();
         $entityDescriptor->serialize($serializationContext->getDocument(), $serializationContext);

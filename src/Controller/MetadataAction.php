@@ -23,7 +23,7 @@ class MetadataAction extends AbstractController
         }
 
         return new Response(
-            $spMetadataService->entityDescriptorToXML($entityDescriptor),
+            $spMetadataService->toXML($entityDescriptor),
             Response::HTTP_OK,
             ['Content-Type' => 'application/xml' /*'application/samlmetadata+xml'*/]
         );
