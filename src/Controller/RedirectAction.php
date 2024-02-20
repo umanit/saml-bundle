@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Umanit\SamlBundle\Service\SamlAuthnRequestServiceInterface;
-use Umanit\SamlBundle\Service\SendMessageServiceInterface;
 
 class RedirectAction extends AbstractController
 {
@@ -17,19 +16,10 @@ class RedirectAction extends AbstractController
     public function __invoke(
         string $provider,
         Request $request,
-        SamlAuthnRequestServiceInterface $authnRequestService,
-        SendMessageServiceInterface $sendMessageService
+        SamlAuthnRequestServiceInterface $authnRequestService
     ): Response {
         $authnRequest = $authnRequestService->generate($provider);
         $xml = $authnRequestService->toXML($authnRequest);
-
-        /*
-        return $sendMessageService->send(
-            $provider,
-            $authnRequest,
-            SamlConstants::BINDING_SAML2_HTTP_POST
-        );
-        */
 
         return $this->render('@UmanitSaml/redirect.html.twig', [
             'xml_base_64' => base64_encode($xml),

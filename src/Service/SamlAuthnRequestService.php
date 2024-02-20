@@ -29,10 +29,10 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
     public function generate(string $provider): AuthnRequest
     {
         $config = $this->configurationService->getByProvider($provider);
-        $idpBindingType = $config['idp']['sso']['binding'] ?? SamlConstants::BINDING_SAML2_HTTP_REDIRECT;
+        $acsBindingType = $config['sp']['acs']['binding'] ?? SamlConstants::BINDING_SAML2_HTTP_REDIRECT;
 
-        if (!SamlConstants::isBindingValid($idpBindingType)) {
-            throw new InvalidArgumentException(sprintf('Invalid binding type "%s"', $idpBindingType));
+        if (!SamlConstants::isBindingValid($acsBindingType)) {
+            throw new InvalidArgumentException(sprintf('Invalid binding type "%s"', $acsBindingType));
         }
 
         $idpEntityDescriptor = $this->idpMetadataService->getEntityDescriptor($provider);
@@ -47,7 +47,7 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
         $authnRequest = new AuthnRequest();
         $authnRequest
             ->setID(Helper::generateID())
-            ->setProtocolBinding($idpSsoService->getBinding())
+            ->setProtocolBinding($acsBindingType)
             ->setIssueInstant(new DateTime())
             ->setDestination($idpSsoService->getLocation())
             ->setNameIDPolicy((new NameIDPolicy())->setFormat($nameIdFormat))
