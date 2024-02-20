@@ -4,25 +4,25 @@ services:
         autoconfigure: false
 
     # Controller
-    Umanit\SamlBundle\Controller\RedirectAction:
+    umanit_saml.service.redirect_action:
         class: Umanit\SamlBundle\Controller\RedirectAction
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags: ['controller.service_arguments', 'container.service_subscriber']
 
-    Umanit\SamlBundle\Controller\MetadataAction:
+    umanit_saml.service.metadata_action:
         class: Umanit\SamlBundle\Controller\MetadataAction
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags: ['controller.service_arguments', 'container.service_subscriber']
 
-    Umanit\SamlBundle\Controller\AcsAction:
+    umanit_saml.service.acs_action:
         class: Umanit\SamlBundle\Controller\AcsAction
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags: ['controller.service_arguments', 'container.service_subscriber']
 
-    Umanit\SamlBundle\Controller\SloAction:
+    umanit_saml.service.slo_action:
         class: Umanit\SamlBundle\Controller\SloAction
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
@@ -34,20 +34,6 @@ services:
         arguments:
             - ~
     Umanit\SamlBundle\Service\ConfigurationServiceInterface: '@umanit_saml.service.configuration_service'
-
-    umanit_saml.service.saml_anthn_request_service:
-        class: Umanit\SamlBundle\Service\SamlAuthnRequestService
-        arguments:
-            - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
-            - '@umanit_saml.service.idp_metadata_service'
-            - '@umanit_saml.service.sp_metadata_service'
-    Umanit\SamlBundle\Service\SamlAuthnRequestServiceInterface: '@umanit_saml.service.saml_anthn_request_service'
-
-    umanit_saml.service.metadata_service:
-        class: Umanit\SamlBundle\Service\MetadataService
-        arguments:
-            - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
-    Umanit\SamlBundle\Service\MetadataServiceInterface: '@umanit_saml.service.metadata_service'
 
     umanit_saml.service.idp_metadata_service:
         class: Umanit\SamlBundle\Service\IdpMetadataService
@@ -64,3 +50,17 @@ services:
             - '@router.default'
             - '@router.default'
     Umanit\SamlBundle\Service\SpMetadataServiceInterface: '@umanit_saml.service.sp_metadata_service'
+
+    umanit_saml.service.saml_anthn_request_service:
+        class: Umanit\SamlBundle\Service\SamlAuthnRequestService
+        arguments:
+            - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
+            - '@umanit_saml.service.idp_metadata_service'
+            - '@umanit_saml.service.sp_metadata_service'
+    Umanit\SamlBundle\Service\SamlAuthnRequestServiceInterface: '@umanit_saml.service.saml_anthn_request_service'
+
+    umanit_saml.service.send_message_service:
+        class: Umanit\SamlBundle\Service\SendMessageService
+        arguments:
+            - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
+    Umanit\SamlBundle\Service\SendMessageServiceInterface: '@umanit_saml.service.send_message_service'
