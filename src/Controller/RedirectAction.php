@@ -10,9 +10,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Umanit\SamlBundle\Service\SamlAuthnRequestServiceInterface;
 
-class RedirectionAction extends AbstractController
+class RedirectAction extends AbstractController
 {
-    #[Route('redirection/{provider}', name: 'umanit_saml_redirection')]
+    #[Route('redirect/{provider<\w+>}', name: 'umanit_saml_redirect')]
     public function __invoke(
         Request $request,
         string $provider,

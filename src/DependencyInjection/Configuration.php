@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\DependencyInjection;
 
+use LightSaml\SamlConstants;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Umanit\SamlBundle\Enums\Mode;
@@ -35,15 +36,23 @@ class Configuration implements ConfigurationInterface
                             ->arrayNode('sp')
                                 ->children()
                                     ->scalarNode('entity_id')->info('Entity id')->end()
+                                    ->scalarNode('name_id_format')->info('NameIDFormat')
+                                        ->defaultValue(SamlConstants::NAME_ID_FORMAT_PERSISTENT)
+                                        ->validate()
+                                            ->ifTrue(fn (string $v) => false === SamlConstants::isNameIdFormatValid($v))
+                                            ->thenInvalid('Invalid NameIDFormat %s')->end()
+                                        ->end()
                                     ->arrayNode('acs')->info('Assertion Consumer Service')
                                         ->children()
-                                            ->scalarNode('url')->isRequired()->end()
+                                            ->scalarNode('url')->end()
+                                            ->scalarNode('route')->end()
                                             ->scalarNode('binding')->end()
                                         ->end()
                                     ->end()
                                     ->arrayNode('slo')->info('Single Logout Service')
                                         ->children()
-                                            ->scalarNode('url')->isRequired()->end()
+                                            ->scalarNode('url')->end()
+                                            ->scalarNode('route')->end()
                                             ->scalarNode('binding')->end()
                                         ->end()
                                     ->end()

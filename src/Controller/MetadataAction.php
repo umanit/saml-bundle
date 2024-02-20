@@ -7,17 +7,25 @@ namespace Umanit\SamlBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Umanit\SamlBundle\Service\MetadataServiceInterface;
+use Umanit\SamlBundle\Service\SpMetadataServiceInterface;
 
 class MetadataAction extends AbstractController
 {
-    #[Route('metadata', name: 'umanit_saml_metadata')]
-    public function __invoke(MetadataServiceInterface $metadataService): Response
-    {
-        // revoie un object metadata
-        $metadataService->generate();
+    #[Route('metadata/{provider<\w+>}', name: 'umanit_saml_metadata')]
+    public function __invoke(
+        string $provider,
+        SpMetadataServiceInterface $spMetadataService
+    ): Response {
+        try {
+            $entityDescriptor = $spMetadataService->getEntityDescriptor($provider);
+        } catch (\Throwable) {
+            throw $this->createNotFoundException();
+        }
 
-        // TOTO ici on return la Response avec l'objet
-        return new Response("metadata");
+        return new Response(
+            $spMetadataService->entityDescriptorToXML($entityDescriptor),
+            Response::HTTP_OK,
+            ['Content-Type' => 'application/xml' /*'application/samlmetadata+xml'*/]
+        );
     }
 }

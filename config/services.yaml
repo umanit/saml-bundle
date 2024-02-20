@@ -4,14 +4,26 @@ services:
         autoconfigure: false
 
     # Controller
-    Umanit\SamlBundle\Controller\RedirectionAction:
-        class: Umanit\SamlBundle\Controller\RedirectionAction
+    Umanit\SamlBundle\Controller\RedirectAction:
+        class: Umanit\SamlBundle\Controller\RedirectAction
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags: ['controller.service_arguments', 'container.service_subscriber']
 
     Umanit\SamlBundle\Controller\MetadataAction:
         class: Umanit\SamlBundle\Controller\MetadataAction
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags: ['controller.service_arguments', 'container.service_subscriber']
+
+    Umanit\SamlBundle\Controller\AcsAction:
+        class: Umanit\SamlBundle\Controller\AcsAction
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags: ['controller.service_arguments', 'container.service_subscriber']
+
+    Umanit\SamlBundle\Controller\SloAction:
+        class: Umanit\SamlBundle\Controller\SloAction
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags: ['controller.service_arguments', 'container.service_subscriber']
@@ -42,3 +54,11 @@ services:
             - '@http_client'
             - '@cache.app.taggable'
     Umanit\SamlBundle\Service\IdpMetadataServiceInterface: '@umanit_saml.service.idp_metadata_service'
+
+    umanit_saml.service.sp_metadata_service:
+        class: Umanit\SamlBundle\Service\SpMetadataService
+        arguments:
+            - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
+            - '@router.default'
+            - '@router.default'
+    Umanit\SamlBundle\Service\SpMetadataServiceInterface: '@umanit_saml.service.sp_metadata_service'
