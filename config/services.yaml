@@ -4,26 +4,22 @@ services:
         autoconfigure: false
 
     # Controller
-    umanit_saml.service.redirect_action:
-        class: Umanit\SamlBundle\Controller\RedirectAction
+    Umanit\SamlBundle\Controller\MetadataAction:
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags: ['controller.service_arguments', 'container.service_subscriber']
 
-    umanit_saml.service.metadata_action:
-        class: Umanit\SamlBundle\Controller\MetadataAction
+    Umanit\SamlBundle\Controller\RedirectAction:
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags: ['controller.service_arguments', 'container.service_subscriber']
 
-    umanit_saml.service.acs_action:
-        class: Umanit\SamlBundle\Controller\AcsAction
+    Umanit\SamlBundle\Controller\AcsAction:
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags: ['controller.service_arguments', 'container.service_subscriber']
 
-    umanit_saml.service.slo_action:
-        class: Umanit\SamlBundle\Controller\SloAction
+    Umanit\SamlBundle\Controller\SloAction:
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags: ['controller.service_arguments', 'container.service_subscriber']
