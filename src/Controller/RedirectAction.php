@@ -14,14 +14,14 @@ class RedirectAction extends AbstractController
 {
     #[Route('redirect/{provider<\w+>}', name: 'umanit_saml_redirect')]
     public function __invoke(
-        Request $request,
         string $provider,
+        Request $request,
         SamlAuthnRequestServiceInterface $authnRequestService
     ): Response {
-        $authnRequestDto = $authnRequestService->generate($provider);
+        $authnRequest = $authnRequestService->generate($provider);
 
-        return $this->render('redirection.html.twig', [
-            'authn_request_dto' => $authnRequestDto,
+        return $this->render('@UmanitSaml/redirect.html.twig', [
+            'authn_request' => $authnRequest,
         ]);
     }
 }

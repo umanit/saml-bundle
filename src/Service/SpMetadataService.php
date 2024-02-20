@@ -117,6 +117,7 @@ class SpMetadataService implements SpMetadataServiceInterface
 
         $isFile = file_exists($privateKey) && is_readable($privateKey);
 
+        // Laisser la possibilité de gérer le niveau de chiffrement
         return new X509Credential(
             $this->makeCertificate($x509Cert),
             KeyHelper::createPrivateKey(
