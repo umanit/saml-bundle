@@ -20,6 +20,8 @@ class AcsAction extends AbstractController
         SpMetadataServiceInterface $spMetadataService
     ) {
 
+        // Debug : symfony console server:dump
+
         $messageContext = new MessageContext();
         $bindingFactory = new BindingFactory();
         $bindingType = $bindingFactory->detectBindingType($request);
