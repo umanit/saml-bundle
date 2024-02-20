@@ -7,34 +7,47 @@ namespace Umanit\SamlBundle\Service;
 use LightSaml\Helper;
 use LightSaml\Model\Assertion\Issuer;
 use LightSaml\Model\Protocol\AuthnRequest;
+use LightSaml\Model\Protocol\NameIDPolicy;
 use LightSaml\SamlConstants;
-use Umanit\SamlBundle\Dto\SamlAuthnRequestDto;
 
 class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
 {
     public function __construct(
-        public ConfigurationServiceInterface $configurationService,
+        protected ConfigurationServiceInterface $configurationService,
+        protected IdpMetadataServiceInterface $idpMetadataService,
+        protected SpMetadataServiceInterface $spMetadataService
     ) {
     }
 
-    public function generate(string $provider): SamlAuthnRequestDto
+    public function generate(string $provider): AuthnRequest
     {
         $config = $this->configurationService->getByProvider($provider);
+        $idpBindingType = $config['idp']['sso']['binding'] ?? SamlConstants::BINDING_SAML2_HTTP_REDIRECT;
 
-        /**
-         * TODO Une erreur Symfony me dit Did you forget a "use" statement for another namespace
-         * alors que les namespace est bien la !
-         */
+        if (!SamlConstants::isBindingValid($idpBindingType)) {
+            throw new \InvalidArgumentException(sprintf('Invalid binding type "%s"', $idpBindingType));
+        }
+
+        $idpEntityDescriptor = $this->idpMetadataService->getEntityDescriptor($provider);
+        $idpSsoDescriptor = $idpEntityDescriptor->getFirstIdpSsoDescriptor();
+        $idpSsoService = $idpSsoDescriptor->getFirstSingleSignOnService();
+        $spEntityDescriptor = $this->spMetadataService->getEntityDescriptor($provider);
+        $spSsoDescriptor = $spEntityDescriptor->getFirstSpSsoDescriptor();
+
+        $acsService = $spSsoDescriptor->getFirstAssertionConsumerService();
+        $nameIdFormat = $spSsoDescriptor->getAllNameIDFormats()[0] ?? SamlConstants::NAME_ID_FORMAT_PERSISTENT;
+
         $authnRequest = new AuthnRequest();
         $authnRequest
-            ->setAssertionConsumerServiceURL($config['sp']['assertionConsumerService']['url'])
-            ->setProtocolBinding(SamlConstants::BINDING_SAML2_HTTP_POST)
             ->setID(Helper::generateID())
+            ->setProtocolBinding($acsService->getBinding())
             ->setIssueInstant(new \DateTime())
-            ->setDestination($config['idp']['SingleSignOnService'])
-            ->setIssuer(new Issuer('https://my.site'))
+            ->setDestination($idpSsoService->getLocation())
+            ->setNameIDPolicy((new NameIDPolicy())->setFormat($nameIdFormat))
+            ->setIssuer(new Issuer($spEntityDescriptor->getEntityID()))
+            ->setAssertionConsumerServiceURL($acsService->getLocation())
         ;
 
-        return new SamlAuthnRequestDto('test', 'url');
+        return $authnRequest;
     }
 }

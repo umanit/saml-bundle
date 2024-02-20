@@ -39,6 +39,8 @@ services:
         class: Umanit\SamlBundle\Service\SamlAuthnRequestService
         arguments:
             - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
+            - '@umanit_saml.service.idp_metadata_service'
+            - '@umanit_saml.service.sp_metadata_service'
     Umanit\SamlBundle\Service\SamlAuthnRequestServiceInterface: '@umanit_saml.service.saml_anthn_request_service'
 
     umanit_saml.service.metadata_service:

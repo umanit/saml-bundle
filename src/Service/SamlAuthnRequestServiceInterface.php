@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Service;
 
-use Umanit\SamlBundle\Dto\SamlAuthnRequestDto;
+use LightSaml\Model\Protocol\AuthnRequest;
 
 interface SamlAuthnRequestServiceInterface
 {
-    public function generate(string $provider): SamlAuthnRequestDto;
+    public function generate(string $provider): AuthnRequest;
 }
