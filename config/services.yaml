@@ -68,3 +68,10 @@ services:
         arguments:
             - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
     Umanit\SamlBundle\Service\X509CertificatServiceInterface: '@umanit_saml.service.x509_certificat_service'
+
+    umanit_saml.service.response_service:
+        class: Umanit\SamlBundle\Service\ResponseService
+        arguments:
+            - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
+            - '@Umanit\SamlBundle\Service\X509CertificatServiceInterface'
+    Umanit\SamlBundle\Service\ResponseServiceInterface: '@umanit_saml.service.response_service'

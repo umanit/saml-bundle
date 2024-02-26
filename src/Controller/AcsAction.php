@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Controller;
 
-use LightSaml\Binding\BindingFactory;
-use LightSaml\Context\Profile\MessageContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Umanit\SamlBundle\Service\SpMetadataServiceInterface;
+use Umanit\SamlBundle\Service\ResponseServiceInterface;
 
 #[Route('acs/{provider<\w+>}', name: 'umanit_saml_acs', methods: ['GET', 'POST'])]
 class AcsAction extends AbstractController
@@ -17,18 +16,15 @@ class AcsAction extends AbstractController
     public function __invoke(
         string $provider,
         Request $request,
-        SpMetadataServiceInterface $spMetadataService
-    ) {
+        ResponseServiceInterface $responseService
+    ): Response {
+        $samlMessage = $responseService->getSamlMessage($request);
 
-        // Debug : symfony console server:dump
+        if (null === $samlMessage) {
+            throw $this->createAccessDeniedException('No SAML message found');
+        }
 
-        $messageContext = new MessageContext();
-        $bindingFactory = new BindingFactory();
-        $bindingType = $bindingFactory->detectBindingType($request);
-        $bindingFactory->create($bindingType)->receive($request, $messageContext);
-        $messageContext->setBindingType($bindingType);
-
-        dd($bindingType, $messageContext->getMessage());
+        $responseService->validateSamlMessage($provider, $samlMessage);
 
         return $this->json([]);
     }
