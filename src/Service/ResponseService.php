@@ -284,7 +284,8 @@ class ResponseService implements ResponseServiceInterface
                     return;
                 }
             } catch (LightSamlSecurityException $e) {
-                dd($e, $key);
+                # https://github.com/litesaml/lightsaml/issues/60
+                dd($e, $key, $signatureReader);
                 continue;
             }
         }
