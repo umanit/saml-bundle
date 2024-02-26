@@ -75,6 +75,9 @@ services:
         arguments:
             - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
             - '@Umanit\SamlBundle\Service\X509CertificatServiceInterface'
+            - '@umanit_saml.service.idp_metadata_service'
+            - '@umanit_saml.service.sp_metadata_service'
+            - '@cache.app.taggable'
     Umanit\SamlBundle\Service\ResponseServiceInterface: '@umanit_saml.service.response_service'
 
     umanit_saml.guesser.best_content_type_guesser:
