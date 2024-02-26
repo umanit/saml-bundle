@@ -45,6 +45,7 @@ services:
             - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
             - '@router.default'
             - '@router.default'
+            - '@Umanit\SamlBundle\Service\X509CertificatServiceInterface'
     Umanit\SamlBundle\Service\SpMetadataServiceInterface: '@umanit_saml.service.sp_metadata_service'
 
     umanit_saml.service.saml_anthn_request_service:

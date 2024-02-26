@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Umanit\SamlBundle\Service;
 
 use InvalidArgumentException;
-use LightSaml\Credential\KeyHelper;
-use LightSaml\Credential\X509Certificate;
-use LightSaml\Credential\X509Credential;
 use LightSaml\Helper;
 use LightSaml\Model\Context\SerializationContext;
 use LightSaml\Model\Metadata\AssertionConsumerService;
@@ -15,10 +12,7 @@ use LightSaml\Model\Metadata\EntityDescriptor;
 use LightSaml\Model\Metadata\KeyDescriptor;
 use LightSaml\Model\Metadata\SingleLogoutService;
 use LightSaml\Model\Metadata\SpSsoDescriptor;
-use LightSaml\Model\XmlDSig\SignatureWriter;
 use LightSaml\SamlConstants;
-use RobRichards\XMLSecLibs\XMLSecurityDSig;
-use RobRichards\XMLSecLibs\XMLSecurityKey;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Throwable;
@@ -28,7 +22,8 @@ class SpMetadataService implements SpMetadataServiceInterface
     public function __construct(
         protected ConfigurationServiceInterface $configurationService,
         protected UrlGeneratorInterface $urlGenerator,
-        protected RouterInterface $router
+        protected RouterInterface $router,
+        protected X509CertificatServiceInterface $x509CertificatService,
     ) {
     }
 
@@ -69,8 +64,8 @@ class SpMetadataService implements SpMetadataServiceInterface
                          ->addItem($spSsoDescriptor)
         ;
 
-        if (null !== ($credential = $this->getX509Credentials($config['sp']))) {
-            $entityDescriptor->setSignature($this->signature($credential));
+        if (null !== ($credential = $this->x509CertificatService->getX509Credentials($config['sp']))) {
+            $entityDescriptor->setSignature($this->x509CertificatService->getSignature($credential));
             $spSsoDescriptor->setAuthnRequestsSigned(true)
                             ->addKeyDescriptor(
                                 new KeyDescriptor(KeyDescriptor::USE_SIGNING, $credential->getCertificate())
@@ -94,58 +89,6 @@ class SpMetadataService implements SpMetadataServiceInterface
         $entityDescriptor->serialize($serializationContext->getDocument(), $serializationContext);
 
         return $serializationContext->getDocument()->saveXML();
-    }
-
-    protected function signature(X509Credential $credential): SignatureWriter
-    {
-        return new SignatureWriter(
-            $credential->getCertificate(),
-            $credential->getPrivateKey(),
-            XMLSecurityDSig::SHA256
-        );
-    }
-
-    protected function getX509Credentials(array $spConfig): ?X509Credential
-    {
-        $x509Cert = $spConfig['x509cert'] ?? null;
-        $privateKey = $spConfig['private_key'] ?? null;
-        $privateKeyPassphrase = $spConfig['private_key_passphrase'] ?? '';
-
-        if (null === $x509Cert || null === $privateKey) {
-            return null;
-        }
-
-        $isFile = file_exists($privateKey) && is_readable($privateKey);
-
-        // Laisser la possibilité de gérer le niveau de chiffrement
-        return new X509Credential(
-            $this->makeCertificate($x509Cert),
-            KeyHelper::createPrivateKey(
-                $privateKey,
-                $privateKeyPassphrase,
-                $isFile,
-                XMLSecurityKey::RSA_SHA256
-            )
-        );
-    }
-
-    protected function makeCertificate(?string $data): X509Certificate
-    {
-        $cert = new X509Certificate();
-
-        if ($data === null) {
-            return $cert;
-        }
-
-        if (file_exists($data) && is_readable($data)) {
-            $data = file_get_contents($data);
-        }
-
-        if (str_starts_with($data, '-----BEGIN CERTIFICATE-----')) {
-            return $cert->loadPem($data);
-        }
-
-        return $cert->setData($data);
     }
 
     protected function getEntityId(string $provider, array $spConfig): string
