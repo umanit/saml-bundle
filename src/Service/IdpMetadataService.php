@@ -24,6 +24,10 @@ class IdpMetadataService implements IdpMetadataServiceInterface
     ) {
     }
 
+    /**
+     * @throws InvalidArgumentException
+     * @throws Exception
+     */
     public function getEntityDescriptor(string $provider): EntityDescriptor
     {
         $config = $this->configurationService->getByProvider($provider);
@@ -86,6 +90,7 @@ class IdpMetadataService implements IdpMetadataServiceInterface
      *
      * @return EntityDescriptor
      * @throws InvalidArgumentException
+     * @throws Exception
      */
     protected function getEntityDescriptorFromUrl(string $url, array $idpConfig): EntityDescriptor
     {
@@ -113,6 +118,9 @@ class IdpMetadataService implements IdpMetadataServiceInterface
         return $this->getEntityDescriptorFromXml($xml, ($idpConfig['entity_id'] ?? null));
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function clearCache(string $provider): void
     {
         $config = $this->configurationService->getByProvider($provider);

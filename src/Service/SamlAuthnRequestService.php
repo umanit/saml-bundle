@@ -37,11 +37,30 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
 
         $idpEntityDescriptor = $this->idpMetadataService->getEntityDescriptor($provider);
         $idpSsoDescriptor = $idpEntityDescriptor->getFirstIdpSsoDescriptor();
+
+        if (null === $idpSsoDescriptor) {
+            throw new RuntimeException('No IdpSsoDescriptor found.');
+        }
+
         $idpSsoService = $idpSsoDescriptor->getFirstSingleSignOnService();
+
+        if (null === $idpSsoService) {
+            throw new RuntimeException('No SingleSignOnService found.');
+        }
+
         $spEntityDescriptor = $this->spMetadataService->getEntityDescriptor($provider);
         $spSsoDescriptor = $spEntityDescriptor->getFirstSpSsoDescriptor();
 
+        if (null === $spSsoDescriptor) {
+            throw new RuntimeException('No SpSsoDescriptor found.');
+        }
+
         $acsService = $spSsoDescriptor->getFirstAssertionConsumerService();
+
+        if (null === $acsService) {
+            throw new RuntimeException('No AssertionConsumerService found.');
+        }
+
         $nameIdFormat = $spSsoDescriptor->getAllNameIDFormats()[0] ?? SamlConstants::NAME_ID_FORMAT_PERSISTENT;
 
         $authnRequest = new AuthnRequest();
@@ -70,6 +89,11 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
         }
 
         $spCredential = $this->x509CertificatService->getSpCredential($provider);
+
+        if (null === $spCredential) {
+            throw new RuntimeException('No Credential found.');
+        }
+
         $authnRequest->setSignature($this->x509CertificatService->getSignature($spCredential));
 
         return $authnRequest;

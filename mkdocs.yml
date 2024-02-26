@@ -1,0 +1,57 @@
+site_name: Umanit SAML Bundle
+repo_url: https://holygit.umanit.fr/umanit/saml-bundle
+repo_name: umanit/saml-bundle
+plugins:
+    - search
+    - offline
+
+theme:
+    name: material
+    features:
+        - navigation.footer
+        - announce.dismiss
+        - content.code.copy
+        - content.code.select
+    icon:
+        repo: fontawesome/brands/gitlab
+
+markdown_extensions:
+    -   tables
+    -   pymdownx.highlight:
+            anchor_linenums: true
+            line_spans: __span
+            pygments_lang_class: true
+    -   pymdownx.inlinehilite
+    -   pymdownx.snippets
+    -   pymdownx.superfences:
+            custom_fences:
+                -   name: mermaid
+                    class: mermaid
+                    format: !!python/name:pymdownx.superfences.fence_code_format
+extra:
+    version:
+        provider: mike
+        default:
+            - stable
+            - development
+extra_css:
+    - stylesheets/extra.css
+
+nav:
+    -   Home: index.md
+
+    -   "Getting Started":
+            -   Installation: ./getting_started/installation.md
+            -   Quality Code: ./getting_started/qa_tools.md
+
+    -   SAML:
+            -   Modes:
+                    -   SP: ./modes/sp.md
+                    -   IDP: ./modes/idp.md
+            -   Metadata: ./saml/metadata.md
+            -   AuthNRequest: ./saml/authnrequest.md
+            -   SingleLogout: ./saml/slo.md
+            -   Assertion Consumer Service: ./saml/acs.md
+
+    -   Configuration:
+            -   Bundle: ./configuration/index.md

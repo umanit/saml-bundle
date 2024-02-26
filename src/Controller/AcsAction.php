@@ -28,7 +28,7 @@ class AcsAction extends AbstractController
         $bindingFactory->create($bindingType)->receive($request, $messageContext);
         $messageContext->setBindingType($bindingType);
 
-        dd($messageContext->getMessage());
+        dd($bindingType, $messageContext->getMessage());
 
         return $this->json([]);
     }
