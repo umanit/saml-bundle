@@ -75,3 +75,8 @@ services:
             - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
             - '@Umanit\SamlBundle\Service\X509CertificatServiceInterface'
     Umanit\SamlBundle\Service\ResponseServiceInterface: '@umanit_saml.service.response_service'
+
+    umanit_saml.guesser.best_content_type_guesser:
+        class: Umanit\SamlBundle\Guesser\BestContentTypeGuesser
+    Umanit\SamlBundle\Guesser\BestContentTypeGuesserInterface: '@umanit_saml.guesser.best_content_type_guesser'
+

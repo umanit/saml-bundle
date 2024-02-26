@@ -8,6 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Umanit\SamlBundle\Guesser\BestContentTypeGuesserInterface;
 use Umanit\SamlBundle\Service\SpMetadataServiceInterface;
 
 class MetadataAction extends AbstractController
@@ -16,7 +17,8 @@ class MetadataAction extends AbstractController
     public function __invoke(
         string $provider,
         Request $request,
-        SpMetadataServiceInterface $spMetadataService
+        SpMetadataServiceInterface $spMetadataService,
+        BestContentTypeGuesserInterface $bestContentTypeGuesser
     ): Response {
         try {
             $entityDescriptor = $spMetadataService->getEntityDescriptor($provider);
@@ -24,22 +26,10 @@ class MetadataAction extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        $supportedContextTypes = ['application/samlmetadata+xml', 'application/xml', 'text/xml'];
-        $contentType = 'text/xml';
-
-        $acceptableContentTypes = array_flip($request->getAcceptableContentTypes());
-
-        foreach ($supportedContextTypes as $supportedContentType) {
-            if (isset($acceptableContentTypes[$supportedContentType])) {
-                $contentType = $supportedContentType;
-                break;
-            }
-        }
-
         return new Response(
             $spMetadataService->toXML($entityDescriptor),
             Response::HTTP_OK,
-            ['Content-Type' => $contentType]
+            ['Content-Type' => $bestContentTypeGuesser->guessForMetadataRequest($request)]
         );
     }
 }
