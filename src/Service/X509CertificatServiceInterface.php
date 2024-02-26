@@ -15,5 +15,5 @@ interface X509CertificatServiceInterface
 
     public function getX509Credentials(array $config): ?X509Credential;
 
-    public function getSignature(X509Credential $credential): SignatureWriter;
+    public function getSignature(X509Credential $credential, string $algorithmSignature): SignatureWriter;
 }
