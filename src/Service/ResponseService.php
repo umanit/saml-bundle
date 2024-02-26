@@ -283,7 +283,8 @@ class ResponseService implements ResponseServiceInterface
                 if ($signatureReader->validate($key)) {
                     return;
                 }
-            } catch (LightSamlSecurityException) {
+            } catch (LightSamlSecurityException $e) {
+                dd($e, $key);
                 continue;
             }
         }
