@@ -7,7 +7,9 @@ namespace Umanit\SamlBundle\DependencyInjection;
 use LightSaml\SamlConstants;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Umanit\SamlBundle\Enums\Encryption;
 use Umanit\SamlBundle\Enums\Mode;
+use Umanit\SamlBundle\Enums\SamlEncryptionSignature;
 use Umanit\SamlBundle\Service\IdpMetadataServiceInterface;
 
 class Configuration implements ConfigurationInterface
@@ -57,8 +59,22 @@ class Configuration implements ConfigurationInterface
                                         ->end()
                                     ->end()
                                     ->scalarNode('x509cert')->isRequired()->info('X509 Certificat')->end()
-                                    ->scalarNode('private_key')->info('Private Key')->end()
+                                    ->arrayNode('private_key')->info('Private Key')
+                                        ->children()
+                                            ->scalarNode('path')->info('Path to private Key')->end()
+                                            ->enumNode('encryption')
+                                                ->values(Encryption::cases())
+                                                ->defaultValue(Encryption::RSA_SHA256)
+                                                ->info('Type de chiffrement')
+                                            ->end()
+                                        ->end()
+                                    ->end()
                                     ->scalarNode('private_key_passphrase')->info('Private Key Passphrase')->end()
+                                    ->enumNode('saml_algorithm_signature')
+                                        ->values(SamlEncryptionSignature::cases())
+                                        ->defaultValue(SamlEncryptionSignature::SHA256)
+                                        ->info('Type de chiffrement')
+                                    ->end()
                                 ->end()
                             ->end()
                             ->arrayNode('idp')

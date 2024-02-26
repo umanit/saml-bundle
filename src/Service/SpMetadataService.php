@@ -64,8 +64,11 @@ class SpMetadataService implements SpMetadataServiceInterface
                          ->addItem($spSsoDescriptor)
         ;
 
+        $samlAlgorithmSignature = $config['sp']['saml_algorithm_signature']->value;
         if (null !== ($credential = $this->x509CertificatService->getX509Credentials($config['sp']))) {
-            $entityDescriptor->setSignature($this->x509CertificatService->getSignature($credential));
+            $entityDescriptor->setSignature(
+                $this->x509CertificatService->getSignature($credential, $samlAlgorithmSignature)
+            );
             $spSsoDescriptor->setAuthnRequestsSigned(true)
                             ->addKeyDescriptor(
                                 new KeyDescriptor(KeyDescriptor::USE_SIGNING, $credential->getCertificate())
@@ -83,34 +86,15 @@ class SpMetadataService implements SpMetadataServiceInterface
         return $entityDescriptor;
     }
 
-    public function toXML(EntityDescriptor $entityDescriptor): string
+    protected function getNameIDFormat(array $spConfig): string
     {
-        $serializationContext = new SerializationContext();
-        $entityDescriptor->serialize($serializationContext->getDocument(), $serializationContext);
+        $nameIdFormat = $spConfig['nameIdFormat'] ?? SamlConstants::NAME_ID_FORMAT_PERSISTENT;
 
-        return $serializationContext->getDocument()->saveXML();
-    }
-
-    protected function getEntityId(string $provider, array $spConfig): string
-    {
-        return $spConfig['entity_id'] ?? $this->urlGenerator->generate(
-            'umanit_saml_metadata',
-            ['provider' => $provider],
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
-    }
-
-    protected function getDefaultAssertionConsumerServiceBinding(array $spConfig): string
-    {
-        $acsBindingType = $spConfig['acs']['binding'] ?? SamlConstants::BINDING_SAML2_HTTP_POST;
-
-        if (!SamlConstants::isBindingValid($acsBindingType)) {
-            throw new InvalidArgumentException(
-                sprintf('Invalid Assertion Consumer Service binding "%s"', $acsBindingType)
-            );
+        if (!SamlConstants::isNameIdFormatValid($nameIdFormat)) {
+            throw new InvalidArgumentException(sprintf('Invalid NameID format "%s"', $nameIdFormat));
         }
 
-        return $acsBindingType;
+        return $nameIdFormat;
     }
 
     protected function getAssertionConsumerServiceRoute(string $provider, array $spConfig, string $bindindType): ?string
@@ -134,40 +118,6 @@ class SpMetadataService implements SpMetadataServiceInterface
         }
 
         return $url;
-    }
-
-    protected function getSingleLogoutServiceRoute(string $provider, array $spConfig, string $bindindType): ?string
-    {
-        $route = $spConfig['slo']['route'] ?? null;
-
-        if (null !== $route) {
-            if (!$this->hasRouteBindingType($route, $bindindType)) {
-                return null;
-            }
-
-            return $this->urlGenerator
-                ->generate($route, ['provider' => $provider], UrlGeneratorInterface::ABSOLUTE_URL)
-            ;
-        }
-
-        $url = $spConfig['slo']['url'] ?? null;
-
-        if (null === $url) {
-            throw new InvalidArgumentException('Assertion Consumer Service route or URL must be configured');
-        }
-
-        return $url;
-    }
-
-    protected function getNameIDFormat(array $spConfig): string
-    {
-        $nameIdFormat = $spConfig['nameIdFormat'] ?? SamlConstants::NAME_ID_FORMAT_PERSISTENT;
-
-        if (!SamlConstants::isNameIdFormatValid($nameIdFormat)) {
-            throw new InvalidArgumentException(sprintf('Invalid NameID format "%s"', $nameIdFormat));
-        }
-
-        return $nameIdFormat;
     }
 
     protected function hasRouteBindingType(string $route, string $bindingType): bool
@@ -198,5 +148,58 @@ class SpMetadataService implements SpMetadataServiceInterface
         } catch (Throwable $e) {
             return false;
         }
+    }
+
+    protected function getDefaultAssertionConsumerServiceBinding(array $spConfig): string
+    {
+        $acsBindingType = $spConfig['acs']['binding'] ?? SamlConstants::BINDING_SAML2_HTTP_POST;
+
+        if (!SamlConstants::isBindingValid($acsBindingType)) {
+            throw new InvalidArgumentException(
+                sprintf('Invalid Assertion Consumer Service binding "%s"', $acsBindingType)
+            );
+        }
+
+        return $acsBindingType;
+    }
+
+    protected function getSingleLogoutServiceRoute(string $provider, array $spConfig, string $bindindType): ?string
+    {
+        $route = $spConfig['slo']['route'] ?? null;
+
+        if (null !== $route) {
+            if (!$this->hasRouteBindingType($route, $bindindType)) {
+                return null;
+            }
+
+            return $this->urlGenerator
+                ->generate($route, ['provider' => $provider], UrlGeneratorInterface::ABSOLUTE_URL)
+            ;
+        }
+
+        $url = $spConfig['slo']['url'] ?? null;
+
+        if (null === $url) {
+            throw new InvalidArgumentException('Assertion Consumer Service route or URL must be configured');
+        }
+
+        return $url;
+    }
+
+    protected function getEntityId(string $provider, array $spConfig): string
+    {
+        return $spConfig['entity_id'] ?? $this->urlGenerator->generate(
+            'umanit_saml_metadata',
+            ['provider' => $provider],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+    }
+
+    public function toXML(EntityDescriptor $entityDescriptor): string
+    {
+        $serializationContext = new SerializationContext();
+        $entityDescriptor->serialize($serializationContext->getDocument(), $serializationContext);
+
+        return $serializationContext->getDocument()->saveXML();
     }
 }

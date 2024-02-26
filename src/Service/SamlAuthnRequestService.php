@@ -94,7 +94,8 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
             throw new RuntimeException('No Credential found.');
         }
 
-        $authnRequest->setSignature($this->x509CertificatService->getSignature($spCredential));
+        $samlAlgorithmSignature = $config['sp']['saml_algorithm_signature']->value;
+        $authnRequest->setSignature($this->x509CertificatService->getSignature($spCredential, $samlAlgorithmSignature));
 
         return $authnRequest;
     }
