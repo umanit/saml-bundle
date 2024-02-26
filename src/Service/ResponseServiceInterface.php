@@ -12,5 +12,5 @@ interface ResponseServiceInterface
 {
     public function getSamlMessage(HttpFoundationRequest $request): ?Response;
 
-    public function validateSamlMessage(string $provider, Response $message): bool;
+    public function validateSamlMessage(string $provider, Response $message): void;
 }
