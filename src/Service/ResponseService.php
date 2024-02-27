@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Service;
 
+use DateTimeImmutable;
 use LightSaml\Binding\BindingFactory;
 use LightSaml\Context\Profile\MessageContext;
-use LightSaml\Credential\KeyHelper;
+use LightSaml\Credential\Context\CredentialContextSet;
+use LightSaml\Credential\Context\MetadataCredentialContext;
+use LightSaml\Credential\X509Credential;
 use LightSaml\Criteria\CriteriaSet;
 use LightSaml\Error\LightSamlSecurityException;
 use LightSaml\Error\LightSamlValidationException;
@@ -18,7 +21,7 @@ use LightSaml\Model\Metadata\KeyDescriptor;
 use LightSaml\Model\Metadata\SpSsoDescriptor;
 use LightSaml\Model\Protocol\Response;
 use LightSaml\Model\Protocol\SamlMessage;
-use LightSaml\Model\XmlDSig\SignatureXmlReader;
+use LightSaml\Model\XmlDSig\AbstractSignatureReader;
 use LightSaml\Resolver\Endpoint\Criteria\DescriptorTypeCriteria;
 use LightSaml\Resolver\Endpoint\Criteria\LocationCriteria;
 use LightSaml\Resolver\Endpoint\Criteria\ServiceTypeCriteria;
@@ -44,7 +47,6 @@ class ResponseService implements ResponseServiceInterface
         protected AdapterInterface $cache
     ) {
     }
-
 
     public function getSamlMessage(HttpFoundationRequest $request): ?Response
     {
@@ -89,7 +91,6 @@ class ResponseService implements ResponseServiceInterface
         // On vérifie que la signature de la réponse est bien valide
         $this->validateSignature($provider, $message);
 
-
         $assertion = $message->getFirstAssertion();
 
         if (null === $assertion) {
@@ -106,11 +107,9 @@ class ResponseService implements ResponseServiceInterface
 
         if ($attributeStatement instanceof AttributeStatement) {
             $attributes = $attributeStatement->getAllAttributes();
-            dump($attributes);
         }
 
-
-        dump($nameIdValue);
+        dump($attributeStatement, $nameIdValue);
     }
 
     private function validateStatus(Response $message): void
@@ -210,7 +209,8 @@ class ResponseService implements ResponseServiceInterface
 
         $spEntityDescriptor = $this->spMetadataService->getEntityDescriptor($provider);
         $endpoints = (new DescriptorTypeEndpointResolver())
-            ->resolve($criteriaSet, $spEntityDescriptor->getAllEndpoints());
+            ->resolve($criteriaSet, $spEntityDescriptor->getAllEndpoints())
+        ;
 
         if (empty($endpoints)) {
             throw new LightSamlValidationException(
@@ -250,9 +250,10 @@ class ResponseService implements ResponseServiceInterface
         (new AssertionTimeValidator())
             ->validateTimeRestrictions(
                 $message->getFirstAssertion(),
-                (new \DateTimeImmutable())->getTimestamp(),
+                (new DateTimeImmutable())->getTimestamp(),
                 $allowedSecondsSkew
-            );
+            )
+        ;
     }
 
     private function validateSignature(string $provider, Response $message): void
@@ -264,32 +265,41 @@ class ResponseService implements ResponseServiceInterface
             throw new LightSamlValidationException('No IdP SSO descriptor found in IdP entity descriptor');
         }
 
-        $keyDescriptors = array_merge(
-            $idpSsoDescriptor->getAllKeyDescriptorsByUse(KeyDescriptor::USE_SIGNING),
-            $idpSsoDescriptor->getAllKeyDescriptorsByUse(null),
-        );
-
-        /** @var SignatureXmlReader $signatureReader */
         $signatureReader = $message->getSignature() ?: $message->getFirstAssertion()?->getSignature();
 
-        if (!$signatureReader instanceof SignatureXmlReader) {
+        if (!$signatureReader instanceof AbstractSignatureReader) {
             throw new LightSamlValidationException('No signature found in response');
         }
 
-        foreach ($keyDescriptors as $keyDescriptor) {
-            $key = KeyHelper::createPublicKey($keyDescriptor->getCertificate());
+        /** @var KeyDescriptor[] $keyDescriptors */
+        $keyDescriptors = $idpSsoDescriptor->getAllKeyDescriptors();
 
-            try {
-                if ($signatureReader->validate($key)) {
-                    return;
-                }
-            } catch (LightSamlSecurityException $e) {
-                # https://github.com/litesaml/lightsaml/issues/60
-                dd($e, $key, $signatureReader);
-                continue;
-            }
+        $credentialCandidates = [];
+
+        foreach ($keyDescriptors as $keyDescriptor) {
+            $credentialCandidates[] = (new X509Credential($keyDescriptor->getCertificate()))
+                ->setEntityId($idpEntityDescriptor->getEntityID())
+                ->addKeyName($keyDescriptor->getCertificate()?->getName())
+                ->setUsageType($keyDescriptor->getUse())
+                ->setCredentialContext(
+                    new CredentialContextSet([
+                        new MetadataCredentialContext($keyDescriptor, $idpSsoDescriptor, $idpEntityDescriptor),
+                    ])
+                )
+            ;
         }
 
-        throw new LightSamlValidationException('No valid signature found in response');
+
+        try {
+            $credential = $signatureReader->validateMulti($credentialCandidates);
+        } catch (LightSamlSecurityException $e) {
+            dump(
+                \openssl_error_string(),
+                $credentialCandidates,
+                $signatureReader->getKey()->getX509Thumbprint(),
+            );
+
+            throw $e;
+        }
     }
 }

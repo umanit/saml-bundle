@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Controller;
 
+use _PHPStan_11268e5ee\Symfony\Component\Console\Exception\LogicException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,6 +27,8 @@ class AcsAction extends AbstractController
 
         $responseService->validateSamlMessage($provider, $samlMessage);
 
-        return $this->json([]);
+        throw new LogicException('Method not implemented');
+
+
     }
 }
