@@ -13,4 +13,6 @@ interface IdpMetadataServiceInterface
     public function getEntityDescriptor(string $provider): EntityDescriptor;
 
     public function clearCache(string $provider): void;
+
+    public function getXml(string $metadata, array $idpConfig): ?string;
 }

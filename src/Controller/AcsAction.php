@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Umanit\SamlBundle\Controller;
 
 use _PHPStan_11268e5ee\Symfony\Component\Console\Exception\LogicException;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,8 +18,15 @@ class AcsAction extends AbstractController
     public function __invoke(
         string $provider,
         Request $request,
-        ResponseServiceInterface $responseService
+        ResponseServiceInterface $responseService,
+        LoggerInterface $umanitSamlLogger
     ): Response {
+        if ($this->getParameter('kernel.environment') === 'dev') {
+            $response = base64_decode($request->request->get('SAMLResponse'));
+
+            $umanitSamlLogger->debug('SAML Response', ['response' => $response]);
+        }
+
         $samlMessage = $responseService->getSamlMessage($request);
 
         if (null === $samlMessage) {

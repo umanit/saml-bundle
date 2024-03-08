@@ -27,12 +27,10 @@ use LightSaml\Resolver\Endpoint\Criteria\LocationCriteria;
 use LightSaml\Resolver\Endpoint\Criteria\ServiceTypeCriteria;
 use LightSaml\Resolver\Endpoint\DescriptorTypeEndpointResolver;
 use LightSaml\Validator\Model\Assertion\AssertionTimeValidator;
-use LightSaml\Validator\Model\Assertion\AssertionValidator;
-use LightSaml\Validator\Model\NameId\NameIdValidator;
-use LightSaml\Validator\Model\Statement\StatementValidator;
-use LightSaml\Validator\Model\Subject\SubjectValidator;
+use LightSaml\Validator\Model\Assertion\AssertionValidatorInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\Request as HttpFoundationRequest;
+use Umanit\SamlBundle\Validator\TimeValidatorInterface;
 
 class ResponseService implements ResponseServiceInterface
 {
@@ -44,7 +42,9 @@ class ResponseService implements ResponseServiceInterface
         protected X509CertificatServiceInterface $x509CertificatService,
         protected IdpMetadataServiceInterface $idpMetadataService,
         protected SpMetadataServiceInterface $spMetadataService,
-        protected AdapterInterface $cache
+        protected AdapterInterface $cache,
+        protected AssertionValidatorInterface $assertionValidator,
+        protected TimeValidatorInterface $timeValidator
     ) {
     }
 
@@ -67,6 +67,12 @@ class ResponseService implements ResponseServiceInterface
 
     public function validateSamlMessage(string $provider, Response $message): void
     {
+        $assertion = $message->getFirstAssertion();
+
+        if (null === $assertion) {
+            throw new LightSamlValidationException('No assertion found in response');
+        }
+
         // On vérifie que le status de la réponse est bien un succès
         $this->validateStatus($message);
 
@@ -74,7 +80,7 @@ class ResponseService implements ResponseServiceInterface
         $this->decryptAssertions($provider, $message);
 
         // On vérifie que les assertions sont bien valides
-        $this->validateAssertions($message);
+        $this->assertionValidator->validateAssertion($assertion);
 
         // On vérifie que l'Issuer de la réponse est bien celui attendu
         $this->validateIssuer($provider, $message);
@@ -86,16 +92,10 @@ class ResponseService implements ResponseServiceInterface
         $this->validateRepeatedId($message);
 
         // On vérifie que le timestamp de la réponse est bien valide
-        $this->validateTimestamp($message);
+        $this->timeValidator->validateAssertion($assertion);
 
         // On vérifie que la signature de la réponse est bien valide
         $this->validateSignature($provider, $message);
-
-        $assertion = $message->getFirstAssertion();
-
-        if (null === $assertion) {
-            throw new LightSamlValidationException('No assertion found in response');
-        }
 
         $nameIdValue = $assertion->getSubject()?->getNameID()?->getValue();
 
@@ -141,17 +141,6 @@ class ResponseService implements ResponseServiceInterface
 
         $assertion = $reader->decryptAssertion($credentials->getPrivateKey(), new DeserializationContext());
         $message->addAssertion($assertion);
-    }
-
-    private function validateAssertions(Response $message): void
-    {
-        $assertionValidator = new AssertionValidator(
-            new NameIdValidator(),
-            new SubjectValidator(new NameIdValidator()),
-            new StatementValidator()
-        );
-
-        $assertionValidator->validateAssertion($message->getFirstAssertion());
     }
 
     private function validateIssuer(string $provider, Response $message): void
@@ -243,19 +232,6 @@ class ResponseService implements ResponseServiceInterface
         $this->cache->save($item);
     }
 
-    private function validateTimestamp(SamlMessage $message): void
-    {
-        $allowedSecondsSkew = self::ALLOWED_SECONDS_SKEW;
-
-        (new AssertionTimeValidator())
-            ->validateTimeRestrictions(
-                $message->getFirstAssertion(),
-                (new DateTimeImmutable())->getTimestamp(),
-                $allowedSecondsSkew
-            )
-        ;
-    }
-
     private function validateSignature(string $provider, Response $message): void
     {
         $idpEntityDescriptor = $this->idpMetadataService->getEntityDescriptor($provider);
@@ -289,6 +265,22 @@ class ResponseService implements ResponseServiceInterface
             ;
         }
 
+        // On vérifie que la signature est bien faite avec une des clés publiques de l'IdP
+        if (null !== ($x509Thumbprint = $signatureReader->getKey()?->getX509Thumbprint())) {
+            $result = [];
+
+            foreach ($credentialCandidates as $credentialCandidate) {
+                if ($credentialCandidate->getPublicKey()?->getX509Thumbprint() === $x509Thumbprint) {
+                    $result[] = $credentialCandidate;
+                }
+            }
+
+            $credentialCandidates = $result;
+        }
+
+        if (empty($credentialCandidates)) {
+            throw new LightSamlValidationException('No valid credential found for signature');
+        }
 
         try {
             $credential = $signatureReader->validateMulti($credentialCandidates);

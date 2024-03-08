@@ -1,0 +1,36 @@
+services:
+    ####################################################################################################################
+    # Provider
+    ####################################################################################################################
+    light_saml.provider.time_provider:
+        class: LightSaml\Provider\TimeProvider\SystemTimeProvider
+    LightSaml\Provider\TimeProvider\TimeProviderInterface: '@light_saml.provider.time_provider'
+
+    ####################################################################################################################
+    # Validator
+    ####################################################################################################################
+    light_saml.validator.model.assertion.assertion_time_validator:
+        class: LightSaml\Validator\Model\Assertion\AssertionTimeValidator
+    LightSaml\Validator\Model\Assertion\AssertionTimeValidatorInterface: '@light_saml.validator.model.assertion.assertion_time_validator'
+
+    light_saml.validator.model.name_id.name_id_validator:
+        class: LightSaml\Validator\Model\NameId\NameIdValidator
+    LightSaml\Validator\Model\NameId\NameIdValidatorInterface: '@light_saml.validator.model.name_id.name_id_validator'
+
+    light_saml.validator.model.statement.statement_validator:
+        class: LightSaml\Validator\Model\Statement\StatementValidator
+    LightSaml\Validator\Model\Statement\StatementValidatorInterface: '@light_saml.validator.model.statement.statement_validator'
+
+    light_saml.validator.model.subject.subject_validator:
+        class: LightSaml\Validator\Model\Subject\SubjectValidator
+        arguments:
+            - '@light_saml.validator.model.name_id.name_id_validator'
+    LightSaml\Validator\Model\Subject\SubjectValidatorInterface: '@light_saml.validator.model.subject.subject_validator'
+
+    light_saml.validator.model.assertion.assertion_validator:
+        class: LightSaml\Validator\Model\Assertion\AssertionValidator
+        arguments:
+            - '@light_saml.validator.model.name_id.name_id_validator'
+            - '@light_saml.validator.model.subject.subject_validator'
+            - '@light_saml.validator.model.statement.statement_validator'
+    LightSaml\Validator\Model\Assertion\AssertionValidatorInterface: '@light_saml.validator.model.assertion.assertion_validator'
