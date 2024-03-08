@@ -22,8 +22,8 @@ class MetadataAction extends AbstractController
     ): Response {
         try {
             $entityDescriptor = $spMetadataService->getEntityDescriptor($provider);
-        } catch (\Throwable) {
-            throw $this->createNotFoundException();
+        } catch (\Throwable $exception) {
+            throw $this->createNotFoundException($exception->getMessage());
         }
 
         return new Response(
