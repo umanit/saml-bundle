@@ -107,6 +107,7 @@ class IdpMetadataService implements IdpMetadataServiceInterface
             $xml = $this->cache->get($tokenId, function (CacheItem $item) use ($tokenId, $url, $metadataTtl): string {
                 $item->expiresAfter((int) $metadataTtl);
 
+                // TODO Gérer les cas d'erreur de l'appel HTTP
                 $xml = $this->client->request('GET', $url)->getContent();
 
                 $item->set($xml);
