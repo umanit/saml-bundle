@@ -10,6 +10,8 @@ use Umanit\SamlBundle\Service\SpMetadataService;
 
 class SpMetadataServiceTest extends TestCase
 {
+    use SpMetadataServiceTrait;
+
     public static function getEntityDescriptorDataProvider(): array
     {
         $dataset = [];
@@ -21,12 +23,24 @@ class SpMetadataServiceTest extends TestCase
                     'test' => [
                         'sp' => [
                             'entity_id' => 'https://test-entity-id.wip',
+                            'acs'       => [
+                                'url' => 'https://saml-bundle.wip/saml2/acs/microsoft_umanit_provider',
+                            ],
+                            'slo'       => [
+                                'url' => 'https://saml-bundle.wip/saml2/slo/microsoft_umanit_provider',
+                            ],
                         ],
                     ],
                 ],
             ],
             'expected' => [
                 'entity_id' => 'https://test-entity-id.wip',
+                'acs'       => [
+                    'url' => 'https://saml-bundle.wip/saml2/acs/microsoft_umanit_provider',
+                ],
+                'slo'       => [
+                    'url' => 'https://saml-bundle.wip/saml2/slo/microsoft_umanit_provider',
+                ],
             ],
         ];
 
@@ -56,5 +70,13 @@ class SpMetadataServiceTest extends TestCase
         $result = $spMetadataService->getEntityDescriptor($provider);
 
         $this->assertEquals($expected['entity_id'], $result->getEntityID());
+        $this->assertEquals(
+            $expected['acs']['url'],
+            $result->getFirstSpSsoDescriptor()->getFirstAssertionConsumerService()->getLocation()
+        );
+        $this->assertEquals(
+            $expected['slo']['url'],
+            $result->getFirstSpSsoDescriptor()->getFirstSingleLogoutService()->getLocation()
+        );
     }
 }
