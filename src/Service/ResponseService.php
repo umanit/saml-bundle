@@ -102,14 +102,6 @@ class ResponseService implements ResponseServiceInterface
         if (null === $nameIdValue) {
             throw new LightSamlValidationException('No NameID value found in response');
         }
-
-        $attributeStatement = $assertion->getFirstAttributeStatement();
-
-        if ($attributeStatement instanceof AttributeStatement) {
-            $attributes = $attributeStatement->getAllAttributes();
-        }
-
-        dump($attributeStatement, $nameIdValue);
     }
 
     private function validateStatus(Response $message): void

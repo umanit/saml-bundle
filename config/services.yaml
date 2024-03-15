@@ -98,3 +98,18 @@ services:
             - '@light_saml.provider.time_provider'
     Umanit\SamlBundle\Validator\TimeValidatorInterface: '@umanit_saml.validator.time_validator'
 
+    umanit_saml.security.http.authenticator.saml_authenticator:
+        class: Umanit\SamlBundle\Security\Http\Authenticator\SamlAuthenticator
+        arguments:
+            - '@security.http_utils'
+            - !abstract defined in SamlFactory
+            - !abstract defined in SamlFactory
+            - !abstract defined in SamlFactory
+            - []
+            - '@Psr\Log\LoggerInterface'
+            - '@umanit_saml.service.configuration_service'
+            - '@umanit_saml.service.response_service'
+            - ~
+
+    umanit_saml.security.user.saml_user_provider:
+        class: Umanit\SamlBundle\Security\User\SamlUserProvider
