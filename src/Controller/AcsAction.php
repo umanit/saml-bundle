@@ -4,39 +4,32 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Controller;
 
-use _PHPStan_11268e5ee\Symfony\Component\Console\Exception\LogicException;
-use Psr\Log\LoggerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Umanit\SamlBundle\Service\ResponseServiceInterface;
+use Symfony\Contracts\Service\Attribute\Required;
+use Symfony\Contracts\Service\ServiceSubscriberInterface;
 
 #[Route('acs/{provider<\w+>}', name: 'umanit_saml_acs', methods: ['GET', 'POST'])]
-class AcsAction extends AbstractController
+class AcsAction implements ServiceSubscriberInterface
 {
-    public function __invoke(
-        string $provider,
-        Request $request,
-        ResponseServiceInterface $responseService,
-        LoggerInterface $umanitSamlLogger
-    ): Response {
-        if ($this->getParameter('kernel.environment') === 'dev') {
-            $response = base64_decode($request->request->get('SAMLResponse'));
+    protected ContainerInterface $container;
 
-            $umanitSamlLogger->debug('SAML Response', ['response' => $response]);
-        }
+    public function __invoke(string $provider): Response {
+        throw new \LogicException('Method not implemented');
+    }
 
-        $samlMessage = $responseService->getSamlMessage($request);
+    #[Required]
+    public function setContainer(ContainerInterface $container): ?ContainerInterface
+    {
+        $previous = $this->container ?? null;
+        $this->container = $container;
 
-        if (null === $samlMessage) {
-            throw $this->createAccessDeniedException('No SAML message found');
-        }
+        return $previous;
+    }
 
-        $responseService->validateSamlMessage($provider, $samlMessage);
-
-        throw new LogicException('Method not implemented');
-
-
+    public static function getSubscribedServices(): array
+    {
+        return [];
     }
 }
