@@ -6,11 +6,11 @@ namespace Umanit\SamlBundle\Service;
 
 class ConfigurationService implements ConfigurationServiceInterface
 {
-    protected array $config;
-
-    public function __construct(array $config)
+    /**
+     * @param array<string, mixed> $config
+     */
+    public function __construct(protected array $config)
     {
-        $this->config = $config;
     }
 
     public function getByProvider(string $provider): array
@@ -26,6 +26,9 @@ class ConfigurationService implements ConfigurationServiceInterface
 
     public function getProviderNames(): array
     {
-        return array_keys($this->config['providers']);
+        /** @var array<int, string>  $names */
+        $names = array_keys($this->config['providers']);
+
+        return $names;
     }
 }

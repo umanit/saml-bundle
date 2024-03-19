@@ -21,6 +21,8 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder(self::NAME);
 
         $rootNode = $treeBuilder->getRootNode();
+
+        // @formatter:off
         $rootNode
             ->children()
                 ->scalarNode('certificat_path')->isRequired()->defaultValue('certs')->end()
@@ -122,6 +124,7 @@ class Configuration implements ConfigurationInterface
                     ->thenInvalid('Provider %s must have private_key')
                 ->end()
             ->end();
+        // @formatter:on
 
         return $treeBuilder;
     }

@@ -74,6 +74,10 @@ class X509CertificatService implements X509CertificatServiceInterface
 
         if (file_exists($data) && is_readable($data)) {
             $data = file_get_contents($data);
+
+            if (false === $data) {
+                throw new \RuntimeException('Unable to read file');
+            }
         }
 
         if (str_starts_with($data, '-----BEGIN CERTIFICATE-----')) {

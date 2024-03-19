@@ -11,7 +11,7 @@ class TimeValidator implements TimeValidatorInterface
     public function __construct(
         protected AssertionTimeValidatorInterface $assertionTimeValidator,
         protected TimeProviderInterface $timeProvider,
-        protected $allowedSecondsSkew = 120
+        protected int $allowedSecondsSkew = 120
     ) {
     }
 

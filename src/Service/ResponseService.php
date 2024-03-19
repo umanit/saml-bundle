@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Service;
 
-use DateTimeImmutable;
 use LightSaml\Binding\BindingFactory;
 use LightSaml\Context\Profile\MessageContext;
 use LightSaml\Credential\Context\CredentialContextSet;
@@ -13,20 +12,17 @@ use LightSaml\Credential\X509Credential;
 use LightSaml\Criteria\CriteriaSet;
 use LightSaml\Error\LightSamlSecurityException;
 use LightSaml\Error\LightSamlValidationException;
-use LightSaml\Model\Assertion\AttributeStatement;
 use LightSaml\Model\Assertion\EncryptedAssertionReader;
 use LightSaml\Model\Context\DeserializationContext;
 use LightSaml\Model\Metadata\AssertionConsumerService;
 use LightSaml\Model\Metadata\KeyDescriptor;
 use LightSaml\Model\Metadata\SpSsoDescriptor;
 use LightSaml\Model\Protocol\Response;
-use LightSaml\Model\Protocol\SamlMessage;
 use LightSaml\Model\XmlDSig\AbstractSignatureReader;
 use LightSaml\Resolver\Endpoint\Criteria\DescriptorTypeCriteria;
 use LightSaml\Resolver\Endpoint\Criteria\LocationCriteria;
 use LightSaml\Resolver\Endpoint\Criteria\ServiceTypeCriteria;
 use LightSaml\Resolver\Endpoint\DescriptorTypeEndpointResolver;
-use LightSaml\Validator\Model\Assertion\AssertionTimeValidator;
 use LightSaml\Validator\Model\Assertion\AssertionValidatorInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\Request as HttpFoundationRequest;
@@ -35,7 +31,6 @@ use Umanit\SamlBundle\Validator\TimeValidatorInterface;
 class ResponseService implements ResponseServiceInterface
 {
     private const MAX_VALIDATION_TIME_FOR_ID = 120;
-    private const ALLOWED_SECONDS_SKEW = 120;
 
     public function __construct(
         protected ConfigurationServiceInterface $configurationService,
@@ -277,12 +272,6 @@ class ResponseService implements ResponseServiceInterface
         try {
             $credential = $signatureReader->validateMulti($credentialCandidates);
         } catch (LightSamlSecurityException $e) {
-            dump(
-                \openssl_error_string(),
-                $credentialCandidates,
-                $signatureReader->getKey()->getX509Thumbprint(),
-            );
-
             throw $e;
         }
     }

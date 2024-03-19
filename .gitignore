@@ -7,3 +7,4 @@ phpunit-report.xml
 junit.xml
 *.cache
 *.log
+/var/

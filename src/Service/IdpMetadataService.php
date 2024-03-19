@@ -120,10 +120,6 @@ class IdpMetadataService implements IdpMetadataServiceInterface
     }
 
     /**
-     * @param string $url
-     * @param array  $idpConfig
-     *
-     * @return EntityDescriptor
      * @throws InvalidArgumentException
      * @throws Exception
      */
@@ -140,7 +136,7 @@ class IdpMetadataService implements IdpMetadataServiceInterface
             $xml = $this->cache->getItem($tokenId)->get();
         } else {
             $xml = $this->cache->get($tokenId, function (CacheItem $item) use ($tokenId, $url, $metadataTtl): string {
-                $item->expiresAfter((int) $metadataTtl);
+                $item->expiresAfter($metadataTtl);
 
                 $xml = $this->client->request('GET', $url)->getContent();
 
@@ -176,6 +172,6 @@ class IdpMetadataService implements IdpMetadataServiceInterface
             throw new RuntimeException('Impossible to generate token ID, for metadata');
         }
 
-        return sha1($str);
+        return sha1((string) $str);
     }
 }

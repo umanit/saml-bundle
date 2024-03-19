@@ -27,7 +27,7 @@ class SamlFactory extends AbstractFactory
         array $config,
         string $userProviderId
     ): string|array {
-        $authenticatorId = 'security.authenticator.saml.'.$firewallName;
+        $authenticatorId = 'security.authenticator.saml.' . $firewallName;
         $authenticator = (new ChildDefinition('umanit_saml.security.http.authenticator.saml_authenticator'))
             ->replaceArgument(1, new Reference($userProviderId))
             ->replaceArgument(2, new Reference($this->createAuthenticationSuccessHandler($container, $firewallName, $config)))

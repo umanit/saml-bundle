@@ -33,10 +33,6 @@ class UmanitSamlExtension extends Extension implements PrependExtensionInterface
 
     /**
      * Ajoute les clés de la config en parameters
-     *
-     * @param ContainerBuilder $container
-     * @param array            $params
-     * @param string           $parent
      */
     private function setConfigAsParameters(ContainerBuilder $container, array $params, string $parent): void
     {

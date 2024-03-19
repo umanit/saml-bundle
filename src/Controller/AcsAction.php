@@ -15,7 +15,8 @@ class AcsAction implements ServiceSubscriberInterface
 {
     protected ContainerInterface $container;
 
-    public function __invoke(string $provider): Response {
+    public function __invoke(string $provider): Response
+    {
         throw new \LogicException('Method not implemented');
     }
 

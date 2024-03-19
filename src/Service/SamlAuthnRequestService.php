@@ -64,15 +64,21 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
         $nameIdFormat = $spSsoDescriptor->getAllNameIDFormats()[0] ?? SamlConstants::NAME_ID_FORMAT_PERSISTENT;
 
         $authnRequest = new AuthnRequest();
+
         $authnRequest
-            ->setID(Helper::generateID())
+            ->setID(Helper::generateID());
+
+        $authnRequest
             ->setProtocolBinding($acsBindingType)
             ->setIssueInstant(new DateTime())
-            ->setDestination($idpSsoService->getLocation())
+            ->setDestination($idpSsoService->getLocation());
+
+        $authnRequest
             ->setNameIDPolicy((new NameIDPolicy())->setFormat($nameIdFormat))
-            ->setIssuer(new Issuer($spEntityDescriptor->getEntityID()))
-            ->setAssertionConsumerServiceURL($acsService->getLocation())
-        ;
+            ->setIssuer(new Issuer($spEntityDescriptor->getEntityID()));
+
+        $authnRequest
+            ->setAssertionConsumerServiceURL($acsService->getLocation());
 
         $isStateless = true === ($config['sp']['is_stateless'] ?? false);
 
@@ -105,6 +111,12 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
         $serializationContext = new SerializationContext();
         $authnRequest->serialize($serializationContext->getDocument(), $serializationContext);
 
-        return $serializationContext->getDocument()->saveXML();
+        $xml = $serializationContext->getDocument()->saveXML();
+
+        if (false === $xml) {
+            throw new RuntimeException('Unable to save XML');
+        }
+
+        return $xml;
     }
 }

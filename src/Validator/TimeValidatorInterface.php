@@ -6,5 +6,4 @@ namespace Umanit\SamlBundle\Validator;
 
 interface TimeValidatorInterface extends AssertionValidatorInterface
 {
-
 }

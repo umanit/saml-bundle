@@ -13,6 +13,11 @@ interface X509CertificatServiceInterface
 
     public function getIdpCredential(string $provider): ?X509Credential;
 
+    /**
+     * @param array<string, mixed> $config
+     *
+     * @return X509Credential|null
+     */
     public function getX509Credentials(array $config): ?X509Credential;
 
     public function getSignature(X509Credential $credential, string $algorithmSignature): SignatureWriter;

@@ -14,5 +14,11 @@ interface IdpMetadataServiceInterface
 
     public function clearCache(string $provider): void;
 
+    /**
+     * @param string $metadata
+     * @param array<string, mixed>  $idpConfig
+     *
+     * @return string|null
+     */
     public function getXml(string $metadata, array $idpConfig): ?string;
 }

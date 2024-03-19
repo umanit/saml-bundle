@@ -10,7 +10,8 @@ class SamlAttributesBadge implements BadgeInterface
 {
     public function __construct(
         private readonly array $attributes,
-    ) {}
+    ) {
+    }
 
     public function getAttributes(): array
     {

@@ -6,7 +6,13 @@ namespace Umanit\SamlBundle\Service;
 
 use LightSaml\Model\Protocol\SamlMessage;
 
+/**
+ * @template T
+ */
 interface SendMessageServiceInterface
 {
+    /**
+     * @return T
+     */
     public function send(string $provider, SamlMessage $message, string $bindingType);
 }

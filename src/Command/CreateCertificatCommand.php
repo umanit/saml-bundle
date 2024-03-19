@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Umanit\SamlBundle\Command;
 
 use RuntimeException;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -12,6 +13,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
 
+#[AsCommand(
+    name: 'umanit:saml:create-certificat',
+    description: 'Create a new X509 certificate and private key'
+)]
 class CreateCertificatCommand extends Command
 {
     protected string $storagePath;
@@ -19,14 +24,12 @@ class CreateCertificatCommand extends Command
     public function __construct(string $storagePath)
     {
         $this->storagePath = $storagePath;
-        parent::__construct('umanit:saml:create-certificat');
+        parent::__construct();
     }
 
     protected function configure(): void
     {
         $this
-            // the short description shown while running "php bin/console list"
-            ->setDescription('Create a new X509 certificate and private key')
             // the full command description shown when running the command with
             // the "--help" option
             ->setHelp('This command allows you to create a new X509 certificate and private key')
@@ -63,7 +66,10 @@ class CreateCertificatCommand extends Command
     {
         $name = $input->getArgument('name');
 
-        if (str_contains($name, '/') || str_contains($name, '\\') || str_contains($name, '.')) {
+        if (str_contains((string) $name, '/') ||
+            str_contains((string) $name, '\\') ||
+            str_contains((string) $name, '.')
+        ) {
             throw new RuntimeException('The name of the certificate cannot contain a slash or a dot.');
         }
 
@@ -71,17 +77,18 @@ class CreateCertificatCommand extends Command
         $keyname = $input->getOption('keyname') ?? $name;
         $certname = $input->getOption('certname') ?? $name;
 
-        if (!str_ends_with($keyname, '.key')) {
+        if (!str_ends_with((string) $keyname, '.key')) {
             $keyname .= '.key';
         }
 
-        if (!str_ends_with($certname, '.crt')) {
+        if (!str_ends_with((string) $certname, '.crt')) {
             $certname .= '.crt';
         }
 
         $storagePath = $this->storagePath . DIRECTORY_SEPARATOR . $input->getArgument('name');
 
-        if (!is_dir($storagePath) &&
+        if (
+            !is_dir($storagePath) &&
             !mkdir($concurrentDirectory = $storagePath, 0755, true) &&
             !is_dir($concurrentDirectory)
         ) {

@@ -39,7 +39,6 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
         private readonly AuthenticationSuccessHandlerInterface $successHandler,
         private readonly AuthenticationFailureHandlerInterface $failureHandler,
         private readonly array $options,
-        private readonly ?LoggerInterface $logger,
         private readonly ConfigurationServiceInterface $configurationService,
         private readonly ResponseServiceInterface $responseService
     ) {

@@ -38,7 +38,7 @@ class SamlUserProviderFactory implements UserProviderFactoryInterface
                     ->cannotBeEmpty()
                     ->validate()
                         ->ifTrue(static fn ($value) => !is_a($value, UserInterface::class, true))
-                        ->thenInvalid('You should provide user class implementing '.UserInterface::class.' interface.')
+                        ->thenInvalid('You should provide user class implementing ' . UserInterface::class . ' interface.')
                     ->end()
                 ->end()
                 ->arrayNode('default_roles')

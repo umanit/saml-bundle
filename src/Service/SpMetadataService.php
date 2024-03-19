@@ -41,14 +41,12 @@ class SpMetadataService implements SpMetadataServiceInterface
             $acsRoute = $this->getAssertionConsumerServiceRoute($provider, $config['sp'], $bindingType);
 
             if (null !== $acsRoute) {
-                $spSsoDescriptor->addAssertionConsumerService(
-                    (new AssertionConsumerService())
-                        ->setIsDefault(
-                            $bindingType === $this->getDefaultAssertionConsumerServiceBinding($config['sp'])
-                        )
-                        ->setBinding($bindingType)
-                        ->setLocation($acsRoute)
-                );
+                $acs = new AssertionConsumerService();
+                $acs->setIsDefault(
+                    $bindingType === $this->getDefaultAssertionConsumerServiceBinding($config['sp'])
+                )->setBinding($bindingType)->setLocation($acsRoute);
+
+                $spSsoDescriptor->addAssertionConsumerService($acs);
             }
 
             $sloRoute = $this->getSingleLogoutServiceRoute($provider, $config['sp'], $bindingType);
@@ -86,6 +84,11 @@ class SpMetadataService implements SpMetadataServiceInterface
         return $entityDescriptor;
     }
 
+    /**
+     * @param array<string, mixed> $spConfig
+     *
+     * @return string
+     */
     protected function getNameIDFormat(array $spConfig): string
     {
         $nameIdFormat = $spConfig['nameIdFormat'] ?? SamlConstants::NAME_ID_FORMAT_PERSISTENT;
@@ -97,6 +100,13 @@ class SpMetadataService implements SpMetadataServiceInterface
         return $nameIdFormat;
     }
 
+    /**
+     * @param string $provider
+     * @param array<string, mixed>  $spConfig
+     * @param string $bindindType
+     *
+     * @return string|null
+     */
     protected function getAssertionConsumerServiceRoute(string $provider, array $spConfig, string $bindindType): ?string
     {
         $route = $spConfig['acs']['route'] ?? null;
@@ -145,11 +155,16 @@ class SpMetadataService implements SpMetadataServiceInterface
             }
 
             return in_array($methods[$bindingType], $routeMethods);
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return false;
         }
     }
 
+    /**
+     * @param array<string, mixed> $spConfig
+     *
+     * @return string
+     */
     protected function getDefaultAssertionConsumerServiceBinding(array $spConfig): string
     {
         $acsBindingType = $spConfig['acs']['binding'] ?? SamlConstants::BINDING_SAML2_HTTP_POST;
@@ -163,6 +178,13 @@ class SpMetadataService implements SpMetadataServiceInterface
         return $acsBindingType;
     }
 
+    /**
+     * @param string $provider
+     * @param array<string, mixed>  $spConfig
+     * @param string $bindindType
+     *
+     * @return string|null
+     */
     protected function getSingleLogoutServiceRoute(string $provider, array $spConfig, string $bindindType): ?string
     {
         $route = $spConfig['slo']['route'] ?? null;
@@ -186,6 +208,12 @@ class SpMetadataService implements SpMetadataServiceInterface
         return $url;
     }
 
+    /**
+     * @param string $provider
+     * @param array<string, mixed>  $spConfig
+     *
+     * @return string
+     */
     protected function getEntityId(string $provider, array $spConfig): string
     {
         return $spConfig['entity_id'] ?? $this->urlGenerator->generate(
@@ -200,6 +228,12 @@ class SpMetadataService implements SpMetadataServiceInterface
         $serializationContext = new SerializationContext();
         $entityDescriptor->serialize($serializationContext->getDocument(), $serializationContext);
 
-        return $serializationContext->getDocument()->saveXML();
+        $xml = $serializationContext->getDocument()->saveXML();
+
+        if (false === $xml) {
+            throw new InvalidArgumentException('Unable to serialize EntityDescriptor');
+        }
+
+        return $xml;
     }
 }

@@ -6,9 +6,8 @@ namespace Umanit\SamlBundle\Security\User;
 
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
 
-class SamlUserProvider implements UserProviderInterface
+class SamlUserProvider implements SamlUserProviderInterface
 {
     /**
      * @param class-string<UserInterface> $userClass
@@ -18,7 +17,7 @@ class SamlUserProvider implements UserProviderInterface
         protected array $defaultRoles,
     ) {
         if (!is_a($userClass, UserInterface::class, true)) {
-            throw new \InvalidArgumentException('The $userClass argument should be a class implementing the '.UserInterface::class.' interface.');
+            throw new \InvalidArgumentException('The $userClass argument should be a class implementing the ' . UserInterface::class . ' interface.');
         }
     }
 

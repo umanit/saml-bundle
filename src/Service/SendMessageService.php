@@ -9,6 +9,9 @@ use LightSaml\Context\Profile\MessageContext;
 use LightSaml\Model\Protocol\SamlMessage;
 use Symfony\Component\HttpFoundation\Response as HttpFoundationResponse;
 
+/**
+ * @implements SendMessageServiceInterface<HttpFoundationResponse>
+ */
 class SendMessageService implements SendMessageServiceInterface
 {
     public function __construct(
