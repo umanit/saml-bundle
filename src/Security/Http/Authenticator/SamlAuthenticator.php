@@ -25,6 +25,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 use Symfony\Component\Security\Http\HttpUtils;
 use Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge\SamlAttributesBadge;
+use Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge\SamlProviderBadge;
 use Umanit\SamlBundle\Security\Http\Authenticator\Token\SamlToken;
 use Umanit\SamlBundle\Security\User\SamlUserInterface;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
@@ -86,10 +87,10 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
             throw new AuthenticationException($e->getMessage());
         }
 
-        return $this->createPassport($samlResponse);
+        return $this->createPassport($provider, $samlResponse);
     }
 
-    private function createPassport(SamlResponse $response): Passport
+    private function createPassport(string $providerKey, SamlResponse $response): Passport
     {
         $assertion = $response->getFirstAssertion();
 
@@ -105,7 +106,9 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
 
         $attributesItems = $assertion->getFirstAttributeStatement()?->getAllAttributes() ?? [];
 
-        $attributes = [];
+        $attributes = [
+            '_provider' => $providerKey
+        ];
 
         foreach ($attributesItems as $attribute) {
             $attributes[$attribute->getName()] = $attribute->getAllAttributeValues();
@@ -130,7 +133,8 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
                 return $user;
             }),
             [
-                new SamlAttributesBadge($attributes)
+                new SamlAttributesBadge($attributes),
+                new SamlProviderBadge($providerKey)
             ]
         );
     }
@@ -148,11 +152,19 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
             $attributes = $badge->getAttributes();
         }
 
+        $badge = $passport->getBadge(SamlProviderBadge::class);
+        $providerKey = 'saml';
+
+        if ($badge instanceof SamlProviderBadge) {
+            $providerKey = $badge->getProviderKey();
+        }
+
         return new SamlToken(
             $passport->getUser(),
             $firewallName,
             $passport->getUser()->getRoles(),
-            $attributes
+            $attributes,
+            $providerKey
         );
     }
 

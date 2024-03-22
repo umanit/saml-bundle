@@ -6,16 +6,16 @@ namespace Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge;
 
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\BadgeInterface;
 
-readonly class SamlAttributesBadge implements BadgeInterface
+readonly class SamlProviderBadge implements BadgeInterface
 {
     public function __construct(
-        private array $attributes,
+        private string $providerKey,
     ) {
     }
 
-    public function getAttributes(): array
+    public function getProviderKey(): string
     {
-        return $this->attributes;
+        return $this->providerKey;
     }
 
     public function isResolved(): bool
