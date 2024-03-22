@@ -106,10 +106,8 @@ services:
             - !abstract defined in SamlFactory
             - !abstract defined in SamlFactory
             - []
-            - '@Psr\Log\LoggerInterface'
             - '@umanit_saml.service.configuration_service'
             - '@umanit_saml.service.response_service'
-            - ~
 
     umanit_saml.security.user.saml_user_provider:
         class: Umanit\SamlBundle\Security\User\SamlUserProvider
