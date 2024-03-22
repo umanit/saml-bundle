@@ -5,7 +5,9 @@ namespace Umanit\SamlBundle\DependencyInjection\Security\Factory;
 use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\Factory\AbstractFactory;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
+use Umanit\SamlBundle\Security\User\SamlScopedUserProviderInterface;
 
 class SamlFactory extends AbstractFactory
 {
@@ -27,6 +29,8 @@ class SamlFactory extends AbstractFactory
         array $config,
         string $userProviderId
     ): string|array {
+
+
         $authenticatorId = 'security.authenticator.saml.' . $firewallName;
         $authenticator = (new ChildDefinition('umanit_saml.security.http.authenticator.saml_authenticator'))
             ->replaceArgument(1, new Reference($userProviderId))
@@ -36,6 +40,19 @@ class SamlFactory extends AbstractFactory
         ;
 
         $container->setDefinition($authenticatorId, $authenticator);
+
+        $provider = $container->getDefinition($userProviderId);
+        $providerKey = str_replace('security.user.provider.concrete.', '', $userProviderId);
+
+        if ($providerKey === 'saml') {
+            $providers= $provider->getArgument(0);
+
+            foreach ($providers as $k => $v) {
+                $providers[$k] = new Reference('security.user.provider.concrete.' . $v);
+            }
+
+            $provider->replaceArgument(0, $providers);
+        }
 
         return $authenticatorId;
     }

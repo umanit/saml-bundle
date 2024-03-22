@@ -27,6 +27,7 @@ use Symfony\Component\Security\Http\HttpUtils;
 use Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge\SamlAttributesBadge;
 use Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge\SamlProviderBadge;
 use Umanit\SamlBundle\Security\Http\Authenticator\Token\SamlToken;
+use Umanit\SamlBundle\Security\User\SamlScopedUserProviderInterface;
 use Umanit\SamlBundle\Security\User\SamlUserInterface;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\ResponseServiceInterface;
@@ -115,9 +116,13 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
         }
 
         return new SelfValidatingPassport(
-            new UserBadge($nameIdValue, function (string $identifier) use ($attributes): UserInterface {
+            new UserBadge($nameIdValue, function (string $identifier) use ($attributes, $providerKey): UserInterface {
                 try {
-                    $user = $this->userProvider->loadUserByIdentifier($identifier);
+                    if ($this->userProvider instanceof SamlScopedUserProviderInterface) {
+                        $user = $this->userProvider->loadUserByIdentifierAndProvider($identifier, $providerKey);
+                    } else {
+                        $user = $this->userProvider->loadUserByIdentifier($identifier);
+                    }
 
                     if ($user instanceof SamlUserInterface) {
                         $user->setSamlAttributes($attributes);

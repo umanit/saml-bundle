@@ -111,3 +111,6 @@ services:
 
     umanit_saml.security.user.saml_user_provider:
         class: Umanit\SamlBundle\Security\User\SamlUserProvider
+
+    umanit_saml.security.user.saml_scoped_user_provider:
+        class: Umanit\SamlBundle\Security\User\SamlScopedUserProvider
