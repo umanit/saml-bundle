@@ -28,27 +28,4 @@ class SloAction extends AbstractController
 
         return $this->json([]);
     }
-
-    /**
-     * TODO-NGA Cette méthode fonctionne. Voir comment factoriser la function getSamlMessage du response service
-     * qui fait la même chose mais pour autre chose
-     *
-     * TODO : Ensuite vérifier la signature de la response
-     */
-    private function getSamlMessage(Request $request): ?LogoutResponse
-    {
-        $messageContext = new MessageContext();
-        $bindingFactory = new BindingFactory();
-        $bindingType = $bindingFactory->detectBindingType($request);
-        $bindingFactory->create($bindingType)->receive($request, $messageContext);
-        $messageContext->setBindingType($bindingType);
-
-        $response = $messageContext->asLogoutResponse();
-
-        if (!$response instanceof LogoutResponse) {
-            return null;
-        }
-
-        return $response;
-    }
 }
