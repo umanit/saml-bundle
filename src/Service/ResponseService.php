@@ -62,6 +62,8 @@ class ResponseService implements ResponseServiceInterface
 
     public function validateSamlMessage(string $provider, Response $message): void
     {
+        // @TODO : Mode Strict ?
+
         $assertion = $message->getFirstAssertion();
 
         if (null === $assertion) {

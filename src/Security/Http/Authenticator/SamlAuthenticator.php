@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Security\Http\Authenticator;
 
+use Exception;
 use LightSaml\Error\LightSamlValidationException;
+use LightSaml\SamlConstants;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,6 +26,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 use Symfony\Component\Security\Http\HttpUtils;
+use Throwable;
 use Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge\SamlAttributesBadge;
 use Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge\SamlProviderBadge;
 use Umanit\SamlBundle\Security\Http\Authenticator\Token\SamlToken;
@@ -71,12 +74,6 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
         $provider = $request->attributes->get('provider');
 
         try {
-            $configuration = $this->configurationService->getByProvider($provider);
-        } catch (\Exception $e) {
-            throw new AuthenticationException($e->getMessage());
-        }
-
-        try {
             $samlResponse = $this->responseService->getSamlMessage($request);
 
             if (null === $samlResponse) {
@@ -84,7 +81,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
             }
 
             $this->responseService->validateSamlMessage($provider, $samlResponse);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new AuthenticationException($e->getMessage());
         }
 
@@ -105,41 +102,53 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
             throw new LightSamlValidationException('No NameID value found in response');
         }
 
+        $nameIdIsEmail = $assertion->getSubject()?->getNameID()?->getFormat() ===
+            SamlConstants::NAME_ID_FORMAT_EMAIL;
+
         $attributesItems = $assertion->getFirstAttributeStatement()?->getAllAttributes() ?? [];
 
         $attributes = [
-            '_provider' => $providerKey
+            '_provider' => $providerKey,
         ];
 
         foreach ($attributesItems as $attribute) {
             $attributes[$attribute->getName()] = $attribute->getAllAttributeValues();
         }
 
+        try {
+            $configuration = $this->configurationService->getByProvider($providerKey);
+        } catch (Exception $e) {
+            throw new AuthenticationException($e->getMessage());
+        }
+
         return new SelfValidatingPassport(
-            new UserBadge($nameIdValue, function (string $identifier) use ($attributes, $providerKey): UserInterface {
-                try {
-                    if ($this->userProvider instanceof SamlScopedUserProviderInterface) {
-                        $user = $this->userProvider->loadUserByIdentifierAndProvider($identifier, $providerKey);
-                    } else {
-                        $user = $this->userProvider->loadUserByIdentifier($identifier);
+            new UserBadge(
+                $nameIdValue,
+                function (string $identifier) use ($nameIdIsEmail, $attributes, $providerKey): UserInterface {
+                    try {
+                        if ($this->userProvider instanceof SamlScopedUserProviderInterface) {
+                            $user = $this->userProvider->loadUserByIdentifierAndProvider($identifier, $providerKey);
+                        } else {
+                            $user = $this->userProvider->loadUserByIdentifier($identifier);
+                        }
+
+                        if ($user instanceof SamlUserInterface) {
+                            $user->setSamlAttributes($attributes);
+                        }
+                    } catch (Throwable $exception) {
+                        if ($exception instanceof UserNotFoundException) {
+                            throw $exception;
+                        }
+
+                        throw new AuthenticationException('The authentication failed.', 0, $exception);
                     }
 
-                    if ($user instanceof SamlUserInterface) {
-                        $user->setSamlAttributes($attributes);
-                    }
-                } catch (\Throwable $exception) {
-                    if ($exception instanceof UserNotFoundException) {
-                        throw $exception;
-                    }
-
-                    throw new AuthenticationException('The authentication failed.', 0, $exception);
+                    return $user;
                 }
-
-                return $user;
-            }),
+            ),
             [
                 new SamlAttributesBadge($attributes),
-                new SamlProviderBadge($providerKey)
+                new SamlProviderBadge($providerKey),
             ]
         );
     }
