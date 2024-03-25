@@ -32,6 +32,8 @@ class SloAction extends AbstractController
     /**
      * TODO-NGA Cette méthode fonctionne. Voir comment factoriser la function getSamlMessage du response service
      * qui fait la même chose mais pour autre chose
+     *
+     * TODO : Ensuite vérifier la signature de la response
      */
     private function getSamlMessage(Request $request): ?LogoutResponse
     {
