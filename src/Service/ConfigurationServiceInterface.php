@@ -17,4 +17,6 @@ interface ConfigurationServiceInterface
      * @return array<int, string>
      */
     public function getProviderNames(): array;
+
+    public function getNameIdFormat(string $provider): string;
 }

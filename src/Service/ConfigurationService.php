@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Service;
 
+use LightSaml\SamlConstants;
+use Umanit\SamlBundle\Enums\Mode;
+
 class ConfigurationService implements ConfigurationServiceInterface
 {
     /**
@@ -30,5 +33,16 @@ class ConfigurationService implements ConfigurationServiceInterface
         $names = array_keys($this->config['providers']);
 
         return $names;
+    }
+
+    public function getNameIdFormat(string $provider): string
+    {
+        $config = $this->getByProvider($provider);
+
+        if ($config['type'] === Mode::SP_INITIATED) {
+            return $config['sp']['name_id_format'] ?? SamlConstants::NAME_ID_FORMAT_UNSPECIFIED;
+        }
+
+        return $config['idp']['name_id_format'] ?? SamlConstants::NAME_ID_FORMAT_UNSPECIFIED;
     }
 }

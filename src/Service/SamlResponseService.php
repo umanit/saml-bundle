@@ -24,6 +24,7 @@ use LightSaml\Model\Protocol\Response;
 use LightSaml\Model\Protocol\Status;
 use LightSaml\Model\Protocol\StatusCode;
 use LightSaml\SamlConstants;
+use RuntimeException;
 
 readonly class SamlResponseService implements SamlResponseServiceInterface
 {
@@ -123,7 +124,7 @@ readonly class SamlResponseService implements SamlResponseServiceInterface
         $credential = $this->x509CertificatService->getIdpCredential($provider);
 
         if (null === $credential) {
-            throw new \RuntimeException('No Credential found.');
+            throw new RuntimeException('No Credential found.');
         }
 
         $config = $this->configurationService->getByProvider($provider);
@@ -141,7 +142,7 @@ readonly class SamlResponseService implements SamlResponseServiceInterface
         $xml = $serializationContext->getDocument()->saveXML();
 
         if (false === $xml) {
-            throw new \RuntimeException('Unable to save XML');
+            throw new RuntimeException('Unable to save XML');
         }
 
         return $xml;

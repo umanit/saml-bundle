@@ -26,6 +26,11 @@ class SamlUserProvider implements SamlUserProviderInterface
         return new $this->userClass($identifier, $this->defaultRoles);
     }
 
+    public function loadUserByEmail(string $email): UserInterface
+    {
+        return new $this->userClass($email, $this->defaultRoles);
+    }
+
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof $this->userClass) {

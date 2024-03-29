@@ -23,6 +23,7 @@ class SamlScopedUserProviderFactory implements UserProviderFactoryInterface
         $container
             ->setDefinition($id, new ChildDefinition('umanit_saml.security.user.saml_scoped_user_provider'))
             ->addArgument($providers)
+            ->addArgument(new Reference('umanit_saml.service.configuration_service'))
         ;
     }
 

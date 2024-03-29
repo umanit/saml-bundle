@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Security\User;
 
+use LightSaml\SamlConstants;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 
 class SamlScopedUserProvider implements SamlScopedUserProviderInterface
 {
@@ -13,7 +15,8 @@ class SamlScopedUserProvider implements SamlScopedUserProviderInterface
      * @param array<string, UserProviderInterface> $userProviders
      */
     public function __construct(
-        private array $userProviders
+        private array $userProviders,
+        private ConfigurationServiceInterface $configurationService
     ) {
     }
 
@@ -29,10 +32,16 @@ class SamlScopedUserProvider implements SamlScopedUserProviderInterface
 
     public function loadUserByIdentifierAndProvider(string $identifier, string $provider): UserInterface
     {
+        $nameIdFormat = $this->configurationService->getNameIdFormat($provider);
+
         $provider = $this->userProviders[$provider] ?? null;
 
         if (null === $provider) {
             throw new \RuntimeException(sprintf('No user provider found for provider "%s"', $provider));
+        }
+
+        if ($nameIdFormat === SamlConstants::NAME_ID_FORMAT_EMAIL && $provider instanceof SamlUserProviderInterface) {
+            return $provider->loadUserByEmail($identifier);
         }
 
         return $provider->loadUserByIdentifier($identifier);
