@@ -9,7 +9,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Umanit\SamlBundle\Guesser\BestContentTypeGuesserInterface;
-use Umanit\SamlBundle\Service\SpMetadataServiceInterface;
+use Umanit\SamlBundle\Serializer\EntityDescriptorSerializerInterface;
+use Umanit\SamlBundle\Service\MetadataServiceInterface;
 
 class MetadataAction extends AbstractController
 {
@@ -17,17 +18,18 @@ class MetadataAction extends AbstractController
     public function __invoke(
         string $provider,
         Request $request,
-        SpMetadataServiceInterface $spMetadataService,
+        MetadataServiceInterface $metadataService,
+        EntityDescriptorSerializerInterface $entityDescriptorSerializer,
         BestContentTypeGuesserInterface $bestContentTypeGuesser
     ): Response {
         try {
-            $entityDescriptor = $spMetadataService->getEntityDescriptor($provider);
+            $entityDescriptor = $metadataService->getOwnEntityDescriptor($provider);
         } catch (\Throwable $exception) {
             throw $this->createNotFoundException($exception->getMessage());
         }
 
         return new Response(
-            $spMetadataService->toXML($entityDescriptor),
+            $entityDescriptorSerializer->toXML($entityDescriptor),
             Response::HTTP_OK,
             ['Content-Type' => $bestContentTypeGuesser->guessForMetadataRequest($request)]
         );

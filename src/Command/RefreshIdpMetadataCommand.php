@@ -8,7 +8,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
-use Umanit\SamlBundle\Service\IdpMetadataServiceInterface;
+use Umanit\SamlBundle\Service\MetadataServiceInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -19,7 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class RefreshIdpMetadataCommand extends Command
 {
     public function __construct(
-        protected IdpMetadataServiceInterface $idpMetadataService,
+        protected MetadataServiceInterface $idpMetadataService,
         protected ConfigurationServiceInterface $configurationService,
     ) {
         parent::__construct();

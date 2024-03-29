@@ -24,6 +24,11 @@ services:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags: ['controller.service_arguments', 'container.service_subscriber']
 
+    Umanit\SamlBundle\Controller\SsoAction:
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags: ['controller.service_arguments', 'container.service_subscriber']
+
     # Services
     umanit_saml.service.configuration_service:
         class: Umanit\SamlBundle\Service\ConfigurationService
@@ -31,30 +36,23 @@ services:
             - ~
     Umanit\SamlBundle\Service\ConfigurationServiceInterface: '@umanit_saml.service.configuration_service'
 
-    umanit_saml.service.idp_metadata_service:
-        class: Umanit\SamlBundle\Service\IdpMetadataService
+    umanit_saml.service.metadata_service:
+        class: Umanit\SamlBundle\Service\MetadataService
         arguments:
-            - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
+            - '@umanit_saml.service.configuration_service'
+            - '@router.default'
+            - '@router.default'
+            - '@umanit_saml.service.x509_certificat_service'
             - '@http_client'
             - '@cache.app.taggable'
             - '@monolog.logger.umanit_saml'
-    Umanit\SamlBundle\Service\IdpMetadataServiceInterface: '@umanit_saml.service.idp_metadata_service'
-
-    umanit_saml.service.sp_metadata_service:
-        class: Umanit\SamlBundle\Service\SpMetadataService
-        arguments:
-            - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
-            - '@router.default'
-            - '@router.default'
-            - '@Umanit\SamlBundle\Service\X509CertificatServiceInterface'
-    Umanit\SamlBundle\Service\SpMetadataServiceInterface: '@umanit_saml.service.sp_metadata_service'
+    Umanit\SamlBundle\Service\MetadataServiceInterface: '@umanit_saml.service.metadata_service'
 
     umanit_saml.service.saml_anthn_request_service:
         class: Umanit\SamlBundle\Service\SamlAuthnRequestService
         arguments:
             - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
-            - '@umanit_saml.service.idp_metadata_service'
-            - '@umanit_saml.service.sp_metadata_service'
+            - '@umanit_saml.service.metadata_service'
             - '@umanit_saml.service.x509_certificat_service'
             - '@request_stack'
     Umanit\SamlBundle\Service\SamlAuthnRequestServiceInterface: '@umanit_saml.service.saml_anthn_request_service'
@@ -76,8 +74,7 @@ services:
         arguments:
             - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
             - '@Umanit\SamlBundle\Service\X509CertificatServiceInterface'
-            - '@umanit_saml.service.idp_metadata_service'
-            - '@umanit_saml.service.sp_metadata_service'
+            - '@umanit_saml.service.metadata_service'
             - '@cache.app.taggable'
             - '@light_saml.validator.model.assertion.assertion_validator'
             - '@umanit_saml.validator.time_validator'
@@ -114,3 +111,7 @@ services:
 
     umanit_saml.security.user.saml_scoped_user_provider:
         class: Umanit\SamlBundle\Security\User\SamlScopedUserProvider
+
+    umanit_saml.serializer.entity_descriptor_serializer:
+        class: Umanit\SamlBundle\Serializer\EntityDescriptorSerializer
+    Umanit\SamlBundle\Serializer\EntityDescriptorSerializerInterface: '@umanit_saml.serializer.entity_descriptor_serializer'

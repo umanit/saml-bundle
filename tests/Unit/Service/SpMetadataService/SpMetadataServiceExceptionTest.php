@@ -6,7 +6,7 @@ namespace Unit\Service\SpMetadataService;
 
 use PHPUnit\Framework\TestCase;
 use Umanit\SamlBundle\Service\ConfigurationService;
-use Umanit\SamlBundle\Service\SpMetadataService;
+use Umanit\SamlBundle\Service\OwnMetadataService;
 
 class SpMetadataServiceExceptionTest extends TestCase
 {
@@ -57,7 +57,7 @@ class SpMetadataServiceExceptionTest extends TestCase
         $router = $this->getMockRouter();
         $X509CertificatService = $this->getX509Service();
 
-        $spMetadataService = new SpMetadataService(
+        $spMetadataService = new OwnMetadataService(
             $configurationService,
             $urlGenerator,
             $router,

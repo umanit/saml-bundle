@@ -19,8 +19,7 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
 {
     public function __construct(
         protected ConfigurationServiceInterface $configurationService,
-        protected IdpMetadataServiceInterface $idpMetadataService,
-        protected SpMetadataServiceInterface $spMetadataService,
+        protected MetadataServiceInterface $metadataService,
         protected X509CertificatServiceInterface $x509CertificatService,
         protected RequestStack $requestStack
     ) {
@@ -35,7 +34,7 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
             throw new InvalidArgumentException(sprintf('Invalid binding type "%s"', $acsBindingType));
         }
 
-        $idpEntityDescriptor = $this->idpMetadataService->getEntityDescriptor($provider);
+        $idpEntityDescriptor = $this->metadataService->getEntityDescriptor($provider);
         $idpSsoDescriptor = $idpEntityDescriptor->getFirstIdpSsoDescriptor();
 
         if (null === $idpSsoDescriptor) {
@@ -48,7 +47,7 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
             throw new RuntimeException('No SingleSignOnService found.');
         }
 
-        $spEntityDescriptor = $this->spMetadataService->getEntityDescriptor($provider);
+        $spEntityDescriptor = $this->metadataService->getOwnEntityDescriptor($provider);
         $spSsoDescriptor = $spEntityDescriptor->getFirstSpSsoDescriptor();
 
         if (null === $spSsoDescriptor) {

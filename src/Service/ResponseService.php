@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Service;
 
+use DateTime;
 use LightSaml\Binding\BindingFactory;
+use LightSaml\ClaimTypes;
 use LightSaml\Context\Profile\MessageContext;
 use LightSaml\Credential\Context\CredentialContextSet;
 use LightSaml\Credential\Context\MetadataCredentialContext;
@@ -12,17 +14,34 @@ use LightSaml\Credential\X509Credential;
 use LightSaml\Criteria\CriteriaSet;
 use LightSaml\Error\LightSamlSecurityException;
 use LightSaml\Error\LightSamlValidationException;
+use LightSaml\Helper;
+use LightSaml\Model\Assertion\Assertion;
+use LightSaml\Model\Assertion\Attribute;
+use LightSaml\Model\Assertion\AttributeStatement;
+use LightSaml\Model\Assertion\AudienceRestriction;
+use LightSaml\Model\Assertion\AuthnContext;
+use LightSaml\Model\Assertion\AuthnStatement;
+use LightSaml\Model\Assertion\Conditions;
 use LightSaml\Model\Assertion\EncryptedAssertionReader;
+use LightSaml\Model\Assertion\Issuer;
+use LightSaml\Model\Assertion\NameID;
+use LightSaml\Model\Assertion\Subject;
+use LightSaml\Model\Assertion\SubjectConfirmation;
+use LightSaml\Model\Assertion\SubjectConfirmationData;
 use LightSaml\Model\Context\DeserializationContext;
 use LightSaml\Model\Metadata\AssertionConsumerService;
 use LightSaml\Model\Metadata\KeyDescriptor;
 use LightSaml\Model\Metadata\SpSsoDescriptor;
+use LightSaml\Model\Protocol\AuthnRequest;
 use LightSaml\Model\Protocol\Response;
+use LightSaml\Model\Protocol\Status;
+use LightSaml\Model\Protocol\StatusCode;
 use LightSaml\Model\XmlDSig\AbstractSignatureReader;
 use LightSaml\Resolver\Endpoint\Criteria\DescriptorTypeCriteria;
 use LightSaml\Resolver\Endpoint\Criteria\LocationCriteria;
 use LightSaml\Resolver\Endpoint\Criteria\ServiceTypeCriteria;
 use LightSaml\Resolver\Endpoint\DescriptorTypeEndpointResolver;
+use LightSaml\SamlConstants;
 use LightSaml\Validator\Model\Assertion\AssertionValidatorInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\Request as HttpFoundationRequest;
@@ -35,12 +54,28 @@ class ResponseService implements ResponseServiceInterface
     public function __construct(
         protected ConfigurationServiceInterface $configurationService,
         protected X509CertificatServiceInterface $x509CertificatService,
-        protected IdpMetadataServiceInterface $idpMetadataService,
-        protected SpMetadataServiceInterface $spMetadataService,
+        protected MetadataServiceInterface $metadataService,
         protected AdapterInterface $cache,
         protected AssertionValidatorInterface $assertionValidator,
         protected TimeValidatorInterface $timeValidator
     ) {
+    }
+
+    public function getAuthNRequestResponse(HttpFoundationRequest $request): ?AuthnRequest
+    {
+        $messageContext = new MessageContext();
+        $bindingFactory = new BindingFactory();
+        $bindingType = $bindingFactory->detectBindingType($request);
+        $bindingFactory->create($bindingType)->receive($request, $messageContext);
+        $messageContext->setBindingType($bindingType);
+
+        $response = $messageContext->asAuthnRequest();
+
+        if (!$response instanceof AuthnRequest) {
+            return null;
+        }
+
+        return $response;
     }
 
     public function getSamlMessage(HttpFoundationRequest $request): ?Response
@@ -140,7 +175,7 @@ class ResponseService implements ResponseServiceInterface
             throw new LightSamlValidationException('No issuer found in response');
         }
 
-        $idpEntityDescriptor = $this->idpMetadataService->getEntityDescriptor($provider);
+        $idpEntityDescriptor = $this->metadataService->getEntityDescriptor($provider);
 
         if ($idpEntityDescriptor->getEntityID() !== $issuer->getValue()) {
             throw new LightSamlValidationException('Issuer does not match IdP entity descriptor');
@@ -185,7 +220,7 @@ class ResponseService implements ResponseServiceInterface
             new LocationCriteria($recipient),
         ]);
 
-        $spEntityDescriptor = $this->spMetadataService->getEntityDescriptor($provider);
+        $spEntityDescriptor = $this->metadataService->getOwnEntityDescriptor($provider);
         $endpoints = (new DescriptorTypeEndpointResolver())
             ->resolve($criteriaSet, $spEntityDescriptor->getAllEndpoints())
         ;
@@ -223,7 +258,7 @@ class ResponseService implements ResponseServiceInterface
 
     private function validateSignature(string $provider, Response $message): void
     {
-        $idpEntityDescriptor = $this->idpMetadataService->getEntityDescriptor($provider);
+        $idpEntityDescriptor = $this->metadataService->getEntityDescriptor($provider);
         $idpSsoDescriptor = $idpEntityDescriptor->getFirstIdpSsoDescriptor();
 
         if (null === $idpSsoDescriptor) {
@@ -276,5 +311,83 @@ class ResponseService implements ResponseServiceInterface
         } catch (LightSamlSecurityException $e) {
             throw $e;
         }
+    }
+
+    public function createSamlResponse(array $config): Response
+    {
+        $response = new Response();
+        $response
+            ->addAssertion($assertion = new Assertion())
+            ->setStatus(
+                new Status(
+                    new StatusCode(
+                        SamlConstants::STATUS_SUCCESS
+                    )
+                )
+            )
+            ->setID(Helper::generateID())
+            ->setIssueInstant(new DateTime())
+            ->setDestination('https://sp.com/acs')
+            ->setIssuer(new Issuer('https://idp.com'))
+        ;
+
+        $assertion
+            ->setId(Helper::generateID())
+            ->setIssueInstant(new DateTime())
+            ->setIssuer(new Issuer('https://idp.com'))
+            ->setSubject(
+                (new Subject())
+                    ->setNameID(
+                        new NameID(
+                            'email.domain.com',
+                            SamlConstants::NAME_ID_FORMAT_EMAIL
+                        )
+                    )
+                    ->addSubjectConfirmation(
+                        (new SubjectConfirmation())
+                            ->setMethod(SamlConstants::CONFIRMATION_METHOD_BEARER)
+                            ->setSubjectConfirmationData(
+                                (new SubjectConfirmationData())
+                                    ->setInResponseTo('id_of_the_authn_request')
+                                    ->setNotOnOrAfter(new DateTime('+1 MINUTE'))
+                                    ->setRecipient('https://sp.com/acs')
+                            )
+                    )
+            )
+            ->setConditions(
+                (new Conditions())
+                    ->setNotBefore(new DateTime())
+                    ->setNotOnOrAfter(new DateTime('+1 MINUTE'))
+                    ->addItem(
+                        new AudienceRestriction(['https://sp.com/acs'])
+                    )
+            )
+            ->addItem(
+                (new AttributeStatement())
+                    ->addAttribute(
+                        new Attribute(
+                            ClaimTypes::EMAIL_ADDRESS,
+                            'email@domain.com'
+                        )
+                    )
+                    ->addAttribute(
+                        new Attribute(
+                            ClaimTypes::COMMON_NAME,
+                            'x123'
+                        )
+                    )
+            )
+            ->addItem(
+                (new AuthnStatement())
+                    ->setAuthnInstant(new DateTime('-10 MINUTE'))
+                    ->setSessionIndex('_some_session_index')
+                    ->setAuthnContext(
+                        (new AuthnContext())
+                            ->setAuthnContextClassRef(
+                                SamlConstants::AUTHN_CONTEXT_PASSWORD_PROTECTED_TRANSPORT
+                            )
+                    )
+            )
+        ;
     }
 }
