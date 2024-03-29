@@ -48,6 +48,14 @@ services:
             - '@monolog.logger.umanit_saml'
     Umanit\SamlBundle\Service\MetadataServiceInterface: '@umanit_saml.service.metadata_service'
 
+    umanit_saml.service.saml_response_service:
+        class: Umanit\SamlBundle\Service\SamlResponseService
+        arguments:
+            - '@umanit_saml.service.configuration_service'
+            - '@umanit_saml.service.metadata_service'
+            - '@umanit_saml.service.x509_certificat_service'
+    Umanit\SamlBundle\Service\SamlResponseServiceInterface: '@umanit_saml.service.saml_response_service'
+
     umanit_saml.service.saml_anthn_request_service:
         class: Umanit\SamlBundle\Service\SamlAuthnRequestService
         arguments:
