@@ -21,8 +21,6 @@ class SsoAction extends AbstractController
         $inboundService->validateSignature($provider, $samlMessage);
         $inboundService->validateIssuer($samlMessage);
 
-        dd($samlMessage);
-
         throw new \LogicException('Method not implemented');
     }
 }
