@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Umanit\SamlBundle\DependencyInjection\Security\UserProvider;
 
 use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\UserProvider\UserProviderFactoryInterface;

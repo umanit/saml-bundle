@@ -80,18 +80,20 @@ services:
     umanit_saml.service.response_service:
         class: Umanit\SamlBundle\Service\ResponseService
         arguments:
-            - '@Umanit\SamlBundle\Service\ConfigurationServiceInterface'
-            - '@Umanit\SamlBundle\Service\X509CertificatServiceInterface'
-            - '@umanit_saml.service.metadata_service'
-            - '@cache.app.taggable'
-            - '@light_saml.validator.model.assertion.assertion_validator'
-            - '@umanit_saml.validator.time_validator'
+            - '@umanit_saml.validator.response_validator'
     Umanit\SamlBundle\Service\ResponseServiceInterface: '@umanit_saml.service.response_service'
 
     umanit_saml.guesser.best_content_type_guesser:
         class: Umanit\SamlBundle\Guesser\BestContentTypeGuesser
     Umanit\SamlBundle\Guesser\BestContentTypeGuesserInterface: '@umanit_saml.guesser.best_content_type_guesser'
 
+    umanit_saml.service.inbound_service:
+        class: Umanit\SamlBundle\Service\InboundService
+        arguments:
+            - '@umanit_saml.service.configuration_service'
+            - '@umanit_saml.validator.signature_validator'
+            - '@umanit_saml.validator.issuer_validator'
+    Umanit\SamlBundle\Service\InboundServiceInterface: '@umanit_saml.service.inbound_service'
 
     ####################################################################################################################
     # Validator
@@ -102,6 +104,33 @@ services:
             - '@light_saml.validator.model.assertion.assertion_time_validator'
             - '@light_saml.provider.time_provider'
     Umanit\SamlBundle\Validator\TimeValidatorInterface: '@umanit_saml.validator.time_validator'
+
+    umanit_saml.validator.signature_validator:
+        class: Umanit\SamlBundle\Validator\SignatureValidator
+        arguments:
+            - '@umanit_saml.service.configuration_service'
+            - '@umanit_saml.service.metadata_service'
+    Umanit\SamlBundle\Validator\SignatureValidatorInterface: '@umanit_saml.validator.signature_validator'
+
+    umanit_saml.validator.issuer_validator:
+        class: Umanit\SamlBundle\Validator\IssuerValidator
+        arguments:
+            - '@light_saml.validator.model.name_id.name_id_validator'
+    Umanit\SamlBundle\Validator\IssuerValidatorInterface: '@umanit_saml.validator.issuer_validator'
+
+    umanit_saml.validator.response_validator:
+        class: Umanit\SamlBundle\Validator\ResponseValidator
+        arguments:
+            - '@umanit_saml.service.configuration_service'
+            - '@umanit_saml.service.metadata_service'
+            - '@umanit_saml.service.x509_certificat_service'
+            - '@cache.app.taggable'
+            - '@light_saml.validator.model.assertion.assertion_validator'
+            - '@umanit_saml.validator.signature_validator'
+            - '@umanit_saml.validator.issuer_validator'
+            - '@umanit_saml.validator.time_validator'
+            - '@monolog.logger.umanit_saml'
+    Umanit\SamlBundle\Validator\ResponseValidatorInterface: '@umanit_saml.validator.response_validator'
 
     umanit_saml.security.http.authenticator.saml_authenticator:
         class: Umanit\SamlBundle\Security\Http\Authenticator\SamlAuthenticator

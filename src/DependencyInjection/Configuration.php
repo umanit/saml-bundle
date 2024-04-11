@@ -32,6 +32,8 @@ class Configuration implements ConfigurationInterface
                     ->useAttributeAsKey('provider_name')
                     ->arrayPrototype()
                         ->children()
+                            ->booleanNode('enabled')->defaultTrue()->info('Activer ou non le provider')->end()
+                            ->booleanNode('strict')->defaultTrue()->info('Activer ou non le mode strict')->end()
                             ->enumNode('type')
                                 ->values(Mode::cases())
                                 ->defaultValue(Mode::SP_INITIATED)

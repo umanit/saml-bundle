@@ -4,13 +4,22 @@ declare(strict_types=1);
 
 namespace Unit\Service\SpMetadataService;
 
+use LightSaml\Model\Metadata\ContactPerson;
+use LightSaml\Model\Metadata\Organization;
+use Psr\Log\NullLogger;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Cache\Adapter\NullAdapter;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Umanit\SamlBundle\Enums\Mode;
 use Umanit\SamlBundle\Service\ConfigurationService;
-use Umanit\SamlBundle\Service\OwnMetadataService;
+use Umanit\SamlBundle\Service\MetadataService;
+use Unit\Service\MetadataServiceTrait;
 
 class SpMetadataServiceTest extends TestCase
 {
-    use SpMetadataServiceTrait;
+    use MetadataServiceTrait;
 
     public static function getEntityDescriptorDataProvider(): array
     {
@@ -21,7 +30,8 @@ class SpMetadataServiceTest extends TestCase
             'config'   => [
                 'providers' => [
                     'test' => [
-                        'sp' => [
+                        'type' => Mode::SP_INITIATED,
+                        'sp'   => [
                             'entity_id' => 'https://test-entity-id.wip',
                             'acs'       => [
                                 'url' => 'https://saml-bundle.wip/saml2/acs/microsoft_umanit_provider',
@@ -29,6 +39,9 @@ class SpMetadataServiceTest extends TestCase
                             'slo'       => [
                                 'url' => 'https://saml-bundle.wip/saml2/slo/microsoft_umanit_provider',
                             ],
+                        ],
+                        'idp'  => [
+                            'metadata' => 'https://idp.identityserver',
                         ],
                     ],
                 ],
@@ -55,19 +68,47 @@ class SpMetadataServiceTest extends TestCase
         array $config,
         array $expected,
     ): void {
+        $contactPerson = new ContactPerson();
+        $contactPerson->setContactType('test2');
+        $contactPerson->setCompany('test2');
+        $contactPerson->setGivenName('test2');
+        $contactPerson->setSurName('test2');
+        $contactPerson->setEmailAddress('test2@example.com');
+
+        $organization = new Organization();
+        $organization->setOrganizationName('test2');
+        $organization->setOrganizationDisplayName('test2 Org');
+        $organization->setOrganizationURL('https://test2.com/');
+        $organization->setLang('en-US');
+
+        $mockedHttpClient = new MockHttpClient(
+            new MockResponse(
+                self::getMetadata(
+                    $expected['entity_id'],
+                    $contactPerson,
+                    $organization
+                ),
+                [
+                    'http_code' => Response::HTTP_OK,
+                ]
+            )
+        );
         $configurationService = new ConfigurationService($config);
         $urlGenerator = $this->getMockUrlGenerator();
         $router = $this->getMockRouter();
         $X509CertificatService = $this->getX509Service();
 
-        $spMetadataService = new OwnMetadataService(
+        $spMetadataService = new MetadataService(
             $configurationService,
             $urlGenerator,
             $router,
-            $X509CertificatService
+            $X509CertificatService,
+            $mockedHttpClient,
+            new NullAdapter(),
+            new NullLogger()
         );
 
-        $result = $spMetadataService->getEntityDescriptor($provider);
+        $result = $spMetadataService->getOwnEntityDescriptor($provider);
 
         $this->assertEquals($expected['entity_id'], $result->getEntityID());
         $this->assertEquals(

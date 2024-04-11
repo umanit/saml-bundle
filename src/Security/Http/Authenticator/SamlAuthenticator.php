@@ -80,7 +80,8 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
                 throw new AuthenticationException('No SAML message found');
             }
 
-            $this->responseService->validateSamlMessage($provider, $samlResponse);
+            // @TODO : Mode strict ?
+            $this->responseService->validate($provider, $samlResponse);
         } catch (Exception $e) {
             throw new AuthenticationException($e->getMessage());
         }

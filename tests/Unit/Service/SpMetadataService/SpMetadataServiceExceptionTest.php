@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace Unit\Service\SpMetadataService;
 
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
+use RuntimeException;
+use Symfony\Component\Cache\Adapter\NullAdapter;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Umanit\SamlBundle\Service\ConfigurationService;
-use Umanit\SamlBundle\Service\OwnMetadataService;
+use Umanit\SamlBundle\Service\MetadataService;
+use Unit\Service\MetadataServiceTrait;
 
 class SpMetadataServiceExceptionTest extends TestCase
 {
-    use SpMetadataServiceTrait;
+    use MetadataServiceTrait;
 
     public static function getEntityDescriptorExceptionDataProvider(): array
     {
@@ -27,7 +34,7 @@ class SpMetadataServiceExceptionTest extends TestCase
                     ],
                 ],
             ],
-            'expected' => \InvalidArgumentException::class,
+            'expected' => RuntimeException::class,
         ];
 
         $dataset[] = [
@@ -38,7 +45,7 @@ class SpMetadataServiceExceptionTest extends TestCase
                     ],
                 ],
             ],
-            'expected' => \RuntimeException::class,
+            'expected' => RuntimeException::class,
         ];
 
         return $dataset;
@@ -52,16 +59,27 @@ class SpMetadataServiceExceptionTest extends TestCase
         array $config,
         string $expected
     ): void {
+        $mockedHttpClient = new MockHttpClient(
+            new MockResponse(
+                '',
+                [
+                    'http_code' => Response::HTTP_OK,
+                ]
+            )
+        );
         $configurationService = new ConfigurationService($config);
         $urlGenerator = $this->getMockUrlGenerator();
         $router = $this->getMockRouter();
         $X509CertificatService = $this->getX509Service();
 
-        $spMetadataService = new OwnMetadataService(
+        $spMetadataService = new MetadataService(
             $configurationService,
             $urlGenerator,
             $router,
-            $X509CertificatService
+            $X509CertificatService,
+            $mockedHttpClient,
+            new NullAdapter(),
+            new NullLogger()
         );
 
         $this->expectException($expected);

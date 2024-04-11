@@ -9,7 +9,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 
-class SamlScopedUserProvider implements SamlScopedUserProviderInterface
+readonly class SamlScopedUserProvider implements SamlScopedUserProviderInterface
 {
     /**
      * @param array<string, UserProviderInterface> $userProviders

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unit\Service;
 
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Umanit\SamlBundle\Service\ConfigurationService;
 
 /**
@@ -19,30 +20,30 @@ class ConfigurationTest extends TestCase
         # Dataset 1
         $dataset[] = [
             'provider' => 'test',
-            'config' => [
+            'config'   => [
                 'providers' => [
                     'test' => [
-                        'test' => 'test'
-                    ]
-                ]
+                        'test' => 'test',
+                    ],
+                ],
             ],
-            'expected' => [ 'test' => 'test' ]
+            'expected' => ['test' => 'test'],
         ];
 
         # Dataset 2
         $dataset[] = [
             'provider' => 'test2',
-            'config' => [
+            'config'   => [
                 'providers' => [
                     'test2' => [
-                        'test' => 'test'
+                        'test' => 'test',
                     ],
                     'test3' => [
-                        'test' => 'test'
+                        'test' => 'test',
                     ],
-                ]
+                ],
             ],
-            'expected' => [ 'test' => 'test' ]
+            'expected' => ['test' => 'test'],
         ];
 
         return $dataset;
@@ -69,23 +70,23 @@ class ConfigurationTest extends TestCase
 
         # Dataset 0
         $dataset[] = [
-            'config' => [
+            'config'   => [
                 'providers' => [
-                    'test' => []
-                ]
+                    'test' => [],
+                ],
             ],
-            'expected' => ['test']
+            'expected' => ['test'],
         ];
 
         # Dataset 1
         $dataset[] = [
-            'config' => [
+            'config'   => [
                 'providers' => [
                     'test1' => [],
                     'test2' => [],
-                ]
+                ],
             ],
-            'expected' => ['test1', 'test2']
+            'expected' => ['test1', 'test2'],
         ];
 
         return $dataset;
@@ -107,21 +108,21 @@ class ConfigurationTest extends TestCase
         # Dataset 0
         $dataset[] = [
             'provider' => 'test',
-            'config' => [
+            'config'   => [
                 'providers' => [
-                    'KO' => []
-                ]
+                    'KO' => [],
+                ],
             ],
-            'expected' => \RuntimeException::class
+            'expected' => RuntimeException::class,
         ];
 
         # Dataset 1
         $dataset[] = [
             'provider' => 'test2',
-            'config' => [
-                'providers' => []
+            'config'   => [
+                'providers' => [],
             ],
-            'expected' => \RuntimeException::class
+            'expected' => RuntimeException::class,
         ];
 
         return $dataset;

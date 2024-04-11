@@ -40,3 +40,8 @@ umanit_saml:
                 #     binding: urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect
                 # x509cert: microsoft_umanit_provider/saml/saml.crt
 ```
+
+## Configuration d'un fournisseur SAML (SP initiated)
+
+## Configuration pour se connecter automatiquement à un autre service (IDP initiated)
+
