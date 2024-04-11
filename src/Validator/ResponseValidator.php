@@ -58,17 +58,19 @@ class ResponseValidator implements ResponseValidatorInterface
         $this->logger->info('Validating assertion');
         $this->assertionValidator->validateAssertion($assertion);
 
-        $this->logger->info('Validating issuer');
-        $this->issuerValidator->validate($samlMessage);
+        if ($strict) {
+            $this->logger->info('Validating issuer');
+            $this->issuerValidator->validate($samlMessage);
 
-        $this->logger->info('Validating recipient');
-        $this->validateRecipient($provider, $samlMessage);
+            $this->logger->info('Validating recipient');
+            $this->validateRecipient($provider, $samlMessage);
 
-        $this->logger->info('Validating repeated ID');
-        $this->validateRepeatedId($samlMessage);
+            $this->logger->info('Validating repeated ID');
+            $this->validateRepeatedId($samlMessage);
 
-        $this->logger->info('Validating time');
-        $this->timeValidator->validateAssertion($assertion);
+            $this->logger->info('Validating time');
+            $this->timeValidator->validateAssertion($assertion);
+        }
 
         $this->logger->info('Validating signature');
         $this->signatureValidator->validate($provider, $samlMessage);

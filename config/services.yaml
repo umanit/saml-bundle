@@ -142,6 +142,7 @@ services:
             - []
             - '@umanit_saml.service.configuration_service'
             - '@umanit_saml.service.response_service'
+            - '@monolog.logger.umanit_saml'
 
     umanit_saml.security.user.saml_user_provider:
         class: Umanit\SamlBundle\Security\User\SamlUserProvider
