@@ -9,14 +9,14 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 
-readonly class SamlScopedUserProvider implements SamlScopedUserProviderInterface
+class SamlScopedUserProvider implements SamlScopedUserProviderInterface
 {
     /**
      * @param array<string, UserProviderInterface> $userProviders
      */
     public function __construct(
-        private array $userProviders,
-        private ConfigurationServiceInterface $configurationService
+        private readonly array $userProviders,
+        private readonly ConfigurationServiceInterface $configurationService
     ) {
     }
 

@@ -14,9 +14,9 @@ use Umanit\SamlBundle\Validator\SignatureValidatorInterface;
 class InboundService implements InboundServiceInterface
 {
     public function __construct(
-        protected ConfigurationServiceInterface $configurationService,
-        protected SignatureValidatorInterface $signatureValidator,
-        protected IssuerValidatorInterface $issuerValidator
+        protected readonly ConfigurationServiceInterface $configurationService,
+        protected readonly SignatureValidatorInterface $signatureValidator,
+        protected readonly IssuerValidatorInterface $issuerValidator
     ) {
     }
 

@@ -11,8 +11,8 @@ use LightSaml\Validator\Model\Assertion\AssertionTimeValidatorInterface;
 class TimeValidator implements TimeValidatorInterface
 {
     public function __construct(
-        protected AssertionTimeValidatorInterface $assertionTimeValidator,
-        protected TimeProviderInterface $timeProvider,
+        protected readonly AssertionTimeValidatorInterface $assertionTimeValidator,
+        protected readonly TimeProviderInterface $timeProvider,
         protected int $allowedSecondsSkew = 120
     ) {
     }

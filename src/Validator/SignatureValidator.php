@@ -16,11 +16,11 @@ use Umanit\SamlBundle\Enums\Mode;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\MetadataServiceInterface;
 
-readonly class SignatureValidator implements SignatureValidatorInterface
+class SignatureValidator implements SignatureValidatorInterface
 {
     public function __construct(
-        protected ConfigurationServiceInterface $configurationService,
-        protected MetadataServiceInterface $metadataService
+        protected readonly ConfigurationServiceInterface $configurationService,
+        protected readonly MetadataServiceInterface $metadataService
     ) {
     }
 

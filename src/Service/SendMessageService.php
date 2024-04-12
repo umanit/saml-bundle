@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response as HttpFoundationResponse;
 class SendMessageService implements SendMessageServiceInterface
 {
     public function __construct(
-        protected ConfigurationServiceInterface $configurationService,
+        protected readonly ConfigurationServiceInterface $configurationService,
         protected ?MessageContext $messageContext = null
     ) {
         $this->messageContext = new MessageContext();

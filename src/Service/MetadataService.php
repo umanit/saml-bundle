@@ -31,13 +31,13 @@ use Umanit\SamlBundle\Enums\Mode;
 class MetadataService implements MetadataServiceInterface
 {
     public function __construct(
-        protected ConfigurationServiceInterface $configurationService,
-        protected UrlGeneratorInterface $urlGenerator,
-        protected RouterInterface $router,
-        protected X509CertificatServiceInterface $x509CertificatService,
-        protected HttpClientInterface $client,
-        protected CacheInterface $cache,
-        protected LoggerInterface $logger
+        protected readonly ConfigurationServiceInterface $configurationService,
+        protected readonly UrlGeneratorInterface $urlGenerator,
+        protected readonly RouterInterface $router,
+        protected readonly X509CertificatServiceInterface $x509CertificatService,
+        protected readonly HttpClientInterface $client,
+        protected readonly CacheInterface $cache,
+        protected readonly LoggerInterface $logger
     ) {
     }
 

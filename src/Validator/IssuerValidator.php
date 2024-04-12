@@ -10,7 +10,7 @@ use LightSaml\Validator\Model\NameId\NameIdValidatorInterface;
 class IssuerValidator implements IssuerValidatorInterface
 {
     public function __construct(
-        protected NameIdValidatorInterface $nameIdValidator
+        protected readonly NameIdValidatorInterface $nameIdValidator
     ) {
     }
 

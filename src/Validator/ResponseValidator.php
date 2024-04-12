@@ -28,15 +28,15 @@ class ResponseValidator implements ResponseValidatorInterface
     private const MAX_VALIDATION_TIME_FOR_ID = 120;
 
     public function __construct(
-        protected ConfigurationServiceInterface $configurationService,
-        protected MetadataServiceInterface $metadataService,
-        protected X509CertificatServiceInterface $x509CertificatService,
-        protected AdapterInterface $cache,
-        protected AssertionValidatorInterface $assertionValidator,
-        protected SignatureValidatorInterface $signatureValidator,
-        protected IssuerValidatorInterface $issuerValidator,
-        protected TimeValidatorInterface $timeValidator,
-        protected LoggerInterface $logger
+        protected readonly ConfigurationServiceInterface $configurationService,
+        protected readonly MetadataServiceInterface $metadataService,
+        protected readonly X509CertificatServiceInterface $x509CertificatService,
+        protected readonly AdapterInterface $cache,
+        protected readonly AssertionValidatorInterface $assertionValidator,
+        protected readonly SignatureValidatorInterface $signatureValidator,
+        protected readonly IssuerValidatorInterface $issuerValidator,
+        protected readonly TimeValidatorInterface $timeValidator,
+        protected readonly LoggerInterface $logger
     ) {
 
     }

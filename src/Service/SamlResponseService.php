@@ -26,12 +26,12 @@ use LightSaml\Model\Protocol\StatusCode;
 use LightSaml\SamlConstants;
 use RuntimeException;
 
-readonly class SamlResponseService implements SamlResponseServiceInterface
+class SamlResponseService implements SamlResponseServiceInterface
 {
     public function __construct(
-        private ConfigurationServiceInterface $configurationService,
-        private MetadataServiceInterface $metadataService,
-        private X509CertificatServiceInterface $x509CertificatService
+        private readonly ConfigurationServiceInterface $configurationService,
+        private readonly MetadataServiceInterface $metadataService,
+        private readonly X509CertificatServiceInterface $x509CertificatService
     ) {
     }
 

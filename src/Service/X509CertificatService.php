@@ -12,7 +12,7 @@ use LightSaml\Model\XmlDSig\SignatureWriter;
 class X509CertificatService implements X509CertificatServiceInterface
 {
     public function __construct(
-        protected ConfigurationServiceInterface $configurationService
+        protected readonly ConfigurationServiceInterface $configurationService
     ) {
     }
 
