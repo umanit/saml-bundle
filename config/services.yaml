@@ -168,3 +168,7 @@ services:
             - '@security.http_utils'
             - []
             - '@monolog.logger.umanit_saml'
+
+    umanit_saml.security.http.event_subscriber.check_attributes_subscriber:
+        class: Umanit\SamlBundle\Security\Http\EventSubscriber\CheckAttributesSubscriber
+        tags: ['kernel.event_subscriber']

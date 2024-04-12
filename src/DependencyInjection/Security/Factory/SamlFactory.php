@@ -20,6 +20,14 @@ class SamlFactory extends AbstractFactory
             'success_handler',
             'umanit_saml.security.http.authentication.saml_authentication_success_handler'
         );
+        $this->addOption(
+            'saml_group_attribute',
+            null
+        );
+        $this->addOption(
+            'saml_group_required',
+            null
+        );
     }
 
     public function getPriority(): int
