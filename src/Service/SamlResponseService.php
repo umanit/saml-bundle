@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Umanit\SamlBundle\Service;
 
 use DateTime;
-use LightSaml\ClaimTypes;
 use LightSaml\Helper;
 use LightSaml\Model\Assertion\Assertion;
 use LightSaml\Model\Assertion\Attribute;
@@ -35,7 +34,7 @@ class SamlResponseService implements SamlResponseServiceInterface
     ) {
     }
 
-    public function getSamlResponse(string $provider, string $nameIdValue): Response
+    public function getSamlResponse(string $provider, string $nameIdValue, array $attributes = []): Response
     {
         // IDP
         $ownEntityDescriptor = $this->metadataService->getOwnEntityDescriptor($provider);
@@ -43,11 +42,13 @@ class SamlResponseService implements SamlResponseServiceInterface
         // SP
         $entityDescriptor = $this->metadataService->getEntityDescriptor($provider);
 
-        $acs = $entityDescriptor->getFirstSpSsoDescriptor()?->getFirstAssertionConsumerService();
+        $idpSsoDescriptor = $entityDescriptor->getFirstIdpSsoDescriptor();
+        $spSsoDescriptor = $entityDescriptor->getFirstSpSsoDescriptor();
+        $acs = $spSsoDescriptor?->getFirstAssertionConsumerService();
         $issuer = $ownEntityDescriptor->getEntityID();
+        $format = $idpSsoDescriptor?->getAllNameIDFormats()[0] ?? SamlConstants::NAME_ID_FORMAT_PERSISTENT;
 
-        // @TODO : determine the NameID format
-        $nameId = new NameID($nameIdValue, SamlConstants::NAME_ID_FORMAT_EMAIL);
+        $nameId = new NameID($nameIdValue, $format);
 
         $response = new Response();
         $response
@@ -65,6 +66,11 @@ class SamlResponseService implements SamlResponseServiceInterface
             ->setIssuer(new Issuer($issuer))
         ;
 
+        $notOnOrAfter = new DateTime('+1 MINUTE');
+        $authnInstant = new DateTime('-10 MINUTE');
+
+        $authnRequestId = Helper::generateID();
+
         $assertion
             ->setId(Helper::generateID())
             ->setIssueInstant(new DateTime())
@@ -79,8 +85,8 @@ class SamlResponseService implements SamlResponseServiceInterface
                             ->setMethod(SamlConstants::CONFIRMATION_METHOD_BEARER)
                             ->setSubjectConfirmationData(
                                 (new SubjectConfirmationData())
-                                    ->setInResponseTo('id_of_the_authn_request')
-                                    ->setNotOnOrAfter(new DateTime('+1 MINUTE'))
+                                    ->setInResponseTo($authnRequestId)
+                                    ->setNotOnOrAfter($notOnOrAfter)
                                     ->setRecipient($acs?->getLocation())
                             )
                     )
@@ -88,30 +94,15 @@ class SamlResponseService implements SamlResponseServiceInterface
             ->setConditions(
                 (new Conditions())
                     ->setNotBefore(new DateTime())
-                    ->setNotOnOrAfter(new DateTime('+1 MINUTE'))
+                    ->setNotOnOrAfter($notOnOrAfter)
                     ->addItem(
                         new AudienceRestriction([$acs?->getLocation()])
                     )
             )
             ->addItem(
-                (new AttributeStatement())
-                    ->addAttribute(
-                        new Attribute(
-                            ClaimTypes::EMAIL_ADDRESS,
-                            'email@domain.com'
-                        )
-                    )
-                    ->addAttribute(
-                        new Attribute(
-                            ClaimTypes::COMMON_NAME,
-                            'x123'
-                        )
-                    )
-            )
-            ->addItem(
                 (new AuthnStatement())
-                    ->setAuthnInstant(new DateTime('-10 MINUTE'))
-                    ->setSessionIndex('_some_session_index')
+                    ->setAuthnInstant($authnInstant)
+                    ->setSessionIndex(Helper::generateID())
                     ->setAuthnContext(
                         (new AuthnContext())
                             ->setAuthnContextClassRef(
@@ -121,6 +112,14 @@ class SamlResponseService implements SamlResponseServiceInterface
             )
         ;
 
+        $this->addAttributesStatement($assertion, $attributes);
+        $this->signResponse($response, $provider);
+
+        return $response;
+    }
+
+    private function signResponse(Response $response, string $provider): void
+    {
         $credential = $this->x509CertificatService->getIdpCredential($provider);
 
         if (null === $credential) {
@@ -130,8 +129,21 @@ class SamlResponseService implements SamlResponseServiceInterface
         $config = $this->configurationService->getByProvider($provider);
         $samlAlgorithmSignature = $config['idp']['saml_algorithm_signature']->value;
         $response->setSignature($this->x509CertificatService->getSignature($credential, $samlAlgorithmSignature));
+    }
 
-        return $response;
+    private function addAttributesStatement(Assertion $assertion, array $attributes): void
+    {
+        if (empty($attributes)) {
+            return;
+        }
+
+        $attributesStatement = new AttributeStatement();
+
+        foreach ($attributes as $name => $value) {
+            $attributesStatement->addAttribute(new Attribute($name, $value));
+        }
+
+        $assertion->addItem($attributesStatement);
     }
 
     public function toXML(Response $response): string

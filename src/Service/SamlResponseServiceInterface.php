@@ -8,7 +8,7 @@ use LightSaml\Model\Protocol\Response;
 
 interface SamlResponseServiceInterface
 {
-    public function getSamlResponse(string $provider, string $nameIdValue): Response;
+    public function getSamlResponse(string $provider, string $nameIdValue, array $attributes = []): Response;
 
     public function toXML(Response $response): string;
 }

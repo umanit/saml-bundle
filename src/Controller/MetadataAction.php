@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Umanit\SamlBundle\Guesser\BestContentTypeGuesserInterface;
-use Umanit\SamlBundle\Serializer\EntityDescriptorSerializerInterface;
+use Umanit\SamlBundle\Serializer\SamlElementSerializerInterface;
 use Umanit\SamlBundle\Service\MetadataServiceInterface;
 
 class MetadataAction extends AbstractController
@@ -19,7 +19,7 @@ class MetadataAction extends AbstractController
         string $provider,
         Request $request,
         MetadataServiceInterface $metadataService,
-        EntityDescriptorSerializerInterface $entityDescriptorSerializer,
+        SamlElementSerializerInterface $entityDescriptorSerializer,
         BestContentTypeGuesserInterface $bestContentTypeGuesser
     ): Response {
         try {

@@ -150,6 +150,14 @@ services:
     umanit_saml.security.user.saml_scoped_user_provider:
         class: Umanit\SamlBundle\Security\User\SamlScopedUserProvider
 
-    umanit_saml.serializer.entity_descriptor_serializer:
-        class: Umanit\SamlBundle\Serializer\EntityDescriptorSerializer
-    Umanit\SamlBundle\Serializer\EntityDescriptorSerializerInterface: '@umanit_saml.serializer.entity_descriptor_serializer'
+    umanit_saml.serializer.saml_element_serializer:
+        class: Umanit\SamlBundle\Serializer\SamlElementSerializer
+    Umanit\SamlBundle\Serializer\SamlElementSerializerInterface: '@umanit_saml.serializer.saml_element_serializer'
+
+    umanit_saml.twig.saml_extension:
+        class: Umanit\SamlBundle\Twig\SamlExtension
+        arguments:
+            - '@umanit_saml.service.configuration_service'
+            - '@umanit_saml.service.saml_response_service'
+            - '@umanit_saml.serializer.saml_element_serializer'
+        tags: ['twig.extension']
