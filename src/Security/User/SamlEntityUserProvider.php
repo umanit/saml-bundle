@@ -27,6 +27,9 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
         private readonly string $classOrAlias,
         private readonly ?string $property = null,
         private readonly ?string $managerName = null,
+        private readonly array $defaultRoles = [],
+        private readonly array $restrictions = [],
+        private readonly array $rolesMapping = [],
     ) {
     }
 

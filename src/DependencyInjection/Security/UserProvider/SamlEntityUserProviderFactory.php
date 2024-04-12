@@ -16,10 +16,12 @@ class SamlEntityUserProviderFactory implements UserProviderFactoryInterface
     {
         $container
             ->setDefinition($id, new ChildDefinition('umanit_saml.security.user.saml_entity_user_provider'))
-            ->addArgument($config['default_roles'])
             ->addArgument($config['class'])
             ->addArgument($config['property'])
             ->addArgument($config['manager_name'])
+            ->addArgument($config['default_roles'])
+            ->addArgument($config['restrictions'])
+            ->addArgument($config['roles_mapping'])
         ;
     }
 
@@ -48,6 +50,12 @@ class SamlEntityUserProviderFactory implements UserProviderFactoryInterface
                 ->end()
                 ->scalarNode('property')->defaultNull()->end()
                 ->scalarNode('manager_name')->defaultNull()->end()
+                ->arrayNode('restrictions')
+                    ->defaultValue([])
+                ->end()
+                ->arrayNode('roles_mapping')
+                    ->defaultValue([])
+                ->end()
             ->end()
         ;
         // @formatter:on
