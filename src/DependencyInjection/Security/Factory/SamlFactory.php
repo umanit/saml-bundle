@@ -13,6 +13,15 @@ class SamlFactory extends AbstractFactory
 {
     public const PRIORITY = -10;
 
+    public function __construct()
+    {
+        // Gestion du relay State
+        $this->addOption(
+            'success_handler',
+            'umanit_saml.security.http.authentication.saml_authentication_success_handler'
+        );
+    }
+
     public function getPriority(): int
     {
         return self::PRIORITY;
@@ -32,8 +41,14 @@ class SamlFactory extends AbstractFactory
         $authenticatorId = 'security.authenticator.saml.' . $firewallName;
         $authenticator = (new ChildDefinition('umanit_saml.security.http.authenticator.saml_authenticator'))
             ->replaceArgument(1, new Reference($userProviderId))
-            ->replaceArgument(2, new Reference($this->createAuthenticationSuccessHandler($container, $firewallName, $config)))
-            ->replaceArgument(3, new Reference($this->createAuthenticationFailureHandler($container, $firewallName, $config)))
+            ->replaceArgument(
+                2,
+                new Reference($this->createAuthenticationSuccessHandler($container, $firewallName, $config))
+            )
+            ->replaceArgument(
+                3,
+                new Reference($this->createAuthenticationFailureHandler($container, $firewallName, $config))
+            )
             ->replaceArgument(4, array_intersect_key($config, $this->options))
         ;
 

@@ -161,3 +161,10 @@ services:
             - '@umanit_saml.service.saml_response_service'
             - '@umanit_saml.serializer.saml_element_serializer'
         tags: ['twig.extension']
+
+    umanit_saml.security.http.authentication.saml_authentication_success_handler:
+        class: Umanit\SamlBundle\Security\Http\Authentication\SamlAuthenticationSuccessHandler
+        arguments:
+            - '@security.http_utils'
+            - []
+            - '@monolog.logger.umanit_saml'
