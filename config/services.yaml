@@ -90,6 +90,8 @@ services:
             - '@umanit_saml.service.saml_message_service'
             - '@umanit_saml.validator.slo_validator'
             - '@security.helper'
+            - '@umanit_saml.service.metadata_service'
+            - '@umanit_saml.service.x509_certificat_service'
     Umanit\SamlBundle\Service\SloServiceInterface: '@umanit_saml.service.slo_service'
 
     umanit_saml.service.saml_message_service:
