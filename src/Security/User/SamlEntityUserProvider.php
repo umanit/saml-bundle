@@ -60,6 +60,10 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
             throw $e;
         }
 
+        $roles = $user->getRoles();
+        $roles = array_merge($roles, $this->defaultRoles);
+        $user->setRoles($roles);
+
         return $user;
     }
 
@@ -94,6 +98,35 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
                 throw $e;
             }
         }
+
+        $roles = $refreshedUser->getRoles();
+        $roles = array_merge($roles, $this->defaultRoles);
+
+        if ($user instanceof SamlUserInterface && $refreshedUser instanceof SamlUserInterface) {
+            $refreshedUser->setSamlAttributes($user->getSamlAttributes());
+
+            $attributes = $refreshedUser->getSamlAttributes();
+
+            foreach ($this->rolesMapping as $role => $config) {
+                if (!isset($attributes[$config['attribute_name']])) {
+                    continue;
+                }
+
+                $attribute = $attributes[$config['attribute_name']];
+
+                if (is_string($attribute)) {
+                    $attribute = explode(';', $attribute);
+                }
+
+                if ($config['type'] === 'memberof' && in_array($config['needed'], $attribute, true)) {
+                    $roles[] = $role;
+                }
+            }
+        }
+
+        $roles = array_unique($roles);
+
+        $refreshedUser->setRoles($roles);
 
         if ($refreshedUser instanceof Proxy && !$refreshedUser->__isInitialized()) {
             $refreshedUser->__load();
@@ -180,6 +213,10 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
 
             throw $e;
         }
+
+        $roles = $user->getRoles();
+        $roles = array_merge($roles, $this->defaultRoles);
+        $user->setRoles($roles);
 
         return $user;
     }
