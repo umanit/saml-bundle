@@ -3,13 +3,14 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Service;
 
+use LightSaml\Binding\BindingFactory;
+use LightSaml\Context\Profile\MessageContext;
+use LightSaml\Error\LightSamlValidationException;
 use LightSaml\Helper;
 use LightSaml\Model\Assertion\Issuer;
 use LightSaml\Model\Assertion\NameID;
 use LightSaml\Model\Protocol\LogoutRequest;
 use LightSaml\Model\Protocol\LogoutResponse;
-use LightSaml\Model\Protocol\Status;
-use LightSaml\Model\Protocol\StatusCode;
 use LightSaml\SamlConstants;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,15 +30,16 @@ class SloService implements SloServiceInterface
     ) {
     }
 
-    public function logoutDepuislapp(string $provider, UserInterface $user)
+    public function sendLogoutRequest(string $provider, UserInterface $user): Response
     {
         $ownEntityDescriptor = $this->metadataService->getOwnEntityDescriptor($provider);
-        $signature = $ownEntityDescriptor->getSignature();
-        // SP
-        $entityDescriptor = $this->metadataService->getEntityDescriptor($provider);
+        $idpSsoDescriptor = $this->metadataService->getEntityDescriptor($provider)->getFirstIdpSsoDescriptor();
 
-        $idpSsoDescriptor = $entityDescriptor->getFirstIdpSsoDescriptor();
-        $format = $idpSsoDescriptor?->getAllNameIDFormats()[0] ?? SamlConstants::NAME_ID_FORMAT_PERSISTENT;
+        if (null === $idpSsoDescriptor) {
+            throw new LightSamlValidationException('No IdP/SP SSO descriptor found in entity descriptor');
+        }
+
+        $format = $idpSsoDescriptor->getAllNameIDFormats()[0] ?? SamlConstants::NAME_ID_FORMAT_PERSISTENT;
         $issuer = new Issuer($ownEntityDescriptor->getEntityID());
         $nameId = new NameID($user->getUserIdentifier(), $format);
 
@@ -45,30 +47,25 @@ class SloService implements SloServiceInterface
         $logoutRequest
             ->setId(Helper::generateID())
             ->setIssueInstant(new \DateTime())
-            ->setDestination($idpSsoDescriptor->getFirstSingleLogoutService()->getLocation())
+            ->setDestination($idpSsoDescriptor->getFirstSingleLogoutService()?->getLocation())
             ->setIssuer($issuer)
-            ->setSignature($signature)
+            ->setSignature($ownEntityDescriptor->getSignature())
             ->setNameID($nameId)
         ;
 
-        $bindingFactory = new \LightSaml\Binding\BindingFactory();
-        $postBinding = $bindingFactory->create(\LightSaml\SamlConstants::BINDING_SAML2_HTTP_POST);
+        $bindingFactory = new BindingFactory();
+        $postBinding = $bindingFactory->create(SamlConstants::BINDING_SAML2_HTTP_POST);
 
-        $messageContext = new \LightSaml\Context\Profile\MessageContext();
+        $messageContext = new MessageContext();
         $messageContext->setMessage($logoutRequest);
 
-        /** @var \Symfony\Component\HttpFoundation\Response $httpResponse */
-        $httpResponse = $postBinding->send($messageContext);
-        dd($httpResponse);
-
-        return $httpResponse;
+        return $postBinding->send($messageContext);
     }
 
     public function logout(Request $request, string $provider): ?Response
     {
         $response = $this->getLogoutResponseSamlMessage($request);
 
-        dd($response);
         if (null === $response) {
             throw new LogoutException("No SAML message found");
         }

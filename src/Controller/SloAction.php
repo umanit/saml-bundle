@@ -19,10 +19,12 @@ class SloAction extends AbstractController
         SloServiceInterface $sloService,
         Request $request,
     ): Response {
-        dump('je passe');
-        $response = $sloService->logoutDepuislapp($provider, $this->getUser());
-        // dd('stop');
-        // $response = $sloService->logout($request, $provider, $this->getUser());
+
+        if ($request->get('SAMLResponse')) {
+            $response = $sloService->logout($request, $provider);
+        } else {
+            $response = $sloService->sendLogoutRequest($provider, $this->getUser());
+        }
 
         if (null === $response) {
             throw new LogoutException("Unable to log out user");
