@@ -24,11 +24,11 @@ class Configuration implements ConfigurationInterface
 
         // @formatter:off
         $rootNode
+            ->addDefaultsIfNotSet()
             ->children()
                 ->scalarNode('certificat_path')->isRequired()->defaultValue('certs')->end()
                 ->arrayNode('providers')
                     ->isRequired()
-                    ->requiresAtLeastOneElement()
                     ->useAttributeAsKey('provider_name')
                     ->arrayPrototype()
                         ->children()
