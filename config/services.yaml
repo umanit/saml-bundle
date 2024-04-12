@@ -150,6 +150,11 @@ services:
     umanit_saml.security.user.saml_scoped_user_provider:
         class: Umanit\SamlBundle\Security\User\SamlScopedUserProvider
 
+    umanit_saml.security.user.saml_entity_user_provider:
+        class: Umanit\SamlBundle\Security\User\SamlEntityUserProvider
+        arguments:
+            - '@doctrine'
+
     umanit_saml.serializer.saml_element_serializer:
         class: Umanit\SamlBundle\Serializer\SamlElementSerializer
     Umanit\SamlBundle\Serializer\SamlElementSerializerInterface: '@umanit_saml.serializer.saml_element_serializer'
