@@ -170,7 +170,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
                 new SamlAttributesBadge(
                     $attributes,
                     $this->options['saml_group_attribute'],
-                        $this->options['saml_group_required'] ?? []
+                        $this->options['saml_group_required'] ?? null
                 ),
                 new SamlProviderBadge($providerKey),
             ]

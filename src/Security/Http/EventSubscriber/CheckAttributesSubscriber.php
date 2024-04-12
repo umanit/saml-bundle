@@ -27,7 +27,16 @@ class CheckAttributesSubscriber implements EventSubscriberInterface
         $attributes = $badge->getAttributes();
 
         $attributeName = $badge->getGroupName();
+
+        if (null === $attributeName) {
+            return;
+        }
+
         $attributeNeeded = $badge->getGroupRequired();
+
+        if (empty($attributeNeeded)) {
+            return;
+        }
 
         if (!isset($attributes[$attributeName])) {
             throw new BadCredentialsException("Missing $attributeName attr.");
