@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Umanit\SamlBundle\Security\Http\EventSubscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Http\Event\CheckPassportEvent;
 use Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge\SamlAttributesBadge;
+
+use function in_array;
 
 class CheckAttributesSubscriber implements EventSubscriberInterface
 {
@@ -39,18 +43,17 @@ class CheckAttributesSubscriber implements EventSubscriberInterface
         }
 
         if (!isset($attributes[$attributeName])) {
-            throw new BadCredentialsException("Missing $attributeName attr.");
+            throw new BadCredentialsException(
+                sprintf('Attribute %s not found', $attributeName)
+            );
         }
 
         $attribute = $attributes[$attributeName];
 
-
-        if (!\in_array($attributeNeeded, $attribute, true)) {
+        if (!in_array($attributeNeeded, $attribute, true)) {
             throw new BadCredentialsException(
                 sprintf('Attribute %s does not contain %s', $attributeName, $attributeNeeded)
             );
         }
-
-        $badge->isResolved();
     }
 }

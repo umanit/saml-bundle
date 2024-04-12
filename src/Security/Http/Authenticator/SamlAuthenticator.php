@@ -96,6 +96,10 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
             ]);
             $this->responseService->validate($provider, $samlResponse, $isStrict);
         } catch (Exception $e) {
+            $this->logger->error('An error occurred while authenticating', [
+                'exception' => $e,
+                'provider'  => $provider,
+            ]);
             throw new AuthenticationException($e->getMessage());
         }
 
