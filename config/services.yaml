@@ -88,6 +88,8 @@ services:
         class: Umanit\SamlBundle\Service\SloService
         arguments:
             - '@umanit_saml.service.saml_message_service'
+            - '@umanit_saml.validator.slo_validator'
+            - '@security.helper'
     Umanit\SamlBundle\Service\SloServiceInterface: '@umanit_saml.service.slo_service'
 
     umanit_saml.service.saml_message_service:
@@ -146,14 +148,7 @@ services:
     umanit_saml.validator.slo_validator:
         class: Umanit\SamlBundle\Validator\SloValidator
         arguments:
-            - '@umanit_saml.service.configuration_service'
-            - '@umanit_saml.service.metadata_service'
-            - '@umanit_saml.service.x509_certificat_service'
-            - '@cache.app.taggable'
-            - '@light_saml.validator.model.assertion.assertion_validator'
             - '@umanit_saml.validator.signature_validator'
-            - '@umanit_saml.validator.issuer_validator'
-            - '@umanit_saml.validator.time_validator'
             - '@monolog.logger.umanit_saml'
     Umanit\SamlBundle\Validator\SloValidatorInterface: '@umanit_saml.validator.slo_validator'
 
