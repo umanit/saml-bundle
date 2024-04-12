@@ -16,7 +16,6 @@ class SamlEntityUserProviderFactory implements UserProviderFactoryInterface
     {
         $container
             ->setDefinition($id, new ChildDefinition('umanit_saml.security.user.saml_entity_user_provider'))
-            ->addArgument($config['user_class'])
             ->addArgument($config['default_roles'])
             ->addArgument($config['class'])
             ->addArgument($config['property'])
@@ -38,13 +37,10 @@ class SamlEntityUserProviderFactory implements UserProviderFactoryInterface
         /** @phpstan-ignore-next-line */
         $builder
             ->children()
-                ->scalarNode('user_class')
+                ->scalarNode('class')
                     ->isRequired()
+                    ->info('The full entity class name of your user class.')
                     ->cannotBeEmpty()
-                    ->validate()
-                        ->ifTrue(static fn ($value) => !is_a($value, UserInterface::class, true))
-                        ->thenInvalid('You should provide user class implementing ' . UserInterface::class . ' interface.')
-                    ->end()
                 ->end()
                 ->arrayNode('default_roles')
                     ->prototype('scalar')->end()
