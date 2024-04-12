@@ -50,7 +50,6 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
         private readonly ConfigurationServiceInterface $configurationService,
         private readonly ResponseServiceInterface $responseService,
         private readonly ?LoggerInterface $logger,
-        private readonly SamlMessageServiceInterface $samlMessageService,
     ) {
     }
 
@@ -96,7 +95,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
                 'provider' => $provider,
                 'strict'   => $isStrict ? 'true' : 'false',
             ]);
-            $this->samlMessageService->validate($provider, $samlResponse, $isStrict);
+            $this->responseService->validate($provider, $samlResponse, $isStrict);
         } catch (Exception $e) {
             $this->logger->error('An error occurred while authenticating', [
                 'exception' => $e,

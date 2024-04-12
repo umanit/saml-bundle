@@ -81,6 +81,7 @@ services:
         class: Umanit\SamlBundle\Service\ResponseService
         arguments:
             - '@umanit_saml.service.saml_message_service'
+            - '@umanit_saml.validator.response_validator'
     Umanit\SamlBundle\Service\ResponseServiceInterface: '@umanit_saml.service.response_service'
 
     umanit_saml.service.slo_service:
@@ -142,6 +143,20 @@ services:
             - '@monolog.logger.umanit_saml'
     Umanit\SamlBundle\Validator\ResponseValidatorInterface: '@umanit_saml.validator.response_validator'
 
+    umanit_saml.validator.slo_validator:
+        class: Umanit\SamlBundle\Validator\SloValidator
+        arguments:
+            - '@umanit_saml.service.configuration_service'
+            - '@umanit_saml.service.metadata_service'
+            - '@umanit_saml.service.x509_certificat_service'
+            - '@cache.app.taggable'
+            - '@light_saml.validator.model.assertion.assertion_validator'
+            - '@umanit_saml.validator.signature_validator'
+            - '@umanit_saml.validator.issuer_validator'
+            - '@umanit_saml.validator.time_validator'
+            - '@monolog.logger.umanit_saml'
+    Umanit\SamlBundle\Validator\SloValidatorInterface: '@umanit_saml.validator.slo_validator'
+
     umanit_saml.security.http.authenticator.saml_authenticator:
         class: Umanit\SamlBundle\Security\Http\Authenticator\SamlAuthenticator
         arguments:
@@ -153,7 +168,6 @@ services:
             - '@umanit_saml.service.configuration_service'
             - '@umanit_saml.service.response_service'
             - '@monolog.logger.umanit_saml'
-            - '@umanit_saml.service.saml_message_service'
 
     umanit_saml.security.user.saml_user_provider:
         class: Umanit\SamlBundle\Security\User\SamlUserProvider

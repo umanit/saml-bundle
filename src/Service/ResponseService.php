@@ -11,8 +11,8 @@ use Umanit\SamlBundle\Validator\ResponseValidatorInterface;
 class ResponseService implements ResponseServiceInterface
 {
     public function __construct(
-        protected readonly ResponseValidatorInterface $responseValidator,
-        protected SamlMessageServiceInterface $samlMessageService
+        protected SamlMessageServiceInterface $samlMessageService,
+        protected ResponseValidatorInterface $responseValidator
     ) {
     }
 
