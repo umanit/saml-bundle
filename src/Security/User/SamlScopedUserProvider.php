@@ -30,7 +30,7 @@ class SamlScopedUserProvider implements SamlScopedUserProviderInterface
         return !is_a($class, UserInterface::class, true);
     }
 
-    public function loadUserByIdentifierAndProvider(string $identifier, string $provider): UserInterface
+    public function loadUserByIdentifierAndProvider(string $identifier, string $provider, array $attributes = []): UserInterface
     {
         $nameIdFormat = $this->configurationService->getNameIdFormat($provider);
 
@@ -41,10 +41,20 @@ class SamlScopedUserProvider implements SamlScopedUserProviderInterface
         }
 
         if ($nameIdFormat === SamlConstants::NAME_ID_FORMAT_EMAIL && $provider instanceof SamlUserProviderInterface) {
-            return $provider->loadUserByEmail($identifier);
+            $user = $provider->loadUserByEmail($identifier);
         }
 
-        return $provider->loadUserByIdentifier($identifier);
+        $user = $provider->loadUserByIdentifier($identifier);
+
+        if ($user instanceof SamlUserInterface) {
+            $user->setSamlAttributes($attributes);
+        }
+
+        if ($provider instanceof SamlEntityUserProvider) {
+            $provider->refreshRole($user);
+        }
+
+        return $user;
     }
 
     public function loadUserByIdentifier(string $identifier): UserInterface

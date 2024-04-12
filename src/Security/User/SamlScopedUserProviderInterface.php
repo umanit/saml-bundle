@@ -9,5 +9,5 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 interface SamlScopedUserProviderInterface extends UserProviderInterface
 {
-    public function loadUserByIdentifierAndProvider(string $identifier, string $provider): UserInterface;
+    public function loadUserByIdentifierAndProvider(string $identifier, string $provider, array $attributes = []): UserInterface;
 }

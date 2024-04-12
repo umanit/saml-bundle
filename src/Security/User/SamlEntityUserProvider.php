@@ -60,9 +60,7 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
             throw $e;
         }
 
-        $roles = $user->getRoles();
-        $roles = array_merge($roles, $this->defaultRoles);
-        $user->setRoles($roles);
+        $this->refreshRole($user);
 
         return $user;
     }
@@ -99,13 +97,26 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
             }
         }
 
-        $roles = $refreshedUser->getRoles();
-        $roles = array_merge($roles, $this->defaultRoles);
+        if ($refreshedUser instanceof Proxy && !$refreshedUser->__isInitialized()) {
+            $refreshedUser->__load();
+        }
 
         if ($user instanceof SamlUserInterface && $refreshedUser instanceof SamlUserInterface) {
             $refreshedUser->setSamlAttributes($user->getSamlAttributes());
+            $this->refreshRole($refreshedUser);
+        }
+        
+        return $refreshedUser;
+    }
 
-            $attributes = $refreshedUser->getSamlAttributes();
+
+    public function refreshRole(UserInterface $user): void
+    {
+        $roles = $user->getRoles();
+        $roles = array_merge($roles, $this->defaultRoles);
+
+        if ($user instanceof SamlUserInterface) {
+            $attributes = $user->getSamlAttributes();
 
             foreach ($this->rolesMapping as $role => $config) {
                 if (!isset($attributes[$config['attribute_name']])) {
@@ -125,15 +136,9 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
         }
 
         $roles = array_unique($roles);
-
-        $refreshedUser->setRoles($roles);
-
-        if ($refreshedUser instanceof Proxy && !$refreshedUser->__isInitialized()) {
-            $refreshedUser->__load();
-        }
-
-        return $refreshedUser;
+        $user->setRoles($roles);
     }
+
 
     public function supportsClass(string $class): bool
     {
@@ -214,9 +219,7 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
             throw $e;
         }
 
-        $roles = $user->getRoles();
-        $roles = array_merge($roles, $this->defaultRoles);
-        $user->setRoles($roles);
+        $this->refreshRole($user);
 
         return $user;
     }

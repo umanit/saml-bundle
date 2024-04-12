@@ -144,7 +144,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
                                 'identifier' => $identifier,
                                 'provider'   => $providerKey,
                             ]);
-                            $user = $this->userProvider->loadUserByIdentifierAndProvider($identifier, $providerKey);
+                            $user = $this->userProvider->loadUserByIdentifierAndProvider($identifier, $providerKey, $attributes);
                         } else {
                             $this->logger->info('Loading user by identifier', ['identifier' => $identifier]);
                             $user = $this->userProvider->loadUserByIdentifier($identifier);
@@ -202,7 +202,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
         }
 
         $this->logger->info('Creating token', ['provider' => $providerKey]);
-
+        
         return new SamlToken(
             $passport->getUser(),
             $firewallName,
