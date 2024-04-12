@@ -80,8 +80,20 @@ services:
     umanit_saml.service.response_service:
         class: Umanit\SamlBundle\Service\ResponseService
         arguments:
-            - '@umanit_saml.validator.response_validator'
+            - '@umanit_saml.service.saml_message_service'
     Umanit\SamlBundle\Service\ResponseServiceInterface: '@umanit_saml.service.response_service'
+
+    umanit_saml.service.slo_service:
+        class: Umanit\SamlBundle\Service\SloService
+        arguments:
+            - '@umanit_saml.service.saml_message_service'
+    Umanit\SamlBundle\Service\SloServiceInterface: '@umanit_saml.service.slo_service'
+
+    umanit_saml.service.saml_message_service:
+        class: Umanit\SamlBundle\Service\SamlMessageService
+        arguments:
+            - '@umanit_saml.validator.response_validator'
+    Umanit\SamlBundle\Service\SamlMessageServiceInterface: '@umanit_saml.service.saml_message_service'
 
     umanit_saml.guesser.best_content_type_guesser:
         class: Umanit\SamlBundle\Guesser\BestContentTypeGuesser
@@ -143,6 +155,7 @@ services:
             - '@umanit_saml.service.configuration_service'
             - '@umanit_saml.service.response_service'
             - '@monolog.logger.umanit_saml'
+            - '@umanit_saml.service.saml_message_service'
 
     umanit_saml.security.user.saml_user_provider:
         class: Umanit\SamlBundle\Security\User\SamlUserProvider
