@@ -33,7 +33,7 @@ interface MetadataServiceInterface
      * Récupère le XML des metadata.
      * Le XML est récupéré via une URL ou un fichier ou une chaîne de caractères.
      *
-     * @param array $config
+     * @param array<string, mixed> $config
      *
      * @return string|null
      */

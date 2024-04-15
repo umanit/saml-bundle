@@ -51,9 +51,9 @@ class SloService implements SloServiceInterface
             ->setIssueInstant(new \DateTime())
             ->setDestination($idpSsoDescriptor->getFirstSingleLogoutService()?->getLocation())
             ->setIssuer($issuer)
-            ->setSignature($ownEntityDescriptor->getSignature())
-            ->setNameID($nameId)
-        ;
+            ->setSignature($ownEntityDescriptor->getSignature());
+
+        $logoutRequest->setNameID($nameId);
 
         $bindingFactory = new BindingFactory();
         $bindingType = $idpSsoDescriptor->getFirstSingleLogoutService()?->getBinding();

@@ -96,6 +96,12 @@ class MetadataService implements MetadataServiceInterface
         $this->cache->delete($tokenId);
     }
 
+    /**
+     * @param array<string, mixed> $config
+     *
+     * @return string|null
+     * @throws InvalidArgumentException
+     */
     public function getMetadataXml(array $config): ?string
     {
         $metadata = $config['metadata'] ?? '';
@@ -104,7 +110,11 @@ class MetadataService implements MetadataServiceInterface
             if (file_exists($metadata) && is_readable($metadata)) {
                 $this->logger->debug('Getting metadata from file');
 
-                return file_get_contents($metadata);
+                $metadata = file_get_contents($metadata);
+
+                if (false === $metadata) {
+                    throw new RuntimeException('Impossible to read metadata file');
+                }
             }
 
             $this->logger->debug('Getting metadata from string');
@@ -123,20 +133,23 @@ class MetadataService implements MetadataServiceInterface
             return $this->cache->getItem($tokenId)->get();
         }
 
-        return $this->cache->get($tokenId, function (CacheItem $item) use ($metadata, $metadataTtl): string {
-            $item->expiresAfter($metadataTtl);
+        return $this->cache->get(
+            $tokenId,
+            function (CacheItem $item, bool &$save) use ($metadata, $metadataTtl): string {
+                $item->expiresAfter($metadataTtl);
 
-            $this->logger->debug('Getting metadata from url and save it to cache', [
-                'metadata'    => $metadata,
-                'metadataTtl' => $metadataTtl,
-            ]);
+                $this->logger->debug('Getting metadata from url and save it to cache', [
+                    'metadata'    => $metadata,
+                    'metadataTtl' => $metadataTtl,
+                ]);
 
-            $xml = $this->client->request('GET', $metadata)->getContent();
+                $xml = $this->client->request('GET', $metadata)->getContent();
 
-            $item->set($xml);
+                $item->set($xml);
 
-            return $xml;
-        });
+                return $xml;
+            }
+        );
     }
 
     /**
@@ -172,6 +185,11 @@ class MetadataService implements MetadataServiceInterface
         return $metadata;
     }
 
+    /**
+     * @param array<string, mixed> $config
+     *
+     * @return string
+     */
     protected function getTokenId(array $config = []): string
     {
         $str = $config['metadata'] ?? '';
@@ -183,6 +201,13 @@ class MetadataService implements MetadataServiceInterface
         return sha1((string) $str);
     }
 
+    /**
+     * @param string               $provider
+     * @param array<string, mixed> $config
+     * @param Mode                 $mode
+     *
+     * @return EntityDescriptor
+     */
     protected function buildOwnEntityDescriptor(string $provider, array $config, Mode $mode): EntityDescriptor
     {
         if ($mode === Mode::SP_INITIATED) {

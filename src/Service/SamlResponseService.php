@@ -34,6 +34,13 @@ class SamlResponseService implements SamlResponseServiceInterface
     ) {
     }
 
+    /**
+     * @param string       $provider
+     * @param string       $nameIdValue
+     * @param array<mixed> $attributes
+     *
+     * @return Response
+     */
     public function getSamlResponse(string $provider, string $nameIdValue, array $attributes = []): Response
     {
         // IDP
@@ -131,7 +138,13 @@ class SamlResponseService implements SamlResponseServiceInterface
         $response->setSignature($this->x509CertificatService->getSignature($credential, $samlAlgorithmSignature));
     }
 
-    private function addAttributesStatement(Assertion $assertion, array $attributes): void
+    /**
+     * @param Assertion $assertion
+     * @param array<mixed>     $attributes
+     *
+     * @return void
+     */
+    private function addAttributesStatement(Assertion $assertion, array $attributes = []): void
     {
         if (empty($attributes)) {
             return;
