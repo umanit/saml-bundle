@@ -46,8 +46,8 @@ nav:
 
     -   SAML:
             -   Modes:
-                    -   SP: ./modes/sp.md
-                    -   IDP: ./modes/idp.md
+                    -   SP: ./saml/modes/sp.md
+                    -   IDP: ./saml/modes/idp.md
             -   Metadata: ./saml/metadata.md
             -   AuthNRequest: ./saml/authnrequest.md
             -   SingleLogout: ./saml/slo.md

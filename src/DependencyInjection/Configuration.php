@@ -26,7 +26,7 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->addDefaultsIfNotSet()
             ->children()
-                ->scalarNode('certificat_path')->isRequired()->defaultValue('certs')->end()
+                ->scalarNode('certificat_path')->isRequired()->defaultValue('%kernel.project_dir%/certs')->end()
                 ->arrayNode('providers')
                     ->isRequired()
                     ->useAttributeAsKey('provider_name')
