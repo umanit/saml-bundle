@@ -20,6 +20,9 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 class SamlEntityUserProvider implements SamlUserProviderInterface
 {
+
+    use UserProviderTrait;
+
     private string $class;
 
     public function __construct(
@@ -61,7 +64,6 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
         }
 
         $this->refreshRole($user);
-
         return $user;
     }
 
@@ -105,40 +107,9 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
             $refreshedUser->setSamlAttributes($user->getSamlAttributes());
             $this->refreshRole($refreshedUser);
         }
-        
+
         return $refreshedUser;
     }
-
-
-    public function refreshRole(UserInterface $user): void
-    {
-        $roles = $user->getRoles();
-        $roles = array_merge($roles, $this->defaultRoles);
-
-        if ($user instanceof SamlUserInterface) {
-            $attributes = $user->getSamlAttributes();
-
-            foreach ($this->rolesMapping as $role => $config) {
-                if (!isset($attributes[$config['attribute_name']])) {
-                    continue;
-                }
-
-                $attribute = $attributes[$config['attribute_name']];
-
-                if (is_string($attribute)) {
-                    $attribute = explode(';', $attribute);
-                }
-
-                if ($config['type'] === 'memberof' && in_array($config['needed'], $attribute, true)) {
-                    $roles[] = $role;
-                }
-            }
-        }
-
-        $roles = array_unique($roles);
-        $user->setRoles($roles);
-    }
-
 
     public function supportsClass(string $class): bool
     {
@@ -157,7 +128,7 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
 
         $repository = $this->getRepository();
 
-        if ($user instanceof PasswordAuthenticatedUserInterface && $repository instanceof PasswordUpgraderInterface) {
+        if ($repository instanceof PasswordUpgraderInterface) {
             $repository->upgradePassword($user, $newHashedPassword);
         }
     }
@@ -220,7 +191,6 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
         }
 
         $this->refreshRole($user);
-
         return $user;
     }
 }

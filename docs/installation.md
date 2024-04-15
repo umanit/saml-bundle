@@ -51,6 +51,96 @@ Ensuite, nous allons rajouter la configuration :
                 metadata: 'https://app.onelogin.com/saml/metadata/b25dbecc-e3be-4b7d-b151-e066faa415d8'
 ```
 
+
+## Configuration de l'authentification
+
+Dans le fichier security.yaml, il faut définir le provider à utiliser pour l'authentification.
+Par défaut le bundle fourni plusieurs user provider qui permettent de gérer l'authentification via SAML.
+
+Les user provider fournis par défaut sont :
+- `saml` : Permet de fournie un utilisateur sans lien avec la base de données.
+- `saml_entity` : Permet de fournir un utilisateur en lien avec la base de données.
+- `saml_scoped` : Permet de définir un user provider par configuration SAML. (Par exemple onelogin utilise le user provider saml_entity)
+
+Il est possible de définir un provider de type `saml_scoped` qui permet de définir un provider de type `saml` avec des restrictions de rôles.
+
+```yaml 
+security:
+    providers:
+        saml_user_provider_without_database:
+            saml:
+                user_class: App\Entity\User
+                default_roles: ['ROLE_USER']
+                
+        saml_user_provider_linked_with_database:
+            saml_entity:
+                class: App\Entity\User
+                property: email
+                default_roles: ['ROLE_USER']
+                # Optionnel, permet de définir une méthode de récupération des utilisateurs
+                # Ici ne pourront se connecter que les utilisateurs ayant un groupe 'UMANIT\grp_users_umanit'
+                # dans l'attribut 'usergroups'
+                restrictions:
+                    - { attribute_name: 'usergroups', type: 'memberof', needed: 'UMANIT\grp_users_umanit' }
+                # Optionnel, permet de définir des rôles en fonction des groupes de l'utilisateur
+                roles_mapping:
+                    - { attribute_name: 'usergroups', type: 'memberof', needed: 'UMANIT\grp_suivitemps_admin', role: 'ROLE_ADMIN' }
+                    - { attribute_name: 'usergroups', type: 'memberof', needed: 'UMANIT\grp_suivitemps_chef_de_projets', role: 'ROLE_CHEF_DE_PROJET' }
+
+        saml:
+            saml_scoped:
+                providers:
+                    onelogin: saml_user_provider_linked_with_database
+```
+
+## Configuration de la class User
+
+La class User doit implémenter l'interface `SamlUserInterface` et doit contenir les méthodes suivantes :
+
+```php
+<?php
+
+namespace App\Entity;
+
+use Symfony\Component\Security\Core\User\UserInterface;use Umanit\SamlBundle\Security\User\SamlUserInterface;
+
+class User implements UserInterface, SamlUserInterface
+{
+    public function getRoles(): array 
+    {
+    
+    }
+    
+    public function eraseCredentials() 
+    {
+    
+    }
+  
+    public function getUserIdentifier(): string
+    {
+    
+    }
+    
+    public function setRoles(array $roles = []): array 
+    {
+    
+    }
+
+    public function getSamlAttributes(): array 
+    {
+        // Retourne un tableau associatif des attributs SAML
+        return [];
+    }            
+
+    public function setSamlAttributes(array $samlAttributes): void 
+    {
+        // Défini les attributs SAML
+    }
+}
+
+```
+
+
 ## Génération d'un certificat et d'une clé privée
 Afin de pouvoir signer et vérifier l'authenticité des échanges
 entre plusieurs applications, il nous faut un certificat et une clé

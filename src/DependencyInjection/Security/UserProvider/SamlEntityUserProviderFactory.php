@@ -65,6 +65,7 @@ class SamlEntityUserProviderFactory implements UserProviderFactoryInterface
                             ->scalarNode('attribute_name')->end()
                             ->scalarNode('type')->end()
                             ->scalarNode('needed')->end()
+                            ->scalarNode('role')->end()
                         ->end()
                     ->end()
                 ->end()

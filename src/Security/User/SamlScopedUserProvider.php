@@ -32,26 +32,25 @@ class SamlScopedUserProvider implements SamlScopedUserProviderInterface
 
     public function loadUserByIdentifierAndProvider(string $identifier, string $provider, array $attributes = []): UserInterface
     {
-        $nameIdFormat = $this->configurationService->getNameIdFormat($provider);
-
-        $provider = $this->userProviders[$provider] ?? null;
-
-        if (null === $provider) {
+        if (!isset($this->userProviders[$provider])) {
             throw new \RuntimeException(sprintf('No user provider found for provider "%s"', $provider));
         }
 
-        if ($nameIdFormat === SamlConstants::NAME_ID_FORMAT_EMAIL && $provider instanceof SamlUserProviderInterface) {
-            $user = $provider->loadUserByEmail($identifier);
-        }
+        $userProvider = $this->userProviders[$provider];
+        $nameIdFormat = $this->configurationService->getNameIdFormat($provider);
 
-        $user = $provider->loadUserByIdentifier($identifier);
+        if ($nameIdFormat === SamlConstants::NAME_ID_FORMAT_EMAIL && $userProvider instanceof SamlUserProviderInterface) {
+            $user = $userProvider->loadUserByEmail($identifier);
+        } else {
+            $user = $userProvider->loadUserByIdentifier($identifier);
+        }
 
         if ($user instanceof SamlUserInterface) {
             $user->setSamlAttributes($attributes);
         }
 
-        if ($provider instanceof SamlEntityUserProvider) {
-            $provider->refreshRole($user);
+        if ($userProvider instanceof SamlEntityUserProvider) {
+            $userProvider->refreshRole($user);
         }
 
         return $user;
