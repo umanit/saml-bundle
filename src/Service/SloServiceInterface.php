@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Service;
@@ -16,5 +17,5 @@ interface SloServiceInterface
 
     public function validate(string $provider, LogoutResponse $samlMessage, bool $strict = true): void;
 
-    public function sendLogoutRequest(string $provider, UserInterface $user): Response;
+    public function sendLogoutRequest(string $provider, ?UserInterface $user): Response;
 }

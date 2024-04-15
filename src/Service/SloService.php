@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Service;
@@ -32,8 +33,12 @@ class SloService implements SloServiceInterface
     ) {
     }
 
-    public function sendLogoutRequest(string $provider, UserInterface $user): Response
+    public function sendLogoutRequest(string $provider, ?UserInterface $user): Response
     {
+        if (null === $user) {
+            throw new \RuntimeException('No user found');
+        }
+
         $ownEntityDescriptor = $this->metadataService->getOwnEntityDescriptor($provider);
         $idpSsoDescriptor = $this->metadataService->getEntityDescriptor($provider)->getFirstIdpSsoDescriptor();
 

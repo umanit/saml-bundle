@@ -66,7 +66,8 @@ class CreateCertificatCommand extends Command
     {
         $name = $input->getArgument('name');
 
-        if (str_contains((string) $name, '/') ||
+        if (
+            str_contains((string) $name, '/') ||
             str_contains((string) $name, '\\') ||
             str_contains((string) $name, '.')
         ) {

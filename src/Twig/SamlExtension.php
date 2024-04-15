@@ -18,8 +18,7 @@ class SamlExtension extends AbstractExtension
         private readonly ConfigurationServiceInterface $configurationService,
         private readonly SamlResponseServiceInterface $samlResponseService,
         private readonly SamlElementSerializerInterface $samlElementSerializer
-    )
-    {
+    ) {
     }
 
     public function getFunctions(): array

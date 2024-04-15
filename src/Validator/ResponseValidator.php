@@ -38,7 +38,6 @@ class ResponseValidator implements ResponseValidatorInterface
         protected readonly TimeValidatorInterface $timeValidator,
         protected readonly LoggerInterface $logger
     ) {
-
     }
 
     public function validate(string $provider, Response $samlMessage, bool $strict = true): void

@@ -135,7 +135,7 @@ class MetadataService implements MetadataServiceInterface
 
         return $this->cache->get(
             $tokenId,
-            function (CacheItem $item, bool &$save) use ($metadata, $metadataTtl): string {
+            function (CacheItem $item) use ($metadata, $metadataTtl): string {
                 $item->expiresAfter($metadataTtl);
 
                 $this->logger->debug('Getting metadata from url and save it to cache', [
