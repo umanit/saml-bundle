@@ -10,19 +10,13 @@ class SamlAttributesBadge implements BadgeInterface
 {
     public function __construct(
         private readonly array $attributes,
-        private ?string $groupName = null,
-        private ?string $groupRequired = null
+        private readonly array $samlRestrictions = []
     ) {
     }
 
-    public function getGroupName(): ?string
+    public function getSamlRestrictions(): array
     {
-        return $this->groupName;
-    }
-
-    public function getGroupRequired(): ?string
-    {
-        return $this->groupRequired;
+        return $this->samlRestrictions;
     }
 
     public function getAttributes(): array

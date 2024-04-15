@@ -30,30 +30,29 @@ class CheckAttributesSubscriber implements EventSubscriberInterface
         $badge = $passport->getBadge(SamlAttributesBadge::class);
         $attributes = $badge->getAttributes();
 
-        $attributeName = $badge->getGroupName();
+        foreach ($badge->getSamlRestrictions() as $restriction) {
+            $attributeName = $restriction['attribute_name'];
+            $attributeNeeded = $restriction['needed'];
 
-        if (null === $attributeName) {
-            return;
-        }
+            if (!isset($attributes[$attributeName])) {
+                throw new BadCredentialsException(
+                    sprintf('Attribute %s not found', $attributeName)
+                );
+            }
 
-        $attributeNeeded = $badge->getGroupRequired();
+            $attribute = $attributes[$attributeName];
 
-        if (empty($attributeNeeded)) {
-            return;
-        }
+            if (is_string($attribute) && $attribute !== $attributeNeeded) {
+                throw new BadCredentialsException(
+                    sprintf('Attribute %s does not contain %s', $attributeName, $attributeNeeded)
+                );
+            }
 
-        if (!isset($attributes[$attributeName])) {
-            throw new BadCredentialsException(
-                sprintf('Attribute %s not found', $attributeName)
-            );
-        }
-
-        $attribute = $attributes[$attributeName];
-
-        if (!in_array($attributeNeeded, $attribute, true)) {
-            throw new BadCredentialsException(
-                sprintf('Attribute %s does not contain %s', $attributeName, $attributeNeeded)
-            );
+            if (!in_array($attributeNeeded, $attribute, true)) {
+                throw new BadCredentialsException(
+                    sprintf('Attribute %s does not contain %s', $attributeName, $attributeNeeded)
+                );
+            }
         }
     }
 }

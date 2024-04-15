@@ -77,11 +77,6 @@ security:
                 class: App\Entity\User
                 property: email
                 default_roles: ['ROLE_USER']
-                # Optionnel, permet de définir une méthode de récupération des utilisateurs
-                # Ici ne pourront se connecter que les utilisateurs ayant un groupe 'UMANIT\grp_users_umanit'
-                # dans l'attribut 'usergroups'
-                restrictions:
-                    - { attribute_name: 'usergroups', type: 'memberof', needed: 'UMANIT\grp_users_umanit' }
                 # Optionnel, permet de définir des rôles en fonction des groupes de l'utilisateur
                 roles_mapping:
                     - { attribute_name: 'usergroups', type: 'memberof', needed: 'UMANIT\grp_suivitemps_admin', role: 'ROLE_ADMIN' }
@@ -98,6 +93,11 @@ security:
             saml:
                 provider: saml
                 login_path: app_login
+                # Optionnel, permet de définir une méthode de récupération des utilisateurs
+                # Ici ne pourront se connecter que les utilisateurs ayant un groupe 'UMANIT\grp_users_umanit'
+                # dans l'attribut 'usergroups'
+                saml_restrictions:
+                    - { attribute_name: 'usergroups', type: 'memberof', needed: 'UMANIT\grp_suivitemps_admin' }
 ```
 
 ## Configuration de la class User

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Umanit\SamlBundle\DependencyInjection\Security\Factory;
 
 use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\Factory\AbstractFactory;
+use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
@@ -21,12 +22,8 @@ class SamlFactory extends AbstractFactory
             'umanit_saml.security.http.authentication.saml_authentication_success_handler'
         );
         $this->addOption(
-            'saml_group_attribute',
-            null
-        );
-        $this->addOption(
-            'saml_group_required',
-            null
+            'saml_restrictions',
+            []
         );
     }
 
@@ -63,5 +60,27 @@ class SamlFactory extends AbstractFactory
         $container->setDefinition($authenticatorId, $authenticator);
 
         return $authenticatorId;
+    }
+
+    public function addConfiguration(NodeDefinition $node): void
+    {
+        parent::addConfiguration($node);
+
+        // @formatter:off
+        /** @phpstan-ignore-next-line */
+        $node
+            ->children()
+                ->arrayNode('saml_restrictions')
+                    ->arrayPrototype()
+                        ->children()
+                            ->scalarNode('attribute_name')->end()
+                            ->scalarNode('type')->end()
+                            ->scalarNode('needed')->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
+        // @formatter:on
     }
 }

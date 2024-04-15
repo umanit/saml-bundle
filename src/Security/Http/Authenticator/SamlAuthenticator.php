@@ -173,8 +173,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
             [
                 new SamlAttributesBadge(
                     $attributes,
-                    $this->options['saml_group_attribute'],
-                        $this->options['saml_group_required'] ?? null
+                    $this->options['saml_restrictions'] ?? [],
                 ),
                 new SamlProviderBadge($providerKey),
             ]
@@ -202,7 +201,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
         }
 
         $this->logger->info('Creating token', ['provider' => $providerKey]);
-        
+
         return new SamlToken(
             $passport->getUser(),
             $firewallName,
