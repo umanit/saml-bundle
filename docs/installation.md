@@ -125,6 +125,11 @@ class User implements UserInterface, SamlUserInterface
     {
     
     }
+    
+    public function setSamlIdentifier(string $identifier): self
+    {
+    
+    }
 
     public function getSamlAttributes(): array 
     {
