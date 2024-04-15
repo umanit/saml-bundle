@@ -153,6 +153,17 @@ class User implements UserInterface, SamlUserInterface
 ```
 
 
+## Configuration des routes
+
+Par exemple dans le dossier route rajouter un fichier `umanit_saml.yaml` avec le contenu suivant 
+
+```yaml
+umanit_saml:
+    resource: '@UmanitSamlBundle/config/route.yaml'
+    prefix: /saml2
+```
+
+
 ## Génération d'un certificat et d'une clé privée
 Afin de pouvoir signer et vérifier l'authenticité des échanges
 entre plusieurs applications, il nous faut un certificat et une clé
