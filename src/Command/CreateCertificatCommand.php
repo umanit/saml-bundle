@@ -12,6 +12,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
+use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 
 #[AsCommand(
     name: 'umanit:saml:create-certificat',
@@ -19,11 +20,10 @@ use Symfony\Component\Process\Process;
 )]
 class CreateCertificatCommand extends Command
 {
-    protected string $storagePath;
-
-    public function __construct(string $storagePath)
+    public function __construct(
+        protected ConfigurationServiceInterface $configurationService,
+    )
     {
-        $this->storagePath = $storagePath;
         parent::__construct();
     }
 
@@ -86,7 +86,8 @@ class CreateCertificatCommand extends Command
             $certname .= '.crt';
         }
 
-        $storagePath = $this->storagePath . DIRECTORY_SEPARATOR . $input->getArgument('name');
+        $storagePath = $this->configurationService->getCertificatePath()
+            . DIRECTORY_SEPARATOR . $input->getArgument('name');
 
         if (
             !is_dir($storagePath) &&

@@ -2,7 +2,7 @@ services:
     umanit.command.create_certificat_command:
         class: Umanit\SamlBundle\Command\CreateCertificatCommand
         arguments:
-            - '%umanit_saml.certificat_path%'
+            - '@umanit_saml.service.configuration_service'
         tags: ['console.command']
 
     umanit.command.refresh_idp_metadata_command:

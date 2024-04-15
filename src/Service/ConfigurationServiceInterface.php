@@ -6,6 +6,8 @@ namespace Umanit\SamlBundle\Service;
 
 interface ConfigurationServiceInterface
 {
+    public function getCertificatePath(): string;
+
     /**
      * @param string $provider
      *

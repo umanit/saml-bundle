@@ -16,12 +16,21 @@ class ConfigurationService implements ConfigurationServiceInterface
     {
     }
 
+    public function getCertificatePath(): string
+    {
+        return $this->config['certificate_path'];
+    }
+
     public function getByProvider(string $provider): array
     {
         $config = $this->config['providers'][$provider] ?? null;
 
         if (empty($config)) {
             throw new \RuntimeException(sprintf('Provider "%s" not found', $provider));
+        }
+
+        if (isset($config['enabled']) && !$config['enabled']) {
+            throw new \RuntimeException(sprintf('Provider "%s" is disabled', $provider));
         }
 
         return $config;
