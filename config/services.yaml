@@ -80,8 +80,23 @@ services:
     umanit_saml.service.response_service:
         class: Umanit\SamlBundle\Service\ResponseService
         arguments:
+            - '@umanit_saml.service.saml_message_service'
             - '@umanit_saml.validator.response_validator'
     Umanit\SamlBundle\Service\ResponseServiceInterface: '@umanit_saml.service.response_service'
+
+    umanit_saml.service.slo_service:
+        class: Umanit\SamlBundle\Service\SloService
+        arguments:
+            - '@umanit_saml.service.saml_message_service'
+            - '@umanit_saml.validator.slo_validator'
+            - '@security.helper'
+            - '@umanit_saml.service.metadata_service'
+            - '@umanit_saml.service.x509_certificat_service'
+    Umanit\SamlBundle\Service\SloServiceInterface: '@umanit_saml.service.slo_service'
+
+    umanit_saml.service.saml_message_service:
+        class: Umanit\SamlBundle\Service\SamlMessageService
+    Umanit\SamlBundle\Service\SamlMessageServiceInterface: '@umanit_saml.service.saml_message_service'
 
     umanit_saml.guesser.best_content_type_guesser:
         class: Umanit\SamlBundle\Guesser\BestContentTypeGuesser
@@ -131,6 +146,13 @@ services:
             - '@umanit_saml.validator.time_validator'
             - '@monolog.logger.umanit_saml'
     Umanit\SamlBundle\Validator\ResponseValidatorInterface: '@umanit_saml.validator.response_validator'
+
+    umanit_saml.validator.slo_validator:
+        class: Umanit\SamlBundle\Validator\SloValidator
+        arguments:
+            - '@umanit_saml.validator.signature_validator'
+            - '@monolog.logger.umanit_saml'
+    Umanit\SamlBundle\Validator\SloValidatorInterface: '@umanit_saml.validator.slo_validator'
 
     umanit_saml.security.http.authenticator.saml_authenticator:
         class: Umanit\SamlBundle\Security\Http\Authenticator\SamlAuthenticator

@@ -36,6 +36,7 @@ use Umanit\SamlBundle\Security\User\SamlUserInterface;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\ResponseServiceInterface;
 use LightSaml\Model\Protocol\Response as SamlResponse;
+use Umanit\SamlBundle\Service\SamlMessageServiceInterface;
 
 #[AutoconfigureTag('monolog.logger', ['channel' => 'security'])]
 class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPointInterface
@@ -48,7 +49,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
         private readonly array $options,
         private readonly ConfigurationServiceInterface $configurationService,
         private readonly ResponseServiceInterface $responseService,
-        private readonly ?LoggerInterface $logger
+        private readonly ?LoggerInterface $logger,
     ) {
     }
 
@@ -83,7 +84,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
             $configuration = $this->configurationService->getByProvider($provider);
 
             $this->logger->info('Getting SAML message', ['provider' => $provider]);
-            $samlResponse = $this->responseService->getSamlMessage($request);
+            $samlResponse = $this->responseService->getResponseSamlMessage($request);
 
             if (null === $samlResponse) {
                 throw new AuthenticationException('No SAML message found');

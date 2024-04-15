@@ -5,18 +5,30 @@ declare(strict_types=1);
 namespace Umanit\SamlBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Umanit\SamlBundle\Service\MetadataServiceInterface;
+use Symfony\Component\Security\Core\Exception\LogoutException;
+use Umanit\SamlBundle\Service\SloServiceInterface;
 
 #[Route('slo/{provider<\w+>}', name: 'umanit_saml_slo', methods: ['GET', 'POST'])]
 class SloAction extends AbstractController
 {
     public function __invoke(
         string $provider,
-        MetadataServiceInterface $metadata
-    ) {
-        dd($metadata->getEntityDescriptor($provider));
+        SloServiceInterface $sloService,
+        Request $request,
+    ): Response {
+        if ($request->query->has('SAMLResponse') || $request->request->has('SAMLRequest')) {
+            $response = $sloService->logout($request, $provider);
+        } else {
+            $response = $sloService->sendLogoutRequest($provider, $this->getUser());
+        }
 
-        return $this->json([]);
+        if (null === $response) {
+            throw new LogoutException("Unable to log out user");
+        }
+
+        return $response;
     }
 }

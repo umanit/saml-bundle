@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Service;
 
-use LightSaml\Binding\BindingFactory;
-use LightSaml\Context\Profile\MessageContext;
 use LightSaml\Model\Protocol\Response;
 use Symfony\Component\HttpFoundation\Request as HttpFoundationRequest;
 use Umanit\SamlBundle\Validator\ResponseValidatorInterface;
@@ -13,17 +11,14 @@ use Umanit\SamlBundle\Validator\ResponseValidatorInterface;
 class ResponseService implements ResponseServiceInterface
 {
     public function __construct(
-        protected readonly ResponseValidatorInterface $responseValidator
+        protected SamlMessageServiceInterface $samlMessageService,
+        protected ResponseValidatorInterface $responseValidator
     ) {
     }
 
-    public function getSamlMessage(HttpFoundationRequest $request): ?Response
+    public function getResponseSamlMessage(HttpFoundationRequest $request): ?Response
     {
-        $messageContext = new MessageContext();
-        $bindingFactory = new BindingFactory();
-        $bindingType = $bindingFactory->detectBindingType($request);
-        $bindingFactory->create($bindingType)->receive($request, $messageContext);
-        $messageContext->setBindingType($bindingType);
+        $messageContext = $this->samlMessageService->getSamlMessage($request);
 
         $response = $messageContext->asResponse();
 
