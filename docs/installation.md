@@ -67,10 +67,10 @@ Il est possible de définir un provider de type `saml_scoped` qui permet de déf
 ```yaml 
 security:
     providers:
-        saml_user_provider_without_database:
-            saml:
-                user_class: App\Entity\User
-                default_roles: ['ROLE_USER']
+        # saml_user_provider_without_database:
+        #     saml:
+        #         user_class: App\Entity\User
+        #         default_roles: ['ROLE_USER']
                 
         saml_user_provider_linked_with_database:
             saml_entity:
@@ -91,6 +91,13 @@ security:
             saml_scoped:
                 providers:
                     onelogin: saml_user_provider_linked_with_database
+
+    firewalls:
+        main:
+            # Configuration de l'authentification par SAML
+            saml:
+                provider: saml
+                login_path: app_login
 ```
 
 ## Configuration de la class User
