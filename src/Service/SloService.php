@@ -13,8 +13,10 @@ use LightSaml\Model\Protocol\LogoutRequest;
 use LightSaml\Model\Protocol\LogoutResponse;
 use LightSaml\SamlConstants;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Security\Core\Exception\LogoutException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Umanit\SamlBundle\Validator\SloValidatorInterface;
@@ -54,12 +56,22 @@ class SloService implements SloServiceInterface
         ;
 
         $bindingFactory = new BindingFactory();
-        $postBinding = $bindingFactory->create(SamlConstants::BINDING_SAML2_HTTP_POST);
+        $bindingType = $idpSsoDescriptor->getFirstSingleLogoutService()?->getBinding();
+        $postBinding = $bindingFactory->create($bindingType);
 
         $messageContext = new MessageContext();
         $messageContext->setMessage($logoutRequest);
 
-        return $postBinding->send($messageContext);
+        $response = $postBinding->send($messageContext);
+        if ($bindingType === SamlConstants::BINDING_SAML2_HTTP_REDIRECT && !$response instanceof RedirectResponse) {
+            $class = get_class($response);
+            throw new HttpException(
+                $response->getStatusCode(),
+                "Excepted RedirectResponse, $class obtained"
+            );
+        }
+
+        return $response;
     }
 
     public function logout(Request $request, string $provider): ?Response

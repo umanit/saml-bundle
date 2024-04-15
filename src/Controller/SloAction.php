@@ -19,8 +19,7 @@ class SloAction extends AbstractController
         SloServiceInterface $sloService,
         Request $request,
     ): Response {
-
-        if ($request->get('SAMLResponse')) {
+        if ($request->query->has('SAMLResponse') || $request->request->has('SAMLRequest')) {
             $response = $sloService->logout($request, $provider);
         } else {
             $response = $sloService->sendLogoutRequest($provider, $this->getUser());
