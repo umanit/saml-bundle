@@ -12,6 +12,13 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class SamlScopedUserProviderFactory implements UserProviderFactoryInterface
 {
+    /**
+     * @param ContainerBuilder     $container
+     * @param string               $id
+     * @param array<string, mixed> $config
+     *
+     * @return void
+     */
     public function create(ContainerBuilder $container, string $id, array $config): void
     {
         $providers = $config['providers'] ?? [];

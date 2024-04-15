@@ -6,6 +6,7 @@ namespace Umanit\SamlBundle\Security\Http\Authenticator;
 
 use Exception;
 use LightSaml\Error\LightSamlValidationException;
+use LightSaml\Model\Assertion\Subject;
 use LightSaml\SamlConstants;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -36,11 +37,20 @@ use Umanit\SamlBundle\Security\User\SamlUserInterface;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\ResponseServiceInterface;
 use LightSaml\Model\Protocol\Response as SamlResponse;
-use Umanit\SamlBundle\Service\SamlMessageServiceInterface;
 
 #[AutoconfigureTag('monolog.logger', ['channel' => 'security'])]
 class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPointInterface
 {
+    /**
+     * @param HttpUtils                                 $httpUtils
+     * @param UserProviderInterface<UserInterface>|null $userProvider
+     * @param AuthenticationSuccessHandlerInterface     $successHandler
+     * @param AuthenticationFailureHandlerInterface     $failureHandler
+     * @param array<mixed>                              $options
+     * @param ConfigurationServiceInterface             $configurationService
+     * @param ResponseServiceInterface                  $responseService
+     * @param LoggerInterface|null                      $logger
+     */
     public function __construct(
         private readonly HttpUtils $httpUtils,
         private readonly ?UserProviderInterface $userProvider,
@@ -115,14 +125,21 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
             throw new AuthenticationException('No assertion found');
         }
 
-        $nameIdValue = $assertion->getSubject()?->getNameID()?->getValue();
+        /** @var Subject|null $subject */
+        $subject = $assertion->getSubject();
+
+        if (null === $subject) {
+            throw new LightSamlValidationException('No subject found in response');
+        }
+
+        /** @var string|null $nameIdValue */
+        $nameIdValue = $subject->getNameID()->getValue();
 
         if (null === $nameIdValue) {
             throw new LightSamlValidationException('No NameID value found in response');
         }
 
-        $nameIdIsEmail = $assertion->getSubject()?->getNameID()?->getFormat() ===
-            SamlConstants::NAME_ID_FORMAT_EMAIL;
+        $nameIdIsEmail = $subject->getNameID()->getFormat() === SamlConstants::NAME_ID_FORMAT_EMAIL;
 
         $this->logger->info('Getting attributes', ['provider' => $providerKey]);
         $attributesItems = $assertion->getFirstAttributeStatement()?->getAllAttributes() ?? [];
@@ -142,10 +159,15 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
                     try {
                         if ($this->userProvider instanceof SamlScopedUserProviderInterface) {
                             $this->logger->info('Loading user by identifier and provider', [
-                                'identifier' => $identifier,
-                                'provider'   => $providerKey,
+                                'identifier'    => $identifier,
+                                'provider'      => $providerKey,
+                                'nameIdIsEmail' => $nameIdIsEmail,
                             ]);
-                            $user = $this->userProvider->loadUserByIdentifierAndProvider($identifier, $providerKey, $attributes);
+                            $user = $this->userProvider->loadUserByIdentifierAndProvider(
+                                $identifier,
+                                $providerKey,
+                                $attributes
+                            );
                         } else {
                             $this->logger->info('Loading user by identifier', ['identifier' => $identifier]);
                             $user = $this->userProvider->loadUserByIdentifier($identifier);

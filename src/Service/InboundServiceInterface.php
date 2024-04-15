@@ -12,4 +12,6 @@ interface InboundServiceInterface
     public function getSamlMessage(HttpFoundationRequest $request): SamlMessage;
 
     public function validateSignature(string $provider, SamlMessage $samlMessage): void;
+
+    public function validateIssuer(SamlMessage $samlMessage): void;
 }

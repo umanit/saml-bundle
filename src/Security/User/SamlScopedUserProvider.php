@@ -12,7 +12,7 @@ use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 class SamlScopedUserProvider implements SamlScopedUserProviderInterface
 {
     /**
-     * @param array<string, UserProviderInterface> $userProviders
+     * @param array<string, UserProviderInterface<UserInterface>> $userProviders
      */
     public function __construct(
         private readonly array $userProviders,

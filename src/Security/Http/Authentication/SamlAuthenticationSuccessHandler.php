@@ -18,7 +18,11 @@ class SamlAuthenticationSuccessHandler extends DefaultAuthenticationSuccessHandl
             return (string) $this->options['default_target_path'];
         }
 
-        $relayState = $request->query->get(self::RELAY_STATE, $request->request->get(self::RELAY_STATE));
+        $relayState = $request->request->get(self::RELAY_STATE);
+
+        if (null === $relayState) {
+            $relayState = $request->query->get(self::RELAY_STATE);
+        }
 
         if ($relayState !== null && $this->httpUtils instanceof HttpUtils) {
             $relayState = (string) $relayState;

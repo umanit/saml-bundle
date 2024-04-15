@@ -20,11 +20,19 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 class SamlEntityUserProvider implements SamlUserProviderInterface
 {
-
     use UserProviderTrait;
 
     private string $class;
 
+    /**
+     * @param ManagerRegistry             $registry
+     * @param class-string<UserInterface> $classOrAlias
+     * @param string|null                 $property
+     * @param string|null                 $managerName
+     * @param array<string>               $defaultRoles
+     * @param array<mixed>                $restrictions
+     * @param array<mixed>                $rolesMapping
+     */
     public function __construct(
         private readonly ManagerRegistry $registry,
         private readonly string $classOrAlias,
@@ -41,6 +49,7 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
         $repository = $this->getRepository();
 
         if (null !== $this->property) {
+            /** @var UserInterface $user */
             $user = $repository->findOneBy([$this->property => $identifier]);
         } else {
             if (!$repository instanceof UserLoaderInterface) {
@@ -64,6 +73,7 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
         }
 
         $this->refreshRole($user);
+
         return $user;
     }
 
@@ -90,10 +100,14 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
                 );
             }
 
+            /** @var UserInterface|null $refreshedUser */
             $refreshedUser = $repository->find($id);
+
             if (null === $refreshedUser) {
-                $e = new UserNotFoundException('User with id ' . json_encode($id) . ' not found.');
-                $e->setUserIdentifier(json_encode($id));
+                /** @var string $serializedId */
+                $serializedId = json_encode($id, JSON_THROW_ON_ERROR);
+                $e = new UserNotFoundException('User with id ' . $serializedId . ' not found.');
+                $e->setUserIdentifier($serializedId);
 
                 throw $e;
             }
@@ -105,8 +119,9 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
 
         if ($user instanceof SamlUserInterface && $refreshedUser instanceof SamlUserInterface) {
             $refreshedUser->setSamlAttributes($user->getSamlAttributes());
-            $this->refreshRole($refreshedUser);
         }
+
+        $this->refreshRole($refreshedUser);
 
         return $refreshedUser;
     }
@@ -138,6 +153,9 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
         return $this->registry->getManager($this->managerName);
     }
 
+    /**
+     * @return ObjectRepository<UserInterface>
+     */
     private function getRepository(): ObjectRepository
     {
         return $this->getObjectManager()->getRepository($this->classOrAlias);
@@ -191,6 +209,7 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
         }
 
         $this->refreshRole($user);
+
         return $user;
     }
 }

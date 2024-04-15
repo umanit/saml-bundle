@@ -8,10 +8,16 @@ use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\UserProvider\User
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 class SamlEntityUserProviderFactory implements UserProviderFactoryInterface
 {
+    /**
+     * @param ContainerBuilder     $container
+     * @param string               $id
+     * @param array<string, mixed> $config
+     *
+     * @return void
+     */
     public function create(ContainerBuilder $container, string $id, array $config): void
     {
         $container

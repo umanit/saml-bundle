@@ -11,6 +11,7 @@ class SamlToken extends PostAuthenticationToken
 {
     /**
      * @param array<string> $roles
+     * @param array<mixed> $samlAttributes
      */
     public function __construct(
         UserInterface $user,
@@ -39,6 +40,11 @@ class SamlToken extends PostAuthenticationToken
         return [$this->providerKey, parent::__serialize()];
     }
 
+    /**
+     * @param array<mixed> $data
+     *
+     * @return void
+     */
     public function __unserialize(array $data): void
     {
         [$this->providerKey, $parentData] = $data;
