@@ -34,6 +34,7 @@ use Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge\SamlProviderBad
 use Umanit\SamlBundle\Security\Http\Authenticator\Token\SamlToken;
 use Umanit\SamlBundle\Security\User\SamlScopedUserProviderInterface;
 use Umanit\SamlBundle\Security\User\SamlUserInterface;
+use Umanit\SamlBundle\Security\User\SamlUserProviderInterface;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\ResponseServiceInterface;
 use LightSaml\Model\Protocol\Response as SamlResponse;
@@ -72,7 +73,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
 
     public function supports(Request $request): ?bool
     {
-        if (!$request->isMethod('POST')) {
+        if (!$request->isMethod('GET') || !$request->isMethod('POST')) {
             return false;
         }
 
@@ -87,27 +88,28 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
 
         $provider = $request->attributes->get('provider');
 
-        $this->logger->info('Authenticating SAML', ['provider' => $provider]);
+        $this->logger->info('SAML Authentication start', ['provider' => $provider]);
 
         try {
-            $this->logger->info('Getting configuration', ['provider' => $provider]);
+            $this->logger->info('SAML Authentication getting configuration', ['provider' => $provider]);
             $configuration = $this->configurationService->getByProvider($provider);
 
-            $this->logger->info('Getting SAML message', ['provider' => $provider]);
+            $this->logger->info('SAML Authentication getting SAML message', ['provider' => $provider]);
             $samlResponse = $this->responseService->getResponseSamlMessage($request);
 
             if (null === $samlResponse) {
+                $this->logger->error('SAML Authentication SAML message not found', ['provider' => $provider]);
                 throw new AuthenticationException('No SAML message found');
             }
 
             $isStrict = $configuration['strict'] ?? true;
-            $this->logger->info('Validating SAML message', [
+            $this->logger->info('SAML Authentication message validation', [
                 'provider' => $provider,
                 'strict'   => $isStrict ? 'true' : 'false',
             ]);
             $this->responseService->validate($provider, $samlResponse, $isStrict);
         } catch (Exception $e) {
-            $this->logger->error('An error occurred while authenticating', [
+            $this->logger->error('SAML Authentication message validation error', [
                 'exception' => $e,
                 'provider'  => $provider,
             ]);
@@ -141,7 +143,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
 
         $nameIdIsEmail = $subject->getNameID()->getFormat() === SamlConstants::NAME_ID_FORMAT_EMAIL;
 
-        $this->logger->info('Getting attributes', ['provider' => $providerKey]);
+        $this->logger->info('SAML Authentication getting attributes', ['provider' => $providerKey]);
         $attributesItems = $assertion->getFirstAttributeStatement()?->getAllAttributes() ?? [];
 
         $attributes = [
@@ -158,7 +160,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
                 function (string $identifier) use ($nameIdIsEmail, $attributes, $providerKey): UserInterface {
                     try {
                         if ($this->userProvider instanceof SamlScopedUserProviderInterface) {
-                            $this->logger->info('Loading user by identifier and provider', [
+                            $this->logger->info('SAML Authentication loading user by identifier and provider', [
                                 'identifier'    => $identifier,
                                 'provider'      => $providerKey,
                                 'nameIdIsEmail' => $nameIdIsEmail,
@@ -168,17 +170,35 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
                                 $providerKey,
                                 $attributes
                             );
+                        } else if ($this->userProvider instanceof SamlUserProviderInterface) {
+                            $this->logger->info('SAML Authentication loading user by identifier', [
+                                'provider'   => $providerKey,
+                                'identifier' => $identifier,
+                            ]);
+
+                            if ($nameIdIsEmail) {
+                                $user = $this->userProvider->loadUserByEmail($identifier);
+                            } else {
+                                $user = $this->userProvider->loadUserByIdentifier($identifier);
+                            }
                         } else {
-                            $this->logger->info('Loading user by identifier', ['identifier' => $identifier]);
+                            $this->logger->info('SAML Authentication loading user by identifier', [
+                                'provider'   => $providerKey,
+                                'identifier' => $identifier,
+                            ]);
+
                             $user = $this->userProvider->loadUserByIdentifier($identifier);
                         }
 
                         if ($user instanceof SamlUserInterface) {
-                            $this->logger->info('Setting SAML attributes', ['provider' => $providerKey]);
+                            $this->logger->info('SAML Authentication set attributes', [
+                                'provider'   => $providerKey,
+                                'identifier' => $identifier,
+                            ]);
                             $user->setSamlAttributes($attributes);
                         }
                     } catch (Throwable $exception) {
-                        $this->logger->error('An error occurred while loading the user', [
+                        $this->logger->error('SAML Authentication an error occurred while loading the user', [
                             'exception'  => $exception,
                             'identifier' => $identifier,
                         ]);
@@ -223,7 +243,10 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
             $providerKey = $badge->getProviderKey();
         }
 
-        $this->logger->info('Creating token', ['provider' => $providerKey]);
+        $this->logger->info('SAML Authentication create token', [
+            'provider'   => $providerKey,
+            'identifier' => $passport->getUser()->getUserIdentifier(),
+        ]);
 
         return new SamlToken(
             $passport->getUser(),

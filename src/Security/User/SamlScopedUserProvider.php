@@ -30,8 +30,11 @@ class SamlScopedUserProvider implements SamlScopedUserProviderInterface
         return !is_a($class, UserInterface::class, true);
     }
 
-    public function loadUserByIdentifierAndProvider(string $identifier, string $provider, array $attributes = []): UserInterface
-    {
+    public function loadUserByIdentifierAndProvider(
+        string $identifier,
+        string $provider,
+        array $attributes = []
+    ): UserInterface {
         if (!isset($this->userProviders[$provider])) {
             throw new \RuntimeException(sprintf('No user provider found for provider "%s"', $provider));
         }
@@ -39,7 +42,10 @@ class SamlScopedUserProvider implements SamlScopedUserProviderInterface
         $userProvider = $this->userProviders[$provider];
         $nameIdFormat = $this->configurationService->getNameIdFormat($provider);
 
-        if ($nameIdFormat === SamlConstants::NAME_ID_FORMAT_EMAIL && $userProvider instanceof SamlUserProviderInterface) {
+        if (
+            $nameIdFormat === SamlConstants::NAME_ID_FORMAT_EMAIL
+            && $userProvider instanceof SamlUserProviderInterface
+        ) {
             $user = $userProvider->loadUserByEmail($identifier);
         } else {
             $user = $userProvider->loadUserByIdentifier($identifier);
@@ -58,6 +64,6 @@ class SamlScopedUserProvider implements SamlScopedUserProviderInterface
 
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
-        throw new \RuntimeException('You must provide a provider to load a user by identifier');
+        throw new \LogicException('Code should not reach this point');
     }
 }

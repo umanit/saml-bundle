@@ -44,37 +44,14 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
     ) {
     }
 
+    public function loadUserByEmail(string $email): UserInterface
+    {
+        return $this->loadUserByProperty('email', $email);
+    }
+
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
-        $repository = $this->getRepository();
-
-        if (null !== $this->property) {
-            /** @var UserInterface $user */
-            $user = $repository->findOneBy([$this->property => $identifier]);
-        } else {
-            if (!$repository instanceof UserLoaderInterface) {
-                throw new InvalidArgumentException(
-                    sprintf(
-                        'You must either make the "%s" entity Doctrine Repository ("%s") implement "Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface" or set the "property" option in the corresponding entity provider configuration.',
-                        $this->classOrAlias,
-                        get_debug_type($repository)
-                    )
-                );
-            }
-
-            $user = $repository->loadUserByIdentifier($identifier);
-        }
-
-        if (null === $user) {
-            $e = new UserNotFoundException(sprintf('User "%s" not found.', $identifier));
-            $e->setUserIdentifier($identifier);
-
-            throw $e;
-        }
-
-        $this->refreshRole($user);
-
-        return $user;
+        return $this->loadUserByProperty($this->property, $identifier);
     }
 
     public function refreshUser(UserInterface $user): UserInterface
@@ -181,12 +158,12 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
         return $this->getObjectManager()->getClassMetadata($this->classOrAlias);
     }
 
-    public function loadUserByEmail(string $email): UserInterface
+    private function loadUserByProperty(string $property, string $propertyValue): UserInterface
     {
         $repository = $this->getRepository();
 
         if (null !== $this->property) {
-            $user = $repository->findOneBy(['email' => $email]);
+            $user = $repository->findOneBy([$property => $propertyValue]);
         } else {
             if (!$repository instanceof UserLoaderInterface) {
                 throw new InvalidArgumentException(
@@ -198,12 +175,12 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
                 );
             }
 
-            $user = $repository->loadUserByIdentifier($email);
+            $user = $repository->loadUserByIdentifier($propertyValue);
         }
 
         if (null === $user) {
-            $e = new UserNotFoundException(sprintf('User "%s" not found.', $email));
-            $e->setUserIdentifier($email);
+            $e = new UserNotFoundException(sprintf('User "%s" not found.', $propertyValue));
+            $e->setUserIdentifier($propertyValue);
 
             throw $e;
         }
