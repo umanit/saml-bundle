@@ -13,12 +13,10 @@ use InvalidArgumentException;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
-class SamlEntityUserProvider implements SamlUserProviderInterface
+class SamlEntityUserProvider implements SamlEntityUserProviderInterface
 {
     use UserProviderTrait;
 
@@ -108,37 +106,17 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
         return $class === $this->getClass() || is_subclass_of($class, $this->getClass());
     }
 
-    /**
-     * @final
-     */
-    public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
-    {
-        $class = $this->getClass();
-        if (!$user instanceof $class) {
-            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', get_debug_type($user)));
-        }
-
-        $repository = $this->getRepository();
-
-        if ($repository instanceof PasswordUpgraderInterface) {
-            $repository->upgradePassword($user, $newHashedPassword);
-        }
-    }
-
-    protected function getObjectManager(): ObjectManager
+    public function getObjectManager(): ObjectManager
     {
         return $this->registry->getManager($this->managerName);
     }
 
-    /**
-     * @return ObjectRepository<UserInterface>
-     */
-    protected function getRepository(): ObjectRepository
+    public function getRepository(): ObjectRepository
     {
         return $this->getObjectManager()->getRepository($this->classOrAlias);
     }
 
-    protected function getClass(): string
+    public function getClass(): string
     {
         if (!isset($this->class)) {
             $class = $this->classOrAlias;
@@ -153,12 +131,12 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
         return $this->class;
     }
 
-    protected function getClassMetadata(): ClassMetadata
+    public function getClassMetadata(): ClassMetadata
     {
         return $this->getObjectManager()->getClassMetadata($this->classOrAlias);
     }
 
-    protected function loadUserByProperty(string $property, string $propertyValue): UserInterface
+    public function loadUserByProperty(string $property, string $propertyValue): UserInterface
     {
         $repository = $this->getRepository();
 
