@@ -52,7 +52,10 @@ Ensuite, nous allons rajouter la configuration :
         onelogin:
             sp:
                 # Doit respecter le format (Unique identifiant de l'application)
-                entity_id: https://saml-bundle.wip/saml2/onelogin
+                # La valeur par défaut est {{host}} cette chaine sera remplacée par le host de l'application
+                # Si la valeur est vide, c'est la route des metadata qui sera utilisée.
+                # Sinon mettre votre valeur :
+                # entity_id: https://saml-bundle.wip/saml2/onelogin
                 # Défini le format de l'identifiant.
                 name_id_format: !php/const LightSaml\SamlConstants::NAME_ID_FORMAT_EMAIL
                 # Défini le certificat X509 généré précédement.
@@ -117,6 +120,10 @@ security:
                 # pour pouvoir se connecter.
                 saml_restrictions:
                     - { attribute_name: 'usergroups', type: 'memberof', needed: 'UMANIT\grp_suivitemps_admin' }
+
+    access_control:
+        # On autorise l'accès à la route /saml2 pour tout le monde
+        - { path: ^/saml2, roles: PUBLIC_ACCESS }
 ```
 
 ### Configuration de la class User

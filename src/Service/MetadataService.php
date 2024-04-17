@@ -450,11 +450,14 @@ class MetadataService implements MetadataServiceInterface
         $context = $this->router->getContext();
         $host = $context->getScheme().'://'.$context->getHost();
 
-        return $config['entity_id'] ?? $host;
-        // $this->urlGenerator->generate(
-        //     'umanit_saml_metadata',
-        //     ['provider' => $provider],
-        //     UrlGeneratorInterface::ABSOLUTE_URL
-        // );
+        if (empty($config['entity_id'])) {
+            return $this->urlGenerator->generate(
+                'umanit_saml_metadata',
+                ['provider' => $provider],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            );
+        }
+
+        return str_replace('{{host}}', $host, $config['entity_id']);
     }
 }
