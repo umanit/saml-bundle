@@ -15,8 +15,8 @@ class SamlScopedUserProvider implements SamlScopedUserProviderInterface
      * @param array<string, UserProviderInterface<UserInterface>> $userProviders
      */
     public function __construct(
-        private readonly array $userProviders,
-        private readonly ConfigurationServiceInterface $configurationService
+        protected readonly array $userProviders,
+        protected readonly ConfigurationServiceInterface $configurationService
     ) {
     }
 

@@ -22,7 +22,7 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
 {
     use UserProviderTrait;
 
-    private string $class;
+    protected string $class;
 
     /**
      * @param ManagerRegistry             $registry
@@ -34,13 +34,13 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
      * @param array<mixed>                $rolesMapping
      */
     public function __construct(
-        private readonly ManagerRegistry $registry,
-        private readonly string $classOrAlias,
-        private readonly ?string $property = null,
-        private readonly ?string $managerName = null,
-        private readonly array $defaultRoles = [],
-        private readonly array $restrictions = [],
-        private readonly array $rolesMapping = [],
+        protected readonly ManagerRegistry $registry,
+        protected readonly string $classOrAlias,
+        protected readonly ?string $property = null,
+        protected readonly ?string $managerName = null,
+        protected readonly array $defaultRoles = [],
+        protected readonly array $restrictions = [],
+        protected readonly array $rolesMapping = [],
     ) {
     }
 
@@ -125,7 +125,7 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
         }
     }
 
-    private function getObjectManager(): ObjectManager
+    protected function getObjectManager(): ObjectManager
     {
         return $this->registry->getManager($this->managerName);
     }
@@ -133,12 +133,12 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
     /**
      * @return ObjectRepository<UserInterface>
      */
-    private function getRepository(): ObjectRepository
+    protected function getRepository(): ObjectRepository
     {
         return $this->getObjectManager()->getRepository($this->classOrAlias);
     }
 
-    private function getClass(): string
+    protected function getClass(): string
     {
         if (!isset($this->class)) {
             $class = $this->classOrAlias;
@@ -153,12 +153,12 @@ class SamlEntityUserProvider implements SamlUserProviderInterface
         return $this->class;
     }
 
-    private function getClassMetadata(): ClassMetadata
+    protected function getClassMetadata(): ClassMetadata
     {
         return $this->getObjectManager()->getClassMetadata($this->classOrAlias);
     }
 
-    private function loadUserByProperty(string $property, string $propertyValue): UserInterface
+    protected function loadUserByProperty(string $property, string $propertyValue): UserInterface
     {
         $repository = $this->getRepository();
 
