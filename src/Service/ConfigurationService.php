@@ -36,10 +36,21 @@ class ConfigurationService implements ConfigurationServiceInterface
         return $config;
     }
 
-    public function getProviderNames(): array
+    public function getProviderNames(array $tags = []): array
     {
-        /** @var array<int, string>  $names */
-        $names = array_keys($this->config['providers']);
+        $names = [];
+
+        foreach ($this->config['providers'] as $key => $provider) {
+            if (isset($provider['enabled']) && !$provider['enabled']) {
+                continue;
+            }
+
+            if (!empty($tags) && !array_intersect($tags, $provider['tags'])) {
+                continue;
+            }
+
+            $names[] = $key;
+        }
 
         return $names;
     }

@@ -26,7 +26,7 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->addDefaultsIfNotSet()
             ->children()
-                ->scalarNode('certificat_path')->isRequired()->defaultValue('%kernel.project_dir%/certs')->end()
+                ->scalarNode('certificat_path')->defaultValue('%kernel.project_dir%/certs')->end()
                 ->arrayNode('providers')
                     ->isRequired()
                     ->useAttributeAsKey('provider_name')
@@ -34,6 +34,7 @@ class Configuration implements ConfigurationInterface
                         ->children()
                             ->booleanNode('enabled')->defaultTrue()->info('Activer ou non le provider')->end()
                             ->booleanNode('strict')->defaultTrue()->info('Activer ou non le mode strict')->end()
+                            ->arrayNode('tags')->defaultValue([])->info('Tags')->end()
                             ->enumNode('type')
                                 ->values(Mode::cases())
                                 ->defaultValue(Mode::SP_INITIATED)

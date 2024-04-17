@@ -28,7 +28,7 @@ class SamlExtension extends AbstractExtension
         ];
     }
 
-    public function generateSamlResponse(string $provider, string $nameIdFormat, array $attributes = []): array
+    public function generateSamlResponse(string $provider, string $nameIdFormat, array $attributes = []): ?array
     {
         try {
             $config = $this->configurationService->getByProvider($provider);
@@ -40,10 +40,7 @@ class SamlExtension extends AbstractExtension
             $response = $this->samlResponseService->getSamlResponse($provider, $nameIdFormat, $attributes);
             $xml = $this->samlElementSerializer->toXML($response);
         } catch (Throwable) {
-            return [
-                'data' => '',
-                'url'  => '',
-            ];
+            return null;
         }
 
         return [

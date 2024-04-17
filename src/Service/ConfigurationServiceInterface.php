@@ -16,9 +16,11 @@ interface ConfigurationServiceInterface
     public function getByProvider(string $provider): array;
 
     /**
+     * @param array<string> $tags
+     *
      * @return array<int, string>
      */
-    public function getProviderNames(): array;
+    public function getProviderNames(array $tags): array;
 
     public function getNameIdFormat(string $provider): string;
 }
