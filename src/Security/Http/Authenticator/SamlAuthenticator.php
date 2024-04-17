@@ -73,7 +73,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
 
     public function supports(Request $request): ?bool
     {
-        if (!$request->isMethod('GET') || !$request->isMethod('POST')) {
+        if (!$request->isMethod('GET') && !$request->isMethod('POST')) {
             return false;
         }
 
