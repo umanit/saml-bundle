@@ -447,10 +447,14 @@ class MetadataService implements MetadataServiceInterface
      */
     protected function getEntityId(string $provider, array $config): string
     {
-        return $config['entity_id'] ?? $this->urlGenerator->generate(
-            'umanit_saml_metadata',
-            ['provider' => $provider],
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
+        $context = $this->router->getContext();
+        $host = $context->getScheme().'://'.$context->getHost();
+
+        return $config['entity_id'] ?? $host;
+        // $this->urlGenerator->generate(
+        //     'umanit_saml_metadata',
+        //     ['provider' => $provider],
+        //     UrlGeneratorInterface::ABSOLUTE_URL
+        // );
     }
 }

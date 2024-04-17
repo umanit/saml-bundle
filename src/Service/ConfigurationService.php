@@ -18,7 +18,7 @@ class ConfigurationService implements ConfigurationServiceInterface
 
     public function getCertificatePath(): string
     {
-        return $this->config['certificate_path'];
+        return $this->config['certificat_path'];
     }
 
     public function getByProvider(string $provider): array
