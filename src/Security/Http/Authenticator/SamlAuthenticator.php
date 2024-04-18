@@ -176,11 +176,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
                                 'identifier' => $identifier,
                             ]);
 
-                            if ($nameIdIsEmail) {
-                                $user = $this->userProvider->loadUserByEmail($identifier);
-                            } else {
-                                $user = $this->userProvider->loadUserByIdentifier($identifier);
-                            }
+                            $user = $this->userProvider->loadSamlUser($identifier, $providerKey, $attributes);
                         } else {
                             $this->logger->info('SAML Authentication loading user by identifier', [
                                 'provider'   => $providerKey,

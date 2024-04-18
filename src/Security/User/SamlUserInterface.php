@@ -14,12 +14,12 @@ interface SamlUserInterface
     public function setRoles(array $roles): self;
 
     /**
-     * @return array<mixed>
+     * @return array<string, mixed>
      */
     public function getSamlAttributes(): array;
 
     /**
-     * @param array<mixed> $samlAttributes
+     * @param array<string, mixed> $samlAttributes
      */
     public function setSamlAttributes(array $samlAttributes): void;
 }

@@ -24,7 +24,7 @@ class SamlScopedUserProviderFactory implements UserProviderFactoryInterface
         $providers = $config['providers'] ?? [];
 
         foreach ($providers as $samlProvider => $userProvider) {
-            $providers[$samlProvider] = new Reference('security.user.provider.concrete.' . $userProvider);
+            $providers[$samlProvider] = new Reference($userProvider);
         }
 
         $container

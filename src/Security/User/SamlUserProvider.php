@@ -74,4 +74,20 @@ class SamlUserProvider implements SamlUserProviderInterface
     {
         return is_a($class, $this->userClass, true);
     }
+
+    public function loadSamlUser(string $identifier, string $provider, array $attributes = []): UserInterface
+    {
+        /** @var UserInterface $user */
+        $user = new $this->userClass();
+
+        if ($user instanceof SamlUserInterface) {
+            $user->setRoles($this->defaultRoles);
+            $user->setSamlIdentifier($identifier);
+            $user->setSamlAttributes($attributes);
+        }
+
+        $this->refreshRole($user);
+
+        return $user;
+    }
 }

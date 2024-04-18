@@ -42,6 +42,18 @@ class SamlEntityUserProvider implements SamlEntityUserProviderInterface
     ) {
     }
 
+    public function loadSamlUser(string $identifier, string $provider, array $attributes = []): UserInterface
+    {
+        $user = $this->loadUserByProperty($this->property, $identifier);
+        $this->refreshRole($user);
+
+        if ($user instanceof SamlUserInterface) {
+            $user->setSamlAttributes($attributes);
+        }
+
+        return $user;
+    }
+
     public function loadUserByEmail(string $email): UserInterface
     {
         return $this->loadUserByProperty('email', $email);

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Security\User;
 
-use LightSaml\SamlConstants;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
@@ -40,13 +39,9 @@ class SamlScopedUserProvider implements SamlScopedUserProviderInterface
         }
 
         $userProvider = $this->userProviders[$provider];
-        $nameIdFormat = $this->configurationService->getNameIdFormat($provider);
 
-        if (
-            $nameIdFormat === SamlConstants::NAME_ID_FORMAT_EMAIL
-            && $userProvider instanceof SamlUserProviderInterface
-        ) {
-            $user = $userProvider->loadUserByEmail($identifier);
+        if ($userProvider instanceof SamlUserProviderInterface) {
+            $user = $userProvider->loadSamlUser($identifier, $provider, $attributes);
         } else {
             $user = $userProvider->loadUserByIdentifier($identifier);
         }

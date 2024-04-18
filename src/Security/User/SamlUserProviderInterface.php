@@ -12,6 +12,8 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
  */
 interface SamlUserProviderInterface extends UserProviderInterface
 {
+    public function loadSamlUser(string $identifier, string $provider, array $attributes = []): UserInterface;
+
     public function loadUserByEmail(string $email): UserInterface;
 
     public function refreshRole(UserInterface $user): void;

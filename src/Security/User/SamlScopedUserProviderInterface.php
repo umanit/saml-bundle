@@ -13,7 +13,7 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 interface SamlScopedUserProviderInterface extends UserProviderInterface
 {
     /**
-     * @param array<mixed> $attributes
+     * @param array<string, mixed> $attributes
      */
     public function loadUserByIdentifierAndProvider(
         string $identifier,
