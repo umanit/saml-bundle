@@ -28,7 +28,7 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->scalarNode('certificat_path')->defaultValue('%kernel.project_dir%/certs')->end()
                 ->arrayNode('providers')
-                    ->isRequired()
+                    ->defaultValue([])
                     ->useAttributeAsKey('provider_name')
                     ->arrayPrototype()
                         ->children()
