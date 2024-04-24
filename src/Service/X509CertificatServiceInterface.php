@@ -9,6 +9,8 @@ use LightSaml\Model\XmlDSig\SignatureWriter;
 
 interface X509CertificatServiceInterface
 {
+    public function getOwnSignature(string $provider): SignatureWriter;
+
     public function getSpCredential(string $provider): ?X509Credential;
 
     public function getIdpCredential(string $provider): ?X509Credential;

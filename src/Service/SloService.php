@@ -12,6 +12,8 @@ use LightSaml\Model\Assertion\Issuer;
 use LightSaml\Model\Assertion\NameID;
 use LightSaml\Model\Protocol\LogoutRequest;
 use LightSaml\Model\Protocol\LogoutResponse;
+use LightSaml\Model\Protocol\Status;
+use LightSaml\Model\Protocol\StatusCode;
 use LightSaml\SamlConstants;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -31,6 +33,61 @@ class SloService implements SloServiceInterface
         protected MetadataServiceInterface $metadataService,
         protected X509CertificatServiceInterface $x509CertificatService,
     ) {
+    }
+
+    public function sendLogoutResponse(string $provider, Request $request): Response
+    {
+        $logoutRequest = $this->getLogoutRequestSamlMessage($request);
+
+        if (null === $logoutRequest) {
+            throw new LogoutException("No SAML message found");
+        }
+
+        $remoteEntityDescriptor = $this->metadataService->getEntityDescriptor($provider); # Request
+
+        $user = $this->security->getUser();
+        $success = null === $user;
+
+        if (null !== $user) {
+            try {
+                $this->security->logout(false);
+                $success = true;
+            } catch (\Exception $e) {
+                throw new LogoutException("Unable to log out user");
+            }
+        }
+
+        $statusCode = new StatusCode($success ? SamlConstants::STATUS_SUCCESS : SamlConstants::STATUS_PARTIAL_LOGOUT);
+        $status = new Status($statusCode);
+
+        $logoutResponse = new LogoutResponse();
+        $logoutResponse
+            ->setStatus($status)
+            ->setId(Helper::generateID())
+            ->setInResponseTo($logoutRequest->getId())
+            ->setIssueInstant(new \DateTime())
+            ->setDestination($remoteEntityDescriptor->getFirstSpSsoDescriptor()?->getFirstSingleLogoutService()?->getLocation())
+            ->setIssuer(new Issuer($this->metadataService->getOwnEntityDescriptor($provider)->getEntityID()))
+            ->setSignature($this->x509CertificatService->getOwnSignature($provider));
+
+        $bindingFactory = new BindingFactory();
+        $bindingType = $remoteEntityDescriptor->getFirstSpSsoDescriptor()?->getFirstSingleLogoutService()?->getBinding();
+        $postBinding = $bindingFactory->create($bindingType);
+
+        $messageContext = new MessageContext();
+        $messageContext->setMessage($logoutResponse);
+
+        $response = $postBinding->send($messageContext);
+
+        if ($bindingType === SamlConstants::BINDING_SAML2_HTTP_REDIRECT && !$response instanceof RedirectResponse) {
+            $class = get_class($response);
+            throw new HttpException(
+                $response->getStatusCode(),
+                "Excepted RedirectResponse, $class obtained"
+            );
+        }
+
+        return $response;
     }
 
     public function sendLogoutRequest(string $provider, ?UserInterface $user): Response
@@ -89,7 +146,11 @@ class SloService implements SloServiceInterface
 
         $this->validate($provider, $response);
 
-        return $this->security->logout(false);
+        if (null !== $this->security->getUser()) {
+            return $this->security->logout(false);
+        }
+
+        return null;
     }
 
     public function getLogoutResponseSamlMessage(Request $request): ?LogoutResponse
@@ -99,6 +160,19 @@ class SloService implements SloServiceInterface
         $response = $messageContext->asLogoutResponse();
 
         if (!$response instanceof LogoutResponse) {
+            return null;
+        }
+
+        return $response;
+    }
+
+    public function getLogoutRequestSamlMessage(Request $request): ?LogoutRequest
+    {
+        $messageContext = $this->samlMessageService->getSamlMessage($request);
+
+        $response = $messageContext->asLogoutRequest();
+
+        if (!$response instanceof LogoutRequest) {
             return null;
         }
 

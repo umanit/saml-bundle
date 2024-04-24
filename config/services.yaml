@@ -199,3 +199,10 @@ services:
     umanit_saml.security.http.event_subscriber.check_attributes_subscriber:
         class: Umanit\SamlBundle\Security\Http\EventSubscriber\CheckAttributesSubscriber
         tags: ['kernel.event_subscriber']
+
+    umanit_saml.event_subscriber.logout_event_subscriber:
+        class: Umanit\SamlBundle\EventSubscriber\LogoutEventSubscriber
+        arguments:
+            - '@umanit_saml.service.configuration_service'
+            - '@umanit_saml.service.slo_service'
+        tags: ['kernel.event_subscriber']

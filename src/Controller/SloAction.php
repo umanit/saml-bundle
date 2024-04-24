@@ -8,7 +8,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Core\Exception\LogoutException;
 use Umanit\SamlBundle\Service\SloServiceInterface;
 
 #[Route('slo/{provider<\w+>}', name: 'umanit_saml_slo', methods: ['GET', 'POST'])]
@@ -19,16 +18,14 @@ class SloAction extends AbstractController
         SloServiceInterface $sloService,
         Request $request,
     ): Response {
-        if ($request->query->has('SAMLResponse') || $request->request->has('SAMLRequest')) {
+        if ($request->query->has('SAMLResponse') || $request->request->has('SAMLResponse')) {
             $response = $sloService->logout($request, $provider);
-        } else {
-            $response = $sloService->sendLogoutRequest($provider, $this->getUser());
         }
 
-        if (null === $response) {
-            throw new LogoutException("Unable to log out user");
+        if ($request->query->has('SAMLRequest') || $request->request->has('SAMLRequest')) {
+            $response = $sloService->sendLogoutResponse($provider, $request);
         }
 
-        return $response;
+        return $response ?? $this->redirect('/');
     }
 }

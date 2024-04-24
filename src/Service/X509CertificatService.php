@@ -8,12 +8,32 @@ use LightSaml\Credential\KeyHelper;
 use LightSaml\Credential\X509Certificate;
 use LightSaml\Credential\X509Credential;
 use LightSaml\Model\XmlDSig\SignatureWriter;
+use Umanit\SamlBundle\Enums\Mode;
 
 class X509CertificatService implements X509CertificatServiceInterface
 {
     public function __construct(
         protected readonly ConfigurationServiceInterface $configurationService
     ) {
+    }
+
+    public function getOwnSignature(string $provider): SignatureWriter
+    {
+        $providerConfiguration = $this->configurationService->getByProvider($provider);
+
+        if ($providerConfiguration['type'] === Mode::SP_INITIATED) {
+            $configuration = $providerConfiguration['sp'];
+        } else {
+            $configuration = $providerConfiguration['idp'];
+        }
+
+        $ownCredential = $this->getX509Credentials($configuration);
+
+        if (null === $ownCredential) {
+            throw new \RuntimeException('Unable to get own credential');
+        }
+
+        return $this->getSignature($ownCredential, $configuration['saml_algorithm_signature']->value);
     }
 
     public function getSpCredential(string $provider): ?X509Credential
