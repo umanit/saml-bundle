@@ -34,6 +34,7 @@ class Configuration implements ConfigurationInterface
                         ->children()
                             ->booleanNode('enabled')->defaultTrue()->info('Activer ou non le provider')->end()
                             ->booleanNode('strict')->defaultTrue()->info('Activer ou non le mode strict')->end()
+                            ->booleanNode('enable_slo')->defaultTrue()->info('Activer le SLO au logout')->end()
                             ->arrayNode('tags')
                                 ->prototype('scalar')->end()
                             ->end()

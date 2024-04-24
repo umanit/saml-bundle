@@ -39,6 +39,10 @@ final class LogoutEventSubscriber implements EventSubscriberInterface
         $user = $token->getUser();
         $configuration = $this->configurationService->getByProvider($provider);
 
+        if (true !== ($configuration['enable_slo'] ?? false)) {
+            return;
+        }
+
         if ($configuration['type'] === Mode::SP_INITIATED) {
             // SP initiated logout
             $response = $this->sloService->sendLogoutRequest($provider, $user);
