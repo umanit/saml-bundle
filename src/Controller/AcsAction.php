@@ -15,11 +15,6 @@ class AcsAction implements ServiceSubscriberInterface
 {
     protected ContainerInterface $container;
 
-    public function __invoke(string $provider): Response
-    {
-        throw new \LogicException('Method not implemented');
-    }
-
     #[Required]
     public function setContainer(ContainerInterface $container): ?ContainerInterface
     {
@@ -32,5 +27,10 @@ class AcsAction implements ServiceSubscriberInterface
     public static function getSubscribedServices(): array
     {
         return [];
+    }
+
+    public function __invoke(string $provider): Response
+    {
+        throw new \LogicException('Method not implemented');
     }
 }
