@@ -41,7 +41,7 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
             throw new RuntimeException('No IdpSsoDescriptor found.');
         }
 
-        $idpSsoService = $idpSsoDescriptor->getFirstSingleSignOnService();
+        $idpSsoService = $idpSsoDescriptor->getFirstSingleSignOnService($acsBindingType);
 
         if (null === $idpSsoService) {
             throw new RuntimeException('No SingleSignOnService found.');

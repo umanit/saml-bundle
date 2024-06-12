@@ -66,12 +66,17 @@ class SloService implements SloServiceInterface
             ->setId(Helper::generateID())
             ->setInResponseTo($logoutRequest->getId())
             ->setIssueInstant(new \DateTime())
-            ->setDestination($remoteEntityDescriptor->getFirstSpSsoDescriptor()?->getFirstSingleLogoutService()?->getLocation())
+            ->setDestination(
+                $remoteEntityDescriptor->getFirstSpSsoDescriptor()?->getFirstSingleLogoutService()?->getLocation()
+            )
             ->setIssuer(new Issuer($this->metadataService->getOwnEntityDescriptor($provider)->getEntityID()))
-            ->setSignature($this->x509CertificatService->getOwnSignature($provider));
+            ->setSignature($this->x509CertificatService->getOwnSignature($provider))
+        ;
 
         $bindingFactory = new BindingFactory();
-        $bindingType = $remoteEntityDescriptor->getFirstSpSsoDescriptor()?->getFirstSingleLogoutService()?->getBinding();
+        $bindingType = $remoteEntityDescriptor
+            ->getFirstSpSsoDescriptor()?->getFirstSingleLogoutService()?->getBinding()
+        ;
         $postBinding = $bindingFactory->create($bindingType);
 
         $messageContext = new MessageContext();
@@ -90,47 +95,14 @@ class SloService implements SloServiceInterface
         return $response;
     }
 
-    public function sendLogoutRequest(string $provider, ?UserInterface $user): Response
+    public function getLogoutRequestSamlMessage(Request $request): ?LogoutRequest
     {
-        if (null === $user) {
-            throw new \RuntimeException('No user found');
-        }
+        $messageContext = $this->samlMessageService->getSamlMessage($request);
 
-        $ownEntityDescriptor = $this->metadataService->getOwnEntityDescriptor($provider);
-        $idpSsoDescriptor = $this->metadataService->getEntityDescriptor($provider)->getFirstIdpSsoDescriptor();
+        $response = $messageContext->asLogoutRequest();
 
-        if (null === $idpSsoDescriptor) {
-            throw new LightSamlValidationException('No IdP/SP SSO descriptor found in entity descriptor');
-        }
-
-        $format = $idpSsoDescriptor->getAllNameIDFormats()[0] ?? SamlConstants::NAME_ID_FORMAT_PERSISTENT;
-        $issuer = new Issuer($ownEntityDescriptor->getEntityID());
-        $nameId = new NameID($user->getUserIdentifier(), $format);
-
-        $logoutRequest = new LogoutRequest();
-        $logoutRequest
-            ->setId(Helper::generateID())
-            ->setIssueInstant(new \DateTime())
-            ->setDestination($idpSsoDescriptor->getFirstSingleLogoutService()?->getLocation())
-            ->setIssuer($issuer)
-            ->setSignature($ownEntityDescriptor->getSignature());
-
-        $logoutRequest->setNameID($nameId);
-
-        $bindingFactory = new BindingFactory();
-        $bindingType = $idpSsoDescriptor->getFirstSingleLogoutService()?->getBinding();
-        $postBinding = $bindingFactory->create($bindingType);
-
-        $messageContext = new MessageContext();
-        $messageContext->setMessage($logoutRequest);
-
-        $response = $postBinding->send($messageContext);
-        if ($bindingType === SamlConstants::BINDING_SAML2_HTTP_REDIRECT && !$response instanceof RedirectResponse) {
-            $class = get_class($response);
-            throw new HttpException(
-                $response->getStatusCode(),
-                "Excepted RedirectResponse, $class obtained"
-            );
+        if (!$response instanceof LogoutRequest) {
+            return null;
         }
 
         return $response;
@@ -166,21 +138,55 @@ class SloService implements SloServiceInterface
         return $response;
     }
 
-    public function getLogoutRequestSamlMessage(Request $request): ?LogoutRequest
-    {
-        $messageContext = $this->samlMessageService->getSamlMessage($request);
-
-        $response = $messageContext->asLogoutRequest();
-
-        if (!$response instanceof LogoutRequest) {
-            return null;
-        }
-
-        return $response;
-    }
-
     public function validate(string $provider, LogoutResponse $samlMessage, bool $strict = true): void
     {
         $this->sloValidator->validate($provider, $samlMessage, $strict);
+    }
+
+    public function sendLogoutRequest(string $provider, ?UserInterface $user): Response
+    {
+        if (null === $user) {
+            throw new \RuntimeException('No user found');
+        }
+
+        $ownEntityDescriptor = $this->metadataService->getOwnEntityDescriptor($provider);
+        $idpSsoDescriptor = $this->metadataService->getEntityDescriptor($provider)->getFirstIdpSsoDescriptor();
+
+        if (null === $idpSsoDescriptor) {
+            throw new LightSamlValidationException('No IdP/SP SSO descriptor found in entity descriptor');
+        }
+
+        $format = $idpSsoDescriptor->getAllNameIDFormats()[0] ?? SamlConstants::NAME_ID_FORMAT_PERSISTENT;
+        $issuer = new Issuer($ownEntityDescriptor->getEntityID());
+        $nameId = new NameID($user->getUserIdentifier(), $format);
+
+        $logoutRequest = new LogoutRequest();
+        $logoutRequest
+            ->setId(Helper::generateID())
+            ->setIssueInstant(new \DateTime())
+            ->setDestination($idpSsoDescriptor->getFirstSingleLogoutService()?->getLocation())
+            ->setIssuer($issuer)
+            ->setSignature($ownEntityDescriptor->getSignature())
+        ;
+
+        $logoutRequest->setNameID($nameId);
+
+        $bindingFactory = new BindingFactory();
+        $bindingType = $idpSsoDescriptor->getFirstSingleLogoutService()?->getBinding();
+        $postBinding = $bindingFactory->create($bindingType);
+
+        $messageContext = new MessageContext();
+        $messageContext->setMessage($logoutRequest);
+
+        $response = $postBinding->send($messageContext);
+        if ($bindingType === SamlConstants::BINDING_SAML2_HTTP_REDIRECT && !$response instanceof RedirectResponse) {
+            $class = get_class($response);
+            throw new HttpException(
+                $response->getStatusCode(),
+                "Excepted RedirectResponse, $class obtained"
+            );
+        }
+
+        return $response;
     }
 }
