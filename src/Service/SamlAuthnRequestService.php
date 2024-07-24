@@ -73,7 +73,7 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
             ->setDestination($idpSsoService->getLocation());
 
         $authnRequest
-            ->setNameIDPolicy((new NameIDPolicy())->setFormat($nameIdFormat))
+            // ->setNameIDPolicy((new NameIDPolicy())->setFormat($nameIdFormat))
             ->setIssuer(new Issuer($spEntityDescriptor->getEntityID()));
 
         $authnRequest

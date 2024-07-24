@@ -110,8 +110,12 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
             $this->responseService->validate($provider, $samlResponse, $isStrict);
         } catch (Exception $e) {
             $this->logger->error('SAML Authentication message validation error', [
-                'exception' => $e,
-                'provider'  => $provider,
+                'exception'      => $e,
+                'provider'       => $provider,
+                'method'         => $request->getMethod(),
+                'uri'            => $request->getRequestUri(),
+                'query_params'   => $request->query->all(),
+                'request_params' => $request->request->all(),
             ]);
             throw new AuthenticationException($e->getMessage());
         }
@@ -170,20 +174,22 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
                                 $providerKey,
                                 $attributes
                             );
-                        } else if ($this->userProvider instanceof SamlUserProviderInterface) {
-                            $this->logger->info('SAML Authentication loading user by identifier', [
-                                'provider'   => $providerKey,
-                                'identifier' => $identifier,
-                            ]);
-
-                            $user = $this->userProvider->loadSamlUser($identifier, $providerKey, $attributes);
                         } else {
-                            $this->logger->info('SAML Authentication loading user by identifier', [
-                                'provider'   => $providerKey,
-                                'identifier' => $identifier,
-                            ]);
+                            if ($this->userProvider instanceof SamlUserProviderInterface) {
+                                $this->logger->info('SAML Authentication loading user by identifier', [
+                                    'provider'   => $providerKey,
+                                    'identifier' => $identifier,
+                                ]);
 
-                            $user = $this->userProvider->loadUserByIdentifier($identifier);
+                                $user = $this->userProvider->loadSamlUser($identifier, $providerKey, $attributes);
+                            } else {
+                                $this->logger->info('SAML Authentication loading user by identifier', [
+                                    'provider'   => $providerKey,
+                                    'identifier' => $identifier,
+                                ]);
+
+                                $user = $this->userProvider->loadUserByIdentifier($identifier);
+                            }
                         }
 
                         if ($user instanceof SamlUserInterface) {
