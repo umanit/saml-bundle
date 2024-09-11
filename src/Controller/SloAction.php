@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Controller;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,13 +18,27 @@ class SloAction extends AbstractController
         string $provider,
         SloServiceInterface $sloService,
         Request $request,
+        ?LoggerInterface $umanitSamlLogger = null
     ): Response {
-        if ($request->query->has('SAMLResponse') || $request->request->has('SAMLResponse')) {
-            $response = $sloService->logout($request, $provider);
-        }
+        $response = null;
 
-        if ($request->query->has('SAMLRequest') || $request->request->has('SAMLRequest')) {
-            $response = $sloService->sendLogoutResponse($provider, $request);
+        try {
+            if ($request->query->has('SAMLResponse') || $request->request->has('SAMLResponse')) {
+                $response = $sloService->logout($request, $provider);
+            }
+
+            if ($request->query->has('SAMLRequest') || $request->request->has('SAMLRequest')) {
+                $response = $sloService->sendLogoutResponse($provider, $request);
+            }
+        } catch (\Throwable $e) {
+            $umanitSamlLogger?->error('SAML SloAction', [
+                'exception'      => $e,
+                'provider'       => $provider,
+                'method'         => $request->getMethod(),
+                'uri'            => $request->getRequestUri(),
+                'query_params'   => $request->query->all(),
+                'request_params' => $request->request->all(),
+            ]);
         }
 
         return $response ?? $this->redirect('/');
