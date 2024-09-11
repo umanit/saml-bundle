@@ -16,14 +16,14 @@
       "email": "tciles@umanit.fr"
     },
     {
-      "name": "Nicolas Glandon",
-      "email": "nglandon@umanit.fr"
+      "name": "Nicolas GANDON",
+      "email": "ngandon@umanit.fr"
     }
   ],
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "litesaml/lightsaml": "^4.1",
+    "litesaml/lightsaml": "^4.2",
     "php": "^8.1|^8.2",
     "psr/log": "^1 || ^2 || ^3",
     "symfony/framework-bundle": "^6|^7",
