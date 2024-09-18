@@ -18,8 +18,12 @@ class RedirectAction extends AbstractController
         Request $request,
         SamlAuthnRequestServiceInterface $authnRequestService
     ): Response {
-        $authnRequest = $authnRequestService->generate($provider);
-        $xml = $authnRequestService->toXML($authnRequest);
+        try {
+            $authnRequest = $authnRequestService->generate($provider);
+            $xml = $authnRequestService->toXML($authnRequest);
+        } catch (\Throwable) {
+            throw $this->createNotFoundException();
+        }
 
         return $this->render('@UmanitSaml/redirect.html.twig', [
             'xml_base_64' => base64_encode($xml),
