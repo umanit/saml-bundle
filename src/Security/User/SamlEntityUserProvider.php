@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Security\User;
 
+use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectManager;
@@ -30,6 +31,7 @@ class SamlEntityUserProvider implements SamlEntityUserProviderInterface
      * @param array<string>               $defaultRoles
      * @param array<mixed>                $restrictions
      * @param array<mixed>                $rolesMapping
+     * @param bool                        $caseInsensitive
      */
     public function __construct(
         protected readonly ManagerRegistry $registry,
@@ -39,6 +41,7 @@ class SamlEntityUserProvider implements SamlEntityUserProviderInterface
         protected readonly array $defaultRoles = [],
         protected readonly array $restrictions = [],
         protected readonly array $rolesMapping = [],
+        protected readonly bool $caseInsensitive = false,
     ) {
     }
 
@@ -153,7 +156,7 @@ class SamlEntityUserProvider implements SamlEntityUserProviderInterface
         $repository = $this->getRepository();
 
         if (null !== $this->property) {
-            $user = $repository->findOneBy([$property => $propertyValue]);
+            $user = $this->findUser($repository, $property, $propertyValue);
         } else {
             if (!$repository instanceof UserLoaderInterface) {
                 throw new InvalidArgumentException(
@@ -178,5 +181,20 @@ class SamlEntityUserProvider implements SamlEntityUserProviderInterface
         $this->refreshRole($user);
 
         return $user;
+    }
+
+    private function findUser(EntityRepository $repository, string $property, string $propertyValue): ?UserInterface {
+        if (!$this->caseInsensitive) {
+            return $repository->findOneBy([$property => $propertyValue]);
+        }
+
+        $qb = $repository->createQueryBuilder('o');
+
+        return $qb->where(sprintf('LOWER(o.%s) = LOWER(:value)', $property))
+           ->setParameter(':value', $propertyValue)
+           ->setMaxResults(1)
+           ->getQuery()
+           ->getOneOrNullResult()
+        ;
     }
 }
