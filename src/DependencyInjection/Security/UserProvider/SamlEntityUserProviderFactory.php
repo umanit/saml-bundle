@@ -28,6 +28,7 @@ class SamlEntityUserProviderFactory implements UserProviderFactoryInterface
             ->addArgument($config['default_roles'])
             ->addArgument($config['restrictions'])
             ->addArgument($config['roles_mapping'])
+            ->addArgument($config['case_insensitive'])
         ;
     }
 
@@ -56,6 +57,7 @@ class SamlEntityUserProviderFactory implements UserProviderFactoryInterface
                 ->end()
                 ->scalarNode('property')->defaultNull()->end()
                 ->scalarNode('manager_name')->defaultNull()->end()
+                ->scalarNode('case_insensitive')->defaultValue(false)->end()
                 ->arrayNode('restrictions')
                     ->arrayPrototype()
                         ->children()
