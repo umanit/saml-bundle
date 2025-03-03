@@ -14,7 +14,7 @@
 
     <form method="post" action="{{ destination }}">
       <input type="submit" style="display:none;" />
-      <input type="hidden" name="SAMLRequest" value="{{ xml_base_64 }}" />
+      <input type="hidden" name="{{ type }}" value="{{ xml_base_64 }}" />
 
       <noscript>
         <input type="submit" value="Submit" />

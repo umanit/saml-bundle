@@ -35,11 +35,19 @@ class RedirectAction extends AbstractController
                 $event = new BeforeSamlResponseEvent($provider);
                 $dispatcher->dispatch($event);
 
-                $samlMessage = $samlResponseService->getSamlResponse($provider, $event->nameIdFormat, $event->attributes);
+                $samlMessage = $samlResponseService->getSamlResponse(
+                    $provider,
+                    $event->nameIdFormat,
+                    $event->attributes
+                );
                 $xml = $samlElementSerializer->toXML($samlMessage);
+
+                $type = 'SAMLResponse';
             } else {
                 $samlMessage = $authnRequestService->generate($provider);
                 $xml = $authnRequestService->toXML($samlMessage);
+
+                $type = 'SAMLRequest';
             }
         } catch (\Throwable) {
             throw $this->createNotFoundException();
@@ -47,7 +55,8 @@ class RedirectAction extends AbstractController
 
         return $this->render('@UmanitSaml/redirect.html.twig', [
             'xml_base_64' => base64_encode($xml),
-            'destination' => $samlMessage->getDestination()
+            'destination' => $samlMessage->getDestination(),
+            'type'        => $type,
         ]);
     }
 }
