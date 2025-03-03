@@ -49,7 +49,7 @@ class SamlResponseService implements SamlResponseServiceInterface
         // SP
         $entityDescriptor = $this->metadataService->getEntityDescriptor($provider);
 
-        $idpSsoDescriptor = $entityDescriptor->getFirstIdpSsoDescriptor();
+        $idpSsoDescriptor = $ownEntityDescriptor->getFirstIdpSsoDescriptor();
         $spSsoDescriptor = $entityDescriptor->getFirstSpSsoDescriptor();
         $acs = $spSsoDescriptor?->getFirstAssertionConsumerService();
         $issuer = $ownEntityDescriptor->getEntityID();
