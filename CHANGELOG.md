@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.0.25] - 2025-03-05
+
+### Fixed
+
+- Changement du namespace pour l'EventDispatcher
+
 ## [1.0.24] - 2025-02-24
 
 ### Fixed
@@ -37,8 +43,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [Authentication] Meilleur gestion du RelayState si vide.
 
-[unreleased]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.24...HEAD
+[unreleased]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.25...HEAD
+
+[1.0.25]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.24...1.0.25
+
 [1.0.24]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.23...1.0.24
+
 [1.0.23]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.22...1.0.23
+
 [1.0.22]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.21...1.0.22
+
 [1.0.21]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.20...1.0.21

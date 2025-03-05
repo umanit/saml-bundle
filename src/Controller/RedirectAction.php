@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Controller;
 
-use Psr\EventDispatcher\EventDispatcherInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
