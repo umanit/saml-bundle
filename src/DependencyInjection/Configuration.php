@@ -27,6 +27,13 @@ class Configuration implements ConfigurationInterface
             ->addDefaultsIfNotSet()
             ->children()
                 ->scalarNode('certificat_path')->defaultValue('%kernel.project_dir%/certs')->end()
+                ->arrayNode('twig_templates')
+                    ->defaultValue([
+                        'redirect' => '@UmanitSaml/redirect.html.twig',
+                    ])
+                    ->useAttributeAsKey('name')
+                    ->scalarPrototype()->end()
+                ->end()
                 ->arrayNode('providers')
                     ->defaultValue([])
                     ->useAttributeAsKey('provider_name')

@@ -137,4 +137,27 @@ class ConfigurationTest extends TestCase
         $configurationService = new ConfigurationService($config);
         $configurationService->getByProvider($provider);
     }
+
+    public static function getRedirectTemplateDataProvider(): array
+    {
+        $dataset[] = [
+            'config'   => [
+                'twig_templates' => [
+                    'redirect' => '@UmanitSaml/redirect.html.twig',
+                ]
+            ],
+            'expected' => '@UmanitSaml/redirect.html.twig',
+        ];
+
+        return $dataset;
+    }
+
+    /**
+     * @dataProvider getRedirectTemplateDataProvider
+     */
+    public function testGetRedirectionTemplate(array $config, string $expected): void
+    {
+        $configurationService = new ConfigurationService($config);
+        $this->assertSame($expected, $configurationService->getRedirectTemplate());
+    }
 }

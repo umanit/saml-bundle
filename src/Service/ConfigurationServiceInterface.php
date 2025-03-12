@@ -23,4 +23,6 @@ interface ConfigurationServiceInterface
     public function getProviderNames(array $tags): array;
 
     public function getNameIdFormat(string $provider): string;
+
+    public function getRedirectTemplate(): string;
 }

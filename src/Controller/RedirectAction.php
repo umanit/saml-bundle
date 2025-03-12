@@ -53,7 +53,7 @@ class RedirectAction extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        return $this->render('@UmanitSaml/redirect.html.twig', [
+        return $this->render($configurationService->getRedirectTemplate(), [
             'xml_base_64' => base64_encode($xml),
             'destination' => $samlMessage->getDestination(),
             'type'        => $type,

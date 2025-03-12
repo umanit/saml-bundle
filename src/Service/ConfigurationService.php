@@ -65,4 +65,9 @@ class ConfigurationService implements ConfigurationServiceInterface
 
         return $config['idp']['name_id_format'] ?? SamlConstants::NAME_ID_FORMAT_UNSPECIFIED;
     }
+
+    public function getRedirectTemplate(): string
+    {
+        return $this->config['twig_templates']['redirect'];
+    }
 }
