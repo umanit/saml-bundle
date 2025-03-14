@@ -54,10 +54,10 @@ class ResponseValidator implements ResponseValidatorInterface
         $this->logger->info('Decrypting assertions');
         $this->decryptAssertions($provider, $samlMessage);
 
-        $this->logger->info('Validating assertion');
-        $this->assertionValidator->validateAssertion($assertion);
-
         if ($strict) {
+            $this->logger->info('Validating assertion');
+            $this->assertionValidator->validateAssertion($assertion);
+
             $this->logger->info('Validating issuer');
             $this->issuerValidator->validate($samlMessage);
 

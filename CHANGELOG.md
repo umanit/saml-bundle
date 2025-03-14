@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.0.27] - 2025-03-14
+
+### Fixed
+
+- Correction du mode non strict pour Esalia
+
 ## [1.0.25] - 2025-03-05
 
 ### Fixed
@@ -43,7 +49,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [Authentication] Meilleur gestion du RelayState si vide.
 
-[unreleased]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.25...HEAD
+[unreleased]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.27...HEAD
+
+[1.0.27]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.26...1.0.27
+
+[1.0.26]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.25...1.0.26
 
 [1.0.25]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.24...1.0.25
 

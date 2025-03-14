@@ -1,5 +1,7 @@
 # Umanit SAML Bundle
 
+https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf
+
 ## Génération de la documentation via Mkdocs
 ```bash
 pip install mkdocs
