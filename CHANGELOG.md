@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.0.28] - 2025-03-27
+
+### Fixed
+
+- Command : gestion des erreurs de mise à jour des metadata
+
 ## [1.0.27] - 2025-03-14
 
 ### Fixed

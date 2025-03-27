@@ -41,10 +41,14 @@ class RefreshIdpMetadataCommand extends Command
         foreach ($providers as $provider) {
             $io->comment(sprintf('Refreshing metadata for provider "%s"', $provider));
 
-            $this->idpMetadataService->clearCache($provider);
-            $entityDescriptor = $this->idpMetadataService->getEntityDescriptor($provider);
+            try {
+                $this->idpMetadataService->clearCache($provider);
+                $entityDescriptor = $this->idpMetadataService->getEntityDescriptor($provider);
 
-            $io->success(sprintf('Metadata refreshed %s => %s.', $provider, $entityDescriptor->getEntityID()));
+                $io->success(sprintf('Metadata refreshed %s => %s.', $provider, $entityDescriptor->getEntityID()));
+            } catch (\Throwable $e) {
+                $io->error($e->getMessage());
+            }
         }
 
         return Command::SUCCESS;
