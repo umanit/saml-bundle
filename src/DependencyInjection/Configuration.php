@@ -100,6 +100,7 @@ class Configuration implements ConfigurationInterface
                             ->arrayNode('idp')
                                 ->children()
                                     ->scalarNode('entity_id')->defaultValue('{{host}}')->info('Entity id, by default the first of the metadata')->end()
+                                    ->booleanNode('disable_ssl_verification')->defaultFalse()->info('Disables SSL certificate verification : useful for connecting to endpoints with self-signed certificates. Not recommended in production')->end()
                                     ->scalarNode('metadata')->info('Metadata URL, File or XML string')->end()
                                     ->scalarNode('metadata_cache_duration')
                                         ->info('Metadata cache duration in seconds')
@@ -151,19 +152,19 @@ class Configuration implements ConfigurationInterface
                         foreach ($providers as $data) {
                             $isSpInitiated = $data['type'] === Mode::SP_INITIATED;
 
-                            if ($isSpInitiated && empty($data['sp']['private_key'])) {
-                                return true;
-                            }
+                    if ($isSpInitiated && empty($data['sp']['private_key'])) {
+                        return true;
+                    }
 
-                            if (!$isSpInitiated && empty($data['idp']['private_key'])) {
-                                return true;
-                            }
-                        }
+                    if (!$isSpInitiated && empty($data['idp']['private_key'])) {
+                        return true;
+                    }
+                }
 
-                        return false;
-                    })
-                    ->thenInvalid('Provider %s must have private_key')
-                ->end()
+                return false;
+            })
+            ->thenInvalid('Provider %s must have private_key')
+            ->end()
             ->end();
         // @formatter:on
 

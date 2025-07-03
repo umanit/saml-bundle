@@ -135,7 +135,7 @@ class MetadataService implements MetadataServiceInterface
 
         return $this->cache->get(
             $tokenId,
-            function (CacheItem $item) use ($metadata, $metadataTtl): string {
+            function (CacheItem $item) use ($metadata, $metadataTtl, $config): string {
                 $item->expiresAfter($metadataTtl);
 
                 $this->logger->debug('Getting metadata from url and save it to cache', [
@@ -143,8 +143,16 @@ class MetadataService implements MetadataServiceInterface
                     'metadataTtl' => $metadataTtl,
                 ]);
 
-                $xml = $this->client->request('GET', $metadata)->getContent();
+                $options = [];
 
+                if (!empty($config['disable_ssl_verification'])) {
+                    $options = [
+                        'verify_peer' => false,
+                        'verify_host' => false,
+                    ];
+                }
+
+                $xml = $this->client->request('GET', $metadata, $options)->getContent();
                 $item->set($xml);
 
                 return $xml;
@@ -253,8 +261,8 @@ class MetadataService implements MetadataServiceInterface
 
         $entityDescriptor = new EntityDescriptor();
         $entityDescriptor->setID(Helper::generateID())
-                         ->setEntityID($this->getEntityId($provider, $config))
-                         ->addItem($descriptor)
+            ->setEntityID($this->getEntityId($provider, $config))
+            ->addItem($descriptor)
         ;
 
         $samlAlgorithmSignature = $config['saml_algorithm_signature']->value;

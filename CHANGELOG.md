@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.0.29] - 2025-07-03
+
+### Added
+
+- Configuration : option pour autoriser les certificats SSL auto-signés sur l'IDP
+
 ## [1.0.28] - 2025-03-27
 
 ### Fixed
