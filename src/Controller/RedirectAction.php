@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Controller;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,6 +28,7 @@ class RedirectAction extends AbstractController
         ConfigurationServiceInterface $configurationService,
         SamlResponseServiceInterface $samlResponseService,
         SamlElementSerializerInterface $samlElementSerializer,
+        LoggerInterface $logger
     ): Response {
         try {
             $config = $configurationService->getByProvider($provider);
@@ -49,7 +51,8 @@ class RedirectAction extends AbstractController
 
                 $type = 'SAMLRequest';
             }
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            $logger->error('SSO redirect error : ' . $e->getMessage());
             throw $this->createNotFoundException();
         }
 
