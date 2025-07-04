@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.0.30] - 2025-07-03
+
+### Added
+
+- Log : ajout de logs quand une erreur se produit au redirect
+
 ## [1.0.29] - 2025-07-03
 
 ### Added
