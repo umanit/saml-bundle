@@ -7,11 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-
 ### Changed
 
-### Removed
+- Retrait de la rotation des logs Monolog
 
 ## [1.0.30] - 2025-07-03
 
@@ -47,13 +45,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- [Redirect] Correction du format 
+- [Redirect] Correction du format
 
 ## [1.0.23] - 2025-02-24
 
 ### Fixed
 
-- [Redirect] Dynamisation du type de message 
+- [Redirect] Dynamisation du type de message
 
 ## [1.0.22] - 2025-02-24
 

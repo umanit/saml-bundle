@@ -23,8 +23,10 @@ class UmanitSamlExtension extends Extension implements PrependExtensionInterface
         $config = $this->processConfiguration($configuration, $configs);
 
         // Injection de la configuration dans le service
-        $container->getDefinition('umanit_saml.service.configuration_service')
-            ->setArgument(0, $config);
+        $container
+            ->getDefinition('umanit_saml.service.configuration_service')
+            ->setArgument(0, $config)
+        ;
 
         $rootName = Configuration::NAME;
         $container->setParameter($rootName, $config);
@@ -42,11 +44,9 @@ class UmanitSamlExtension extends Extension implements PrependExtensionInterface
                     'channels'     => ['umanit_saml'],
                 ],
                 'umanit_saml_file' => [
-                    'type'      => 'rotating_file',
-                    'path'      => '%kernel.logs_dir%/%kernel.environment%_umanit_saml.log',
-                    'level'     => 'debug',
-                    'max_files' => 60,
-                    'channels'  => ['umanit_saml'],
+                    'type'  => 'stream',
+                    'path'  => '%kernel.logs_dir%/%kernel.environment%_umanit_saml.log',
+                    'level' => 'debug',
                 ],
             ],
         ]);
