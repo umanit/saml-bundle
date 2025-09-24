@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.31] - 2025-09-24
+
 ### Changed
 
 - Retrait de la rotation des logs Monolog
@@ -65,7 +67,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [Authentication] Meilleur gestion du RelayState si vide.
 
-[unreleased]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.27...HEAD
+[Unreleased]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.31...HEAD
+
+[1.0.31]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.30...1.0.31
+
+[1.0.30]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.29...1.0.30
+
+[1.0.29]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.28...1.0.29
+
+[1.0.28]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.27...1.0.28
 
 [1.0.27]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.26...1.0.27
 
