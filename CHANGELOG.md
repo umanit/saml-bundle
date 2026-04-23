@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.32] - 2026-04-23
+
 ### Changed
 
 - Mise en place de `#[IsGranted('PUBLIC_ACCESS')]` sur les différents controlleurs
@@ -71,7 +73,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [Authentication] Meilleur gestion du RelayState si vide.
 
-[Unreleased]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.31...HEAD
+[Unreleased]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.32...HEAD
+
+[1.0.32]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.31...1.0.32
 
 [1.0.31]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.30...1.0.31
 
