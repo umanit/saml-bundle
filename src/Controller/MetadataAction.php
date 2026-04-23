@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Controller;
 
-use LightSaml\SamlConstants;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Umanit\SamlBundle\Guesser\BestContentTypeGuesserInterface;
 use Umanit\SamlBundle\Serializer\SamlElementSerializerInterface;
 use Umanit\SamlBundle\Service\MetadataServiceInterface;
 
+#[Route('metadata/{provider<\w+>}', name: 'umanit_saml_metadata')]
+#[IsGranted('PUBLIC_ACCESS')]
 class MetadataAction extends AbstractController
 {
-    #[Route('metadata/{provider<\w+>}', name: 'umanit_saml_metadata')]
     public function __invoke(
         string $provider,
         Request $request,
@@ -30,7 +31,7 @@ class MetadataAction extends AbstractController
         }
 
         return new Response(
-            $entityDescriptorSerializer->toXML($entityDescriptor),
+            $entityDescriptorSerializer->toXml($entityDescriptor),
             Response::HTTP_OK,
             ['Content-Type' => $bestContentTypeGuesser->guessForMetadataRequest($request)]
         );

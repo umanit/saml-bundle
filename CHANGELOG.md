@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Mise en place de `#[IsGranted('PUBLIC_ACCESS')]` sur les différents controlleurs
+
 ## [1.0.31] - 2025-09-24
 
 ### Changed

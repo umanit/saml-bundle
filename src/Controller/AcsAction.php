@@ -7,10 +7,12 @@ namespace Umanit\SamlBundle\Controller;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Service\Attribute\Required;
 use Symfony\Contracts\Service\ServiceSubscriberInterface;
 
 #[Route('acs/{provider<\w+>}', name: 'umanit_saml_acs', methods: ['GET', 'POST'])]
+#[IsGranted('PUBLIC_ACCESS')]
 class AcsAction implements ServiceSubscriberInterface
 {
     protected ContainerInterface $container;

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Umanit\SamlBundle\Controller;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Umanit\SamlBundle\Enums\Mode;
 use Umanit\SamlBundle\Event\BeforeSamlResponseEvent;
 use Umanit\SamlBundle\Serializer\SamlElementSerializerInterface;
@@ -17,9 +18,10 @@ use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\SamlAuthnRequestServiceInterface;
 use Umanit\SamlBundle\Service\SamlResponseServiceInterface;
 
+#[Route('redirect/{provider<\w+>}', name: 'umanit_saml_redirect')]
+#[IsGranted('PUBLIC_ACCESS')]
 class RedirectAction extends AbstractController
 {
-    #[Route('redirect/{provider<\w+>}', name: 'umanit_saml_redirect')]
     public function __invoke(
         string $provider,
         Request $request,
@@ -42,7 +44,7 @@ class RedirectAction extends AbstractController
                     $event->nameIdFormat,
                     $event->attributes
                 );
-                $xml = $samlElementSerializer->toXML($samlMessage);
+                $xml = $samlElementSerializer->toXml($samlMessage);
 
                 $type = 'SAMLResponse';
             } else {

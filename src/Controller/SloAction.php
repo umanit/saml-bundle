@@ -9,9 +9,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Umanit\SamlBundle\Service\SloServiceInterface;
 
 #[Route('slo/{provider<\w+>}', name: 'umanit_saml_slo', methods: ['GET', 'POST'])]
+#[IsGranted('PUBLIC_ACCESS')]
 class SloAction extends AbstractController
 {
     public function __invoke(
