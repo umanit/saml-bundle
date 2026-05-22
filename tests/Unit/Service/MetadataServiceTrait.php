@@ -12,34 +12,10 @@ use Umanit\SamlBundle\Service\X509CertificatServiceInterface;
 
 trait MetadataServiceTrait
 {
-    public function getMockUrlGenerator(): UrlGeneratorInterface
-    {
-        return $this->getMockBuilder(UrlGeneratorInterface::class)
-                    ->disableOriginalConstructor()
-                    ->getMock()
-        ;
-    }
-
-    public function getMockRouter(): RouterInterface
-    {
-        return $this->getMockBuilder(RouterInterface::class)
-                    ->disableOriginalConstructor()
-                    ->getMock()
-        ;
-    }
-
-    public function getX509Service(): X509CertificatServiceInterface
-    {
-        return $this->getMockBuilder(X509CertificatServiceInterface::class)
-                    ->disableOriginalConstructor()
-                    ->getMock()
-        ;
-    }
-
     public static function getMetadata(
         string $entityId,
         ContactPerson $contactPerson,
-        Organization $organization
+        Organization $organization,
     ): string {
         return <<<XML
 <EntityDescriptor
@@ -48,18 +24,25 @@ trait MetadataServiceTrait
     validUntil="2022-07-20T09:48:54Z"
     cacheDuration="PT15M"
     xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
-    xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">
+    >
 
     <IDPSSODescriptor WantAuthnRequestsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
-        <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://idp.identityserver/saml/sso" />
-        <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://idp.identityserver/saml/sso" />
-        <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact" Location="https://idp.identityserver/saml/sso" />
+        <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+            Location="https://idp.identityserver/saml/sso" />
+        <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+            Location="https://idp.identityserver/saml/sso" />
+        <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact"
+            Location="https://idp.identityserver/saml/sso" />
 
-        <SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://idp.identityserver/saml/slo" />
-        <SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://idp.identityserver/saml/slo" />
-        <SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact" Location="https://idp.identityserver/saml/slo" />
+        <SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+            Location="https://idp.identityserver/saml/slo" />
+        <SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+            Location="https://idp.identityserver/saml/slo" />
+        <SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact"
+            Location="https://idp.identityserver/saml/slo" />
 
-        <ArtifactResolutionService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://idp.identityserver/saml/ars" index="0" />
+        <ArtifactResolutionService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
+            Location="https://idp.identityserver/saml/ars" index="0" />
 
         <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
         <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</NameIDFormat>
@@ -96,7 +79,9 @@ GdMxXz1iS6Iv8HIZdyUT
 
     <Organization>
         <OrganizationName xml:lang="en-US">{$organization->getOrganizationName()}</OrganizationName>
-        <OrganizationDisplayName xml:lang="en-US">{$organization->getOrganizationDisplayName()}</OrganizationDisplayName>
+        <OrganizationDisplayName xml:lang="en-US">
+            {$organization->getOrganizationDisplayName()}
+        </OrganizationDisplayName>
         <OrganizationURL xml:lang="en-US">{$organization->getOrganizationURL()}</OrganizationURL>
     </Organization>
 
@@ -106,8 +91,34 @@ GdMxXz1iS6Iv8HIZdyUT
         <SurName>{$contactPerson->getSurName()}</SurName>
         <EmailAddress>{$contactPerson->getEmailAddress()}</EmailAddress>
     </ContactPerson>
-
 </EntityDescriptor>
 XML;
+    }
+
+    public function getMockUrlGenerator(): UrlGeneratorInterface
+    {
+        return $this
+            ->getMockBuilder(UrlGeneratorInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
+    }
+
+    public function getMockRouter(): RouterInterface
+    {
+        return $this
+            ->getMockBuilder(RouterInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
+    }
+
+    public function getX509Service(): X509CertificatServiceInterface
+    {
+        return $this
+            ->getMockBuilder(X509CertificatServiceInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
     }
 }

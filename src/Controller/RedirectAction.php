@@ -55,6 +55,7 @@ class RedirectAction extends AbstractController
             }
         } catch (\Throwable $e) {
             $logger->error('SSO redirect error : ' . $e->getMessage());
+
             throw $this->createNotFoundException();
         }
 

@@ -10,8 +10,8 @@ use Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken;
 class SamlToken extends PostAuthenticationToken
 {
     /**
-     * @param array<string> $roles
-     * @param array<mixed>  $samlAttributes
+     * @param array<string>        $roles
+     * @param array<string, mixed> $samlAttributes
      */
     public function __construct(
         UserInterface $user,
@@ -25,6 +25,21 @@ class SamlToken extends PostAuthenticationToken
         $this->setAttributes($samlAttributes);
     }
 
+    public function __serialize(): array
+    {
+        return [$this->providerKey, parent::__serialize()];
+    }
+
+    /**
+     * @param array<int, mixed> $data
+     */
+    public function __unserialize(array $data): void
+    {
+        [$this->providerKey, $parentData] = $data;
+
+        parent::__unserialize($parentData);
+    }
+
     public function getProviderKey(): string
     {
         return $this->providerKey;
@@ -33,21 +48,5 @@ class SamlToken extends PostAuthenticationToken
     public function setProviderKey(string $providerKey): void
     {
         $this->providerKey = $providerKey;
-    }
-
-    public function __serialize(): array
-    {
-        return [$this->providerKey, parent::__serialize()];
-    }
-
-    /**
-     * @param array<mixed> $data
-     *
-     * @return void
-     */
-    public function __unserialize(array $data): void
-    {
-        [$this->providerKey, $parentData] = $data;
-        parent::__unserialize($parentData);
     }
 }

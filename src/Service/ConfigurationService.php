@@ -59,7 +59,7 @@ class ConfigurationService implements ConfigurationServiceInterface
     {
         $config = $this->getByProvider($provider);
 
-        if ($config['type'] === Mode::SP_INITIATED) {
+        if (Mode::SP_INITIATED === $config['type']) {
             return $config['sp']['name_id_format'] ?? SamlConstants::NAME_ID_FORMAT_UNSPECIFIED;
         }
 

@@ -8,7 +8,6 @@ use LightSaml\Credential\Context\CredentialContextSet;
 use LightSaml\Credential\Context\MetadataCredentialContext;
 use LightSaml\Credential\X509Certificate;
 use LightSaml\Credential\X509Credential;
-use LightSaml\Error\LightSamlSecurityException;
 use LightSaml\Error\LightSamlValidationException;
 use LightSaml\Model\Metadata\KeyDescriptor;
 use LightSaml\Model\Protocol\Response;
@@ -51,7 +50,7 @@ final readonly class SignatureValidator implements SignatureValidatorInterface
             throw new LightSamlValidationException('No signature found in response');
         }
 
-        /** @var KeyDescriptor[] $keyDescriptors */
+        /** @var list<KeyDescriptor> $keyDescriptors */
         $keyDescriptors = $ssoDescriptor->getAllKeyDescriptors();
 
         $credentialCandidates = [];
@@ -72,7 +71,8 @@ final readonly class SignatureValidator implements SignatureValidatorInterface
         }
 
         // On vérifie que la signature est bien faite avec une des clés publiques de l'IdP
-        if (null !== ($x509Thumbprint = $signatureReader->getKey()?->getX509Thumbprint())) {
+        $x509Thumbprint = $signatureReader->getKey()?->getX509Thumbprint();
+        if (null !== $x509Thumbprint) {
             $result = [];
 
             foreach ($credentialCandidates as $credentialCandidate) {
@@ -88,10 +88,6 @@ final readonly class SignatureValidator implements SignatureValidatorInterface
             throw new LightSamlValidationException('No valid credential found for signature');
         }
 
-        try {
-            $credential = $signatureReader->validateMulti($credentialCandidates);
-        } catch (LightSamlSecurityException $e) {
-            throw $e;
-        }
+        $signatureReader->validateMulti($credentialCandidates);
     }
 }

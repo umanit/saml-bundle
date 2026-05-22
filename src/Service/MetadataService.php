@@ -243,14 +243,16 @@ final readonly class MetadataService implements MetadataServiceInterface
         }
 
         $entityDescriptor = new EntityDescriptor();
-        $entityDescriptor->setID(Helper::generateID())
-                         ->setEntityID($this->getEntityId($provider, $config))
-                         ->addItem($descriptor)
+        $entityDescriptor
+            ->setID(Helper::generateID())
+            ->setEntityID($this->getEntityId($provider, $config))
+            ->addItem($descriptor)
         ;
 
         $samlAlgorithmSignature = $config['saml_algorithm_signature']->value;
 
-        if (null !== ($credential = $this->x509CertificatService->getX509Credentials($config))) {
+        $credential = $this->x509CertificatService->getX509Credentials($config);
+        if (null !== $credential) {
             $entityDescriptor->setSignature(
                 $this->x509CertificatService->getSignature($credential, $samlAlgorithmSignature),
             );
@@ -269,9 +271,9 @@ final readonly class MetadataService implements MetadataServiceInterface
             ;
         }
 
-        // @TODO : Ajout section organization
+        // @todo Ajout section organization
 
-        // @TODO : Ajout section contact technical
+        // @todo Ajout section contact technical
 
         return $entityDescriptor;
     }

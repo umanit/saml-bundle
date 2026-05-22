@@ -17,13 +17,9 @@ class AcsAction implements ServiceSubscriberInterface
 {
     protected ContainerInterface $container;
 
-    #[Required]
-    public function setContainer(ContainerInterface $container): ?ContainerInterface
+    public function __invoke(string $provider): Response
     {
-        $previous = $this->container ?? null;
-        $this->container = $container;
-
-        return $previous;
+        throw new \LogicException('Method not implemented');
     }
 
     public static function getSubscribedServices(): array
@@ -31,8 +27,12 @@ class AcsAction implements ServiceSubscriberInterface
         return [];
     }
 
-    public function __invoke(string $provider): Response
+    #[Required]
+    public function setContainer(ContainerInterface $container): ?ContainerInterface
     {
-        throw new \LogicException('Method not implemented');
+        $previous = $this->container ?? null;
+        $this->container = $container;
+
+        return $previous;
     }
 }

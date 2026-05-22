@@ -10,10 +10,10 @@ use LightSaml\Credential\X509Credential;
 use LightSaml\Model\XmlDSig\SignatureWriter;
 use Umanit\SamlBundle\Enums\Mode;
 
-class X509CertificatService implements X509CertificatServiceInterface
+final readonly class X509CertificatService implements X509CertificatServiceInterface
 {
     public function __construct(
-        protected readonly ConfigurationServiceInterface $configurationService,
+        protected ConfigurationServiceInterface $configurationService,
     ) {
     }
 
@@ -21,7 +21,7 @@ class X509CertificatService implements X509CertificatServiceInterface
     {
         $providerConfiguration = $this->configurationService->getByProvider($provider);
 
-        if ($providerConfiguration['type'] === Mode::SP_INITIATED) {
+        if (Mode::SP_INITIATED === $providerConfiguration['type']) {
             $configuration = $providerConfiguration['sp'];
         } else {
             $configuration = $providerConfiguration['idp'];
@@ -88,7 +88,7 @@ class X509CertificatService implements X509CertificatServiceInterface
     {
         $cert = new X509Certificate();
 
-        if ($data === null) {
+        if (null === $data) {
             return $cert;
         }
 

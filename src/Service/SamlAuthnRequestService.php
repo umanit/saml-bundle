@@ -14,13 +14,13 @@ use LightSaml\SamlConstants;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\RequestStack;
 
-class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
+final readonly class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
 {
     public function __construct(
-        protected readonly ConfigurationServiceInterface $configurationService,
-        protected readonly MetadataServiceInterface $metadataService,
-        protected readonly X509CertificatServiceInterface $x509CertificatService,
-        protected readonly RequestStack $requestStack,
+        protected ConfigurationServiceInterface $configurationService,
+        protected MetadataServiceInterface $metadataService,
+        protected X509CertificatServiceInterface $x509CertificatService,
+        protected RequestStack $requestStack,
     ) {
     }
 
@@ -59,8 +59,6 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
             throw new RuntimeException('No AssertionConsumerService found.');
         }
 
-        $nameIdFormat = $spSsoDescriptor->getAllNameIDFormats()[0] ?? SamlConstants::NAME_ID_FORMAT_PERSISTENT;
-
         $authnRequest = new AuthnRequest();
 
         $authnRequest
@@ -68,18 +66,11 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
         ;
 
         $authnRequest
+            ->setAssertionConsumerServiceURL($acsService->getLocation())
             ->setProtocolBinding($acsBindingType)
             ->setIssueInstant(new DateTime())
             ->setDestination($idpSsoService->getLocation())
-        ;
-
-        $authnRequest
-            // ->setNameIDPolicy((new NameIDPolicy())->setFormat($nameIdFormat))
             ->setIssuer(new Issuer($spEntityDescriptor->getEntityID()))
-        ;
-
-        $authnRequest
-            ->setAssertionConsumerServiceURL($acsService->getLocation())
         ;
 
         $isStateless = true === ($config['sp']['is_stateless'] ?? false);

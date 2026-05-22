@@ -14,7 +14,7 @@ use Umanit\SamlBundle\Service\MetadataServiceInterface;
 
 class Configuration implements ConfigurationInterface
 {
-    public const NAME = 'umanit_saml';
+    public const string NAME = 'umanit_saml';
 
     public function getConfigTreeBuilder(): TreeBuilder
     {
@@ -61,7 +61,7 @@ class Configuration implements ConfigurationInterface
                                     ->scalarNode('name_id_format')->info('NameIDFormat')
                                         ->defaultValue(SamlConstants::NAME_ID_FORMAT_PERSISTENT)
                                         ->validate()
-                                            ->ifTrue(fn (string $v) => false === SamlConstants::isNameIdFormatValid($v))
+                                            ->ifTrue(static fn(string $v) => !SamlConstants::isNameIdFormatValid($v))
                                             ->thenInvalid('Invalid NameIDFormat %s')->end()
                                         ->end()
                                     ->arrayNode('acs')->info('Assertion Consumer Service')->addDefaultsIfNotSet()
@@ -99,8 +99,17 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->arrayNode('idp')
                                 ->children()
-                                    ->scalarNode('entity_id')->defaultValue('{{host}}')->info('Entity id, by default the first of the metadata')->end()
-                                    ->booleanNode('disable_ssl_verification')->defaultFalse()->info('Disables SSL certificate verification : useful for connecting to endpoints with self-signed certificates. Not recommended in production')->end()
+                                    ->scalarNode('entity_id')
+                                        ->defaultValue('{{host}}')
+                                        ->info('Entity id, by default the first of the metadata')
+                                    ->end()
+                                    ->booleanNode('disable_ssl_verification')
+                                        ->defaultFalse()
+                                        ->info(
+                                            'Disables SSL certificate verification : useful for connecting to'
+                                            . ' endpoints with self-signed certificates. Not recommended in production',
+                                        )
+                                    ->end()
                                     ->scalarNode('metadata')->info('Metadata URL, File or XML string')->end()
                                     ->scalarNode('metadata_cache_duration')
                                         ->info('Metadata cache duration in seconds')
@@ -109,7 +118,7 @@ class Configuration implements ConfigurationInterface
                                     ->scalarNode('name_id_format')->info('NameIDFormat')
                                         ->defaultValue(SamlConstants::NAME_ID_FORMAT_PERSISTENT)
                                         ->validate()
-                                            ->ifTrue(fn (string $v) => false === SamlConstants::isNameIdFormatValid($v))
+                                            ->ifTrue(static fn(string $v) => !SamlConstants::isNameIdFormatValid($v))
                                             ->thenInvalid('Invalid NameIDFormat %s')->end()
                                         ->end()
                                     ->arrayNode('sso')->info('Single Sign On Service')->addDefaultsIfNotSet()
@@ -148,21 +157,21 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                     ->validate()
-                    ->ifTrue(function (array $providers) {
+                    ->ifTrue(static function (array $providers) {
                         foreach ($providers as $data) {
-                            $isSpInitiated = $data['type'] === Mode::SP_INITIATED;
+                            $isSpInitiated = Mode::SP_INITIATED === $data['type'];
 
-                    if ($isSpInitiated && empty($data['sp']['private_key'])) {
-                        return true;
-                    }
+                            if ($isSpInitiated && empty($data['sp']['private_key'])) {
+                                return true;
+                            }
 
-                    if (!$isSpInitiated && empty($data['idp']['private_key'])) {
-                        return true;
-                    }
-                }
+                            if (!$isSpInitiated && empty($data['idp']['private_key'])) {
+                                return true;
+                            }
+                        }
 
-                return false;
-            })
+                        return false;
+                    })
             ->thenInvalid('Provider %s must have private_key')
             ->end()
             ->end();

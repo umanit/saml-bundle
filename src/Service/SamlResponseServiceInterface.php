@@ -9,11 +9,7 @@ use LightSaml\Model\Protocol\Response;
 interface SamlResponseServiceInterface
 {
     /**
-     * @param string       $provider
-     * @param string       $nameIdValue
-     * @param array<mixed> $attributes
-     *
-     * @return Response
+     * @param array<string, mixed> $attributes
      */
     public function getSamlResponse(string $provider, string $nameIdValue, array $attributes = []): Response;
 

@@ -6,6 +6,8 @@ namespace Unit\Service;
 
 use LightSaml\Model\Metadata\ContactPerson;
 use LightSaml\Model\Metadata\Organization;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\Cache\Adapter\NullAdapter;
@@ -16,12 +18,41 @@ use Umanit\SamlBundle\Enums\Mode;
 use Umanit\SamlBundle\Service\ConfigurationService;
 use Umanit\SamlBundle\Service\MetadataService;
 
-/**
- * @group unit
- */
+#[Group('unit')]
 class MetadataServiceTest extends TestCase
 {
     use MetadataServiceTrait;
+
+    #[DataProvider('getEntityDescriptorDataProvider')]
+    public function testGetEntityDescriptor(string $provider, array $config, ?array $expected): void
+    {
+        $metadataService = new MetadataService(
+            new ConfigurationService($config),
+            $this->getMockUrlGenerator(),
+            $this->getMockRouter(),
+            $this->getX509Service(),
+            new MockHttpClient(
+                new MockResponse(
+                    self::getMetadata(
+                        $expected['entityId'],
+                        $expected['contactPerson'],
+                        $expected['organization'],
+                    ),
+                    [
+                        'http_code' => Response::HTTP_OK,
+                    ],
+                ),
+            ),
+            new NullAdapter(),
+            new NullLogger(),
+        );
+
+        $result = $metadataService->getEntityDescriptor($provider);
+
+        $this->assertEquals($expected['organization'], $result->getFirstOrganization());
+        $this->assertEquals($expected['contactPerson'], $result->getFirstContactPerson());
+        $this->assertEquals($expected['entityId'], $result->getEntityID());
+    }
 
     public static function getEntityDescriptorDataProvider(): array
     {
@@ -47,7 +78,7 @@ class MetadataServiceTest extends TestCase
                 'providers' => [
                     'test' => [
                         'type' => Mode::SP_INITIATED,
-                        'idp' => [
+                        'idp'  => [
                             'metadata' => 'https://idp.identityserver',
                         ],
                     ],
@@ -55,8 +86,8 @@ class MetadataServiceTest extends TestCase
             ],
             'expected' => [
                 'contactPerson' => $contactPerson,
-                'organization' => $organization,
-                'entityId' => 'https://idp.identityserver',
+                'organization'  => $organization,
+                'entityId'      => 'https://idp.identityserver',
             ],
         ];
 
@@ -78,15 +109,15 @@ class MetadataServiceTest extends TestCase
             'provider' => 'test2',
             'config'   => [
                 'providers' => [
-                    'test' => [
+                    'test'  => [
                         'type' => Mode::SP_INITIATED,
-                        'idp' => [
+                        'idp'  => [
                             'metadata' => 'https://idp.identityserver',
                         ],
                     ],
                     'test2' => [
                         'type' => Mode::SP_INITIATED,
-                        'idp' => [
+                        'idp'  => [
                             'metadata' => 'https://idp2.identityserver',
                         ],
                     ],
@@ -94,8 +125,8 @@ class MetadataServiceTest extends TestCase
             ],
             'expected' => [
                 'contactPerson' => $contactPerson,
-                'organization' => $organization,
-                'entityId' => 'https://idp2.identityserver',
+                'organization'  => $organization,
+                'entityId'      => 'https://idp2.identityserver',
             ],
         ];
 
@@ -117,19 +148,19 @@ class MetadataServiceTest extends TestCase
             'provider' => 'test',
             'config'   => [
                 'providers' => [
-                    'test' => [
+                    'test'  => [
                         'type' => Mode::SP_INITIATED,
-                        'idp' => [
+                        'idp'  => [
                             'metadata' => self::getMetadata(
                                 'https://idp.identityserver',
                                 $contactPerson,
-                                $organization
+                                $organization,
                             ),
                         ],
                     ],
                     'test2' => [
                         'type' => Mode::SP_INITIATED,
-                        'idp' => [
+                        'idp'  => [
                             'metadata' => 'https://idp2.identityserver',
                         ],
                     ],
@@ -137,55 +168,11 @@ class MetadataServiceTest extends TestCase
             ],
             'expected' => [
                 'contactPerson' => $contactPerson,
-                'organization' => $organization,
-                'entityId' => 'https://idp.identityserver',
+                'organization'  => $organization,
+                'entityId'      => 'https://idp.identityserver',
             ],
         ];
 
         return $dataset;
-    }
-
-    /**
-     * @dataProvider getEntityDescriptorDataProvider
-     */
-    public function testGetEntityDescriptor(
-        string $provider,
-        array $config,
-        ?array $expected
-    ): void {
-        $configurationService = new ConfigurationService($config);
-
-        $mockedHttpClient = new MockHttpClient(
-            new MockResponse(
-                self::getMetadata(
-                    $expected['entityId'],
-                    $expected['contactPerson'],
-                    $expected['organization']
-                ),
-                [
-                    'http_code' => Response::HTTP_OK,
-                ]
-            )
-        );
-
-        $urlGenerator = $this->getMockUrlGenerator();
-        $router = $this->getMockRouter();
-        $X509CertificatService = $this->getX509Service();
-
-        $metadataService = new MetadataService(
-            $configurationService,
-            $urlGenerator,
-            $router,
-            $X509CertificatService,
-            $mockedHttpClient,
-            new NullAdapter(),
-            new NullLogger()
-        );
-
-        $result = $metadataService->getEntityDescriptor($provider);
-
-        $this->assertEquals($expected['organization'], $result->getFirstOrganization());
-        $this->assertEquals($expected['contactPerson'], $result->getFirstContactPerson());
-        $this->assertEquals($expected['entityId'], $result->getEntityID());
     }
 }

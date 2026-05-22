@@ -6,20 +6,20 @@ namespace Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge;
 
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\BadgeInterface;
 
-class SamlAttributesBadge implements BadgeInterface
+final readonly class SamlAttributesBadge implements BadgeInterface
 {
     /**
-     * @param array<mixed> $attributes
-     * @param array<mixed> $samlRestrictions
+     * @param array<string, mixed> $attributes
+     * @param array<int, mixed>    $samlRestrictions
      */
     public function __construct(
-        private readonly array $attributes,
-        private readonly array $samlRestrictions = [],
+        private array $attributes,
+        private array $samlRestrictions = [],
     ) {
     }
 
     /**
-     * @return mixed[]
+     * @return array<int, mixed>
      */
     public function getSamlRestrictions(): array
     {
@@ -27,7 +27,7 @@ class SamlAttributesBadge implements BadgeInterface
     }
 
     /**
-     * @return mixed[]
+     * @return array<string, mixed>
      */
     public function getAttributes(): array
     {

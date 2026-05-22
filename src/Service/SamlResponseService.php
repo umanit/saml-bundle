@@ -25,22 +25,15 @@ use LightSaml\Model\Protocol\StatusCode;
 use LightSaml\SamlConstants;
 use RuntimeException;
 
-class SamlResponseService implements SamlResponseServiceInterface
+final readonly class SamlResponseService implements SamlResponseServiceInterface
 {
     public function __construct(
-        private readonly ConfigurationServiceInterface $configurationService,
-        private readonly MetadataServiceInterface $metadataService,
-        private readonly X509CertificatServiceInterface $x509CertificatService,
+        private ConfigurationServiceInterface $configurationService,
+        private MetadataServiceInterface $metadataService,
+        private X509CertificatServiceInterface $x509CertificatService,
     ) {
     }
 
-    /**
-     * @param string       $provider
-     * @param string       $nameIdValue
-     * @param array<mixed> $attributes
-     *
-     * @return Response
-     */
     public function getSamlResponse(string $provider, string $nameIdValue, array $attributes = []): Response
     {
         // IDP
@@ -125,6 +118,20 @@ class SamlResponseService implements SamlResponseServiceInterface
         return $response;
     }
 
+    public function toXML(Response $response): string
+    {
+        $serializationContext = new SerializationContext();
+        $response->serialize($serializationContext->getDocument(), $serializationContext);
+
+        $xml = $serializationContext->getDocument()->saveXML();
+
+        if (false === $xml) {
+            throw new RuntimeException('Unable to save XML');
+        }
+
+        return $xml;
+    }
+
     private function signResponse(Response $response, string $provider): void
     {
         $credential = $this->x509CertificatService->getIdpCredential($provider);
@@ -157,19 +164,5 @@ class SamlResponseService implements SamlResponseServiceInterface
         }
 
         $assertion->addItem($attributesStatement);
-    }
-
-    public function toXML(Response $response): string
-    {
-        $serializationContext = new SerializationContext();
-        $response->serialize($serializationContext->getDocument(), $serializationContext);
-
-        $xml = $serializationContext->getDocument()->saveXML();
-
-        if (false === $xml) {
-            throw new RuntimeException('Unable to save XML');
-        }
-
-        return $xml;
     }
 }

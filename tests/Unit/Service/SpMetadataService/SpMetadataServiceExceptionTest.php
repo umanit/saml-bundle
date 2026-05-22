@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unit\Service\SpMetadataService;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use RuntimeException;
@@ -18,6 +19,31 @@ use Unit\Service\MetadataServiceTrait;
 class SpMetadataServiceExceptionTest extends TestCase
 {
     use MetadataServiceTrait;
+
+    #[DataProvider('getEntityDescriptorExceptionDataProvider')]
+    public function testGetEntityDescriptorException(string $provider, array $config, string $expected): void
+    {
+        $spMetadataService = new MetadataService(
+            new ConfigurationService($config),
+            $this->getMockUrlGenerator(),
+            $this->getMockRouter(),
+            $this->getX509Service(),
+            new MockHttpClient(
+                new MockResponse(
+                    '',
+                    [
+                        'http_code' => Response::HTTP_OK,
+                    ],
+                ),
+            ),
+            new NullAdapter(),
+            new NullLogger(),
+        );
+
+        $this->expectException($expected);
+
+        $spMetadataService->getEntityDescriptor($provider);
+    }
 
     public static function getEntityDescriptorExceptionDataProvider(): array
     {
@@ -49,41 +75,5 @@ class SpMetadataServiceExceptionTest extends TestCase
         ];
 
         return $dataset;
-    }
-
-    /**
-     * @dataProvider getEntityDescriptorExceptionDataProvider
-     */
-    public function testGetEntityDescriptorException(
-        string $provider,
-        array $config,
-        string $expected
-    ): void {
-        $mockedHttpClient = new MockHttpClient(
-            new MockResponse(
-                '',
-                [
-                    'http_code' => Response::HTTP_OK,
-                ]
-            )
-        );
-        $configurationService = new ConfigurationService($config);
-        $urlGenerator = $this->getMockUrlGenerator();
-        $router = $this->getMockRouter();
-        $X509CertificatService = $this->getX509Service();
-
-        $spMetadataService = new MetadataService(
-            $configurationService,
-            $urlGenerator,
-            $router,
-            $X509CertificatService,
-            $mockedHttpClient,
-            new NullAdapter(),
-            new NullLogger()
-        );
-
-        $this->expectException($expected);
-
-        $spMetadataService->getEntityDescriptor($provider);
     }
 }
