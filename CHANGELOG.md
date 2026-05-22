@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-05-22
+
 ### Added
 
 - Ajout du support de PHP 8.4
@@ -83,7 +85,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [Authentication] Meilleur gestion du RelayState si vide.
 
-[Unreleased]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.32...HEAD
+[Unreleased]: https://holygit.umanit.fr/umanit/saml-bundle/compare/2.0.0...HEAD
+
+[2.0.0]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.32...2.0.0
 
 [1.0.32]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.31...1.0.32
 
