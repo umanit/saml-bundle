@@ -8,3 +8,4 @@ junit.xml
 *.cache
 *.log
 /var/
+.phpcs-cache

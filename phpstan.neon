@@ -4,7 +4,19 @@ includes:
     - vendor/phpstan/phpstan-symfony/extension.neon
     - vendor/phpstan/phpstan-symfony/rules.neon
 
+rules:
+    - Umanit\DevBundle\PHPStan\Rules\EnsureFunctionBackslashRule
+    - Umanit\DevBundle\PHPStan\Rules\NoWhereOnQueryBuilderRule
+
 parameters:
     level: 7
     paths:
         - src/
+    symfony:
+        constantHassers: false
+    scanFiles:
+        - vendor/symfony/dependency-injection/Loader/Configurator/ContainerConfigurator.php
+    ignoreErrors:
+        - message: '#Call to function is_a\(\) with arguments class-string<Umanit\\SamlBundle\\Security\\User\\SamlUserInterface>, ''Umanit\\\\SamlBundle\\\\Security\\\\User\\\\SamlUserInterface'' and true will always evaluate to true\.#'
+          paths:
+            - src/Security/User/SamlUserProvider.php

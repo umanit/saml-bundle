@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Ajout du support de PHP 8.4
+- [Dev] Mise en place de `umanit/dev-bundle`
+
+### Removed
+
+- Retrait du support de PHP <8.4
+- Retrait du support de Symfony <7.4
+
 ## [1.0.32] - 2026-04-23
 
 ### Changed
