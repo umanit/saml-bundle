@@ -1,0 +1,9 @@
+include:
+    -   project: 'umanit/ci-templates'
+        file: 'symfony.yaml'
+
+variables:
+    PHP_VERSION: '8.4'
+    PHPUNIT_EXTRA_ARGS: '--log-junit junit.xml --coverage-cobertura cobertura.xml --coverage-text --only-summary-for-coverage-text'
+    SYMFONY_DEPRECATIONS_HELPER: 'disabled=1'
+    TRIVY_ENABLED: '1'
