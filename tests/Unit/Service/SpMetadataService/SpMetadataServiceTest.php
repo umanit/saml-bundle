@@ -14,6 +14,7 @@ use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Umanit\SamlBundle\Enums\Mode;
+use Umanit\SamlBundle\Enums\SamlEncryptionSignature;
 use Umanit\SamlBundle\Service\ConfigurationService;
 use Umanit\SamlBundle\Service\MetadataService;
 use Unit\Service\MetadataServiceTrait;
@@ -86,13 +87,14 @@ class SpMetadataServiceTest extends TestCase
                     'test' => [
                         'type' => Mode::SP_INITIATED,
                         'sp'   => [
-                            'entity_id' => 'https://test-entity-id.wip',
-                            'acs'       => [
+                            'entity_id'                => 'https://test-entity-id.wip',
+                            'acs'                      => [
                                 'url' => 'https://saml-bundle.wip/saml2/acs/microsoft_umanit_provider',
                             ],
-                            'slo'       => [
+                            'slo'                      => [
                                 'url' => 'https://saml-bundle.wip/saml2/slo/microsoft_umanit_provider',
                             ],
+                            'saml_algorithm_signature' => SamlEncryptionSignature::SHA256,
                         ],
                         'idp'  => [
                             'metadata' => 'https://idp.identityserver',

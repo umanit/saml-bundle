@@ -12,6 +12,7 @@ use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Umanit\SamlBundle\Enums\Mode;
 use Umanit\SamlBundle\Service\ConfigurationService;
 use Umanit\SamlBundle\Service\MetadataService;
 use Unit\Service\MetadataServiceTrait;
@@ -54,7 +55,8 @@ class SpMetadataServiceExceptionTest extends TestCase
             'config'   => [
                 'providers' => [
                     'test' => [
-                        'sp' => [
+                        'type' => Mode::IDP_INITIATED,
+                        'sp'   => [
                             'entity_id' => 'https://test-entity-id.wip',
                         ],
                     ],

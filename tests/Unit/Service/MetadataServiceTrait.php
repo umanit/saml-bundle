@@ -79,9 +79,8 @@ GdMxXz1iS6Iv8HIZdyUT
 
     <Organization>
         <OrganizationName xml:lang="en-US">{$organization->getOrganizationName()}</OrganizationName>
-        <OrganizationDisplayName xml:lang="en-US">
-            {$organization->getOrganizationDisplayName()}
-        </OrganizationDisplayName>
+        <OrganizationDisplayName
+          xml:lang="en-US">{$organization->getOrganizationDisplayName()}</OrganizationDisplayName>
         <OrganizationURL xml:lang="en-US">{$organization->getOrganizationURL()}</OrganizationURL>
     </Organization>
 
