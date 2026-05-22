@@ -13,7 +13,7 @@ use Umanit\SamlBundle\Enums\Mode;
 class X509CertificatService implements X509CertificatServiceInterface
 {
     public function __construct(
-        protected readonly ConfigurationServiceInterface $configurationService
+        protected readonly ConfigurationServiceInterface $configurationService,
     ) {
     }
 
@@ -70,8 +70,8 @@ class X509CertificatService implements X509CertificatServiceInterface
                 $privateKey,
                 $privateKeyPassphrase,
                 $isFile,
-                $privateKeyEncryption
-            )
+                $privateKeyEncryption,
+            ),
         );
     }
 
@@ -80,7 +80,7 @@ class X509CertificatService implements X509CertificatServiceInterface
         return new SignatureWriter(
             $credential->getCertificate(),
             $credential->getPrivateKey(),
-            $algorithmSignature
+            $algorithmSignature,
         );
     }
 

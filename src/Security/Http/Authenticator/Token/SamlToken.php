@@ -11,14 +11,14 @@ class SamlToken extends PostAuthenticationToken
 {
     /**
      * @param array<string> $roles
-     * @param array<mixed> $samlAttributes
+     * @param array<mixed>  $samlAttributes
      */
     public function __construct(
         UserInterface $user,
         string $firewallName,
         array $roles,
         array $samlAttributes,
-        private string $providerKey = 'saml'
+        private string $providerKey = 'saml',
     ) {
         parent::__construct($user, $firewallName, $roles);
 

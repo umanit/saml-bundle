@@ -24,14 +24,10 @@ class SamlEntityUserProvider implements SamlEntityUserProviderInterface
     protected string $class;
 
     /**
-     * @param ManagerRegistry             $registry
      * @param class-string<UserInterface> $classOrAlias
-     * @param string|null                 $property
-     * @param string|null                 $managerName
-     * @param array<string>               $defaultRoles
-     * @param array<mixed>                $restrictions
-     * @param array<mixed>                $rolesMapping
-     * @param bool                        $caseInsensitive
+     * @param list<string>                $defaultRoles
+     * @param array<string, mixed>        $restrictions
+     * @param array<string, mixed>        $rolesMapping
      */
     public function __construct(
         protected readonly ManagerRegistry $registry,
@@ -72,7 +68,7 @@ class SamlEntityUserProvider implements SamlEntityUserProviderInterface
         $class = $this->getClass();
 
         if (!$user instanceof $class) {
-            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', get_debug_type($user)));
+            throw new UnsupportedUserException(\sprintf('Instances of "%s" are not supported.', get_debug_type($user)));
         }
 
         $repository = $this->getRepository();
@@ -84,9 +80,11 @@ class SamlEntityUserProvider implements SamlEntityUserProviderInterface
             // might have changed without proper persistence in the database.
             // That's the case when the user has been changed by a form with
             // validation errors.
-            if (!$id = $this->getClassMetadata()->getIdentifierValues($user)) {
+            $id = $this->getClassMetadata()->getIdentifierValues($user);
+            if ([] === $id) {
                 throw new InvalidArgumentException(
-                    'You cannot refresh a user from the EntityUserProvider that does not contain an identifier. The user object has to be serialized with its own identifier mapped by Doctrine.'
+                    'You cannot refresh a user from the EntityUserProvider that does not contain an identifier.'
+                    . ' The user object has to be serialized with its own identifier mapped by Doctrine.',
                 );
             }
 
@@ -94,7 +92,6 @@ class SamlEntityUserProvider implements SamlEntityUserProviderInterface
             $refreshedUser = $repository->find($id);
 
             if (null === $refreshedUser) {
-                /** @var string $serializedId */
                 $serializedId = json_encode($id, JSON_THROW_ON_ERROR);
                 $e = new UserNotFoundException('User with id ' . $serializedId . ' not found.');
                 $e->setUserIdentifier($serializedId);
@@ -156,15 +153,27 @@ class SamlEntityUserProvider implements SamlEntityUserProviderInterface
         $repository = $this->getRepository();
 
         if (null !== $this->property) {
+            if (!$repository instanceof EntityRepository) {
+                throw new InvalidArgumentException(
+                    \sprintf(
+                        'Repository for "%s" must be an instance of "%s".',
+                        $this->classOrAlias,
+                        EntityRepository::class,
+                    ),
+                );
+            }
+
             $user = $this->findUser($repository, $property, $propertyValue);
         } else {
             if (!$repository instanceof UserLoaderInterface) {
                 throw new InvalidArgumentException(
-                    sprintf(
-                        'You must either make the "%s" entity Doctrine Repository ("%s") implement "Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface" or set the "property" option in the corresponding entity provider configuration.',
+                    \sprintf(
+                        'You must either make the "%s" entity Doctrine Repository ("%s") implement "%s" or set'
+                        . ' the "property" option in the corresponding entity provider configuration.',
                         $this->classOrAlias,
-                        get_debug_type($repository)
-                    )
+                        get_debug_type($repository),
+                        UserLoaderInterface::class,
+                    ),
                 );
             }
 
@@ -172,7 +181,7 @@ class SamlEntityUserProvider implements SamlEntityUserProviderInterface
         }
 
         if (null === $user) {
-            $e = new UserNotFoundException(sprintf('User "%s" not found.', $propertyValue));
+            $e = new UserNotFoundException(\sprintf('User "%s" not found.', $propertyValue));
             $e->setUserIdentifier($propertyValue);
 
             throw $e;
@@ -183,18 +192,26 @@ class SamlEntityUserProvider implements SamlEntityUserProviderInterface
         return $user;
     }
 
-    private function findUser(EntityRepository $repository, string $property, string $propertyValue): ?UserInterface {
+    /**
+     * @param EntityRepository<UserInterface> $repository
+     */
+    private function findUser(EntityRepository $repository, string $property, string $propertyValue): ?UserInterface
+    {
         if (!$this->caseInsensitive) {
-            return $repository->findOneBy([$property => $propertyValue]);
+            /** @var ?UserInterface $result */
+            $result = $repository->findOneBy([$property => $propertyValue]);
+
+            return $result;
         }
 
         $qb = $repository->createQueryBuilder('o');
 
-        return $qb->where(sprintf('LOWER(o.%s) = LOWER(:value)', $property))
-           ->setParameter(':value', $propertyValue)
-           ->setMaxResults(1)
-           ->getQuery()
-           ->getOneOrNullResult()
+        return $qb
+            ->andWhere(\sprintf('LOWER(o.%s) = LOWER(:value)', $property))
+            ->setParameter(':value', $propertyValue)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
         ;
     }
 }

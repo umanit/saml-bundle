@@ -17,7 +17,7 @@ class SsoAction extends AbstractController
     public function __invoke(
         Request $request,
         InboundServiceInterface $inboundService,
-        string $provider
+        string $provider,
     ): void {
         $samlMessage = $inboundService->getSamlMessage($request);
         $inboundService->validateSignature($provider, $samlMessage);

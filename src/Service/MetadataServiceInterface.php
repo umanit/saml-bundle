@@ -8,7 +8,7 @@ use LightSaml\Model\Metadata\EntityDescriptor;
 
 interface MetadataServiceInterface
 {
-    public const DEFAULT_METADATA_CACHE_DURATION = 3600;
+    public const int DEFAULT_METADATA_CACHE_DURATION = 3600;
 
     /**
      * Générer l'EntityDescriptor pour l'application.
@@ -22,10 +22,6 @@ interface MetadataServiceInterface
     /**
      * Récupère le XML des metadata pour générer l'EntityDescriptor.
      * Le XML est récupéré via une URL ou un fichier ou une chaîne de caractères.
-     *
-     * @param string $provider
-     *
-     * @return EntityDescriptor
      */
     public function getEntityDescriptor(string $provider): EntityDescriptor;
 
@@ -34,17 +30,11 @@ interface MetadataServiceInterface
      * Le XML est récupéré via une URL ou un fichier ou une chaîne de caractères.
      *
      * @param array<string, mixed> $config
-     *
-     * @return string|null
      */
-    public function getMetadataXml(array $config): ?string;
+    public function getMetadataXml(array $config): string;
 
     /**
      * Nettoie le cache des metadata.
-     *
-     * @param string $provider
-     *
-     * @return void
      */
     public function clearCache(string $provider): void;
 }

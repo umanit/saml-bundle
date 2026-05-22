@@ -14,7 +14,7 @@ class SamlUserProvider implements SamlUserProviderInterface
 
     /**
      * @param class-string<SamlUserInterface> $userClass
-     * @param array<string>                   $defaultRoles
+     * @param list<string>                   $defaultRoles
      * @param array<mixed>                    $restrictions
      * @param array<mixed>                    $rolesMapping
      */
@@ -26,7 +26,10 @@ class SamlUserProvider implements SamlUserProviderInterface
     ) {
         if (!is_a($userClass, SamlUserInterface::class, true)) {
             throw new InvalidArgumentException(
-                'The $userClass argument should be a class implementing the ' . SamlUserInterface::class . ' interface.'
+                \sprintf(
+                    'The $userClass argument should be a class implementing the %s interface.',
+                    SamlUserInterface::class,
+                ),
             );
         }
     }

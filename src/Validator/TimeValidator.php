@@ -13,7 +13,7 @@ class TimeValidator implements TimeValidatorInterface
     public function __construct(
         protected readonly AssertionTimeValidatorInterface $assertionTimeValidator,
         protected readonly TimeProviderInterface $timeProvider,
-        protected int $allowedSecondsSkew = 120
+        protected int $allowedSecondsSkew = 120,
     ) {
     }
 
@@ -22,7 +22,7 @@ class TimeValidator implements TimeValidatorInterface
         $this->assertionTimeValidator->validateTimeRestrictions(
             $assertion,
             $this->timeProvider->getTimestamp(),
-            $this->allowedSecondsSkew
+            $this->allowedSecondsSkew,
         );
     }
 }

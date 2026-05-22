@@ -20,6 +20,9 @@ interface SamlEntityUserProviderInterface extends SamlUserProviderInterface
 
     public function getClass(): string;
 
+    /**
+     * @return ClassMetadata<UserInterface>
+     */
     public function getClassMetadata(): ClassMetadata;
 
     public function loadUserByProperty(string $property, string $propertyValue): UserInterface;

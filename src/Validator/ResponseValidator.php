@@ -7,36 +7,38 @@ namespace Umanit\SamlBundle\Validator;
 use LightSaml\Criteria\CriteriaSet;
 use LightSaml\Error\LightSamlValidationException;
 use LightSaml\Model\Assertion\EncryptedAssertionReader;
+use LightSaml\Model\Assertion\Subject;
 use LightSaml\Model\Context\DeserializationContext;
 use LightSaml\Model\Metadata\AssertionConsumerService;
 use LightSaml\Model\Metadata\SpSsoDescriptor;
 use LightSaml\Model\Protocol\Response;
+use LightSaml\Model\Protocol\Status;
 use LightSaml\Model\Protocol\StatusResponse;
 use LightSaml\Resolver\Endpoint\Criteria\DescriptorTypeCriteria;
 use LightSaml\Resolver\Endpoint\Criteria\LocationCriteria;
 use LightSaml\Resolver\Endpoint\Criteria\ServiceTypeCriteria;
 use LightSaml\Resolver\Endpoint\DescriptorTypeEndpointResolver;
+use LightSaml\Validator\Model\Assertion\AssertionValidatorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\MetadataServiceInterface;
-use LightSaml\Validator\Model\Assertion\AssertionValidatorInterface;
 use Umanit\SamlBundle\Service\X509CertificatServiceInterface;
 
-class ResponseValidator implements ResponseValidatorInterface
+final readonly class ResponseValidator implements ResponseValidatorInterface
 {
-    private const MAX_VALIDATION_TIME_FOR_ID = 120;
+    private const int MAX_VALIDATION_TIME_FOR_ID = 120;
 
     public function __construct(
-        protected readonly ConfigurationServiceInterface $configurationService,
-        protected readonly MetadataServiceInterface $metadataService,
-        protected readonly X509CertificatServiceInterface $x509CertificatService,
-        protected readonly AdapterInterface $cache,
-        protected readonly AssertionValidatorInterface $assertionValidator,
-        protected readonly SignatureValidatorInterface $signatureValidator,
-        protected readonly IssuerValidatorInterface $issuerValidator,
-        protected readonly TimeValidatorInterface $timeValidator,
-        protected readonly LoggerInterface $logger
+        protected ConfigurationServiceInterface $configurationService,
+        protected MetadataServiceInterface $metadataService,
+        protected X509CertificatServiceInterface $x509CertificatService,
+        protected AdapterInterface $cache,
+        protected AssertionValidatorInterface $assertionValidator,
+        protected SignatureValidatorInterface $signatureValidator,
+        protected IssuerValidatorInterface $issuerValidator,
+        protected TimeValidatorInterface $timeValidator,
+        protected LoggerInterface $logger,
     ) {
     }
 
@@ -77,6 +79,7 @@ class ResponseValidator implements ResponseValidatorInterface
 
     protected function validateStatus(StatusResponse $samlMessage): void
     {
+        /** @var ?Status $status */
         $status = $samlMessage->getStatus();
 
         if (null === $status) {
@@ -115,6 +118,7 @@ class ResponseValidator implements ResponseValidatorInterface
             throw new LightSamlValidationException('No assertion found in response');
         }
 
+        /** @var ?Subject $subject */
         $subject = $assertion->getSubject();
 
         if (null === $subject) {
@@ -147,13 +151,13 @@ class ResponseValidator implements ResponseValidatorInterface
 
         $spEntityDescriptor = $this->metadataService->getOwnEntityDescriptor($provider);
 
-        $endpoints = (new DescriptorTypeEndpointResolver())
+        $endpoints = new DescriptorTypeEndpointResolver()
             ->resolve($criteriaSet, $spEntityDescriptor->getAllEndpoints())
         ;
 
         if (empty($endpoints)) {
             throw new LightSamlValidationException(
-                sprintf('No endpoint found for recipient "%s"', $recipient)
+                \sprintf('No endpoint found for recipient "%s"', $recipient),
             );
         }
     }
@@ -169,7 +173,7 @@ class ResponseValidator implements ResponseValidatorInterface
         $id = $assertion->getID();
         $issuerValue = $samlMessage->getIssuer()?->getValue();
 
-        $key = sprintf('%s-%s', $issuerValue, $id);
+        $key = \sprintf('%s-%s', $issuerValue, $id);
 
         if ($this->cache->hasItem($key)) {
             throw new LightSamlValidationException('Repeated ID found in response');

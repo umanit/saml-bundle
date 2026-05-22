@@ -16,14 +16,13 @@ use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 
 #[AsCommand(
     name: 'umanit:saml:create-certificat',
-    description: 'Create a new X509 certificate and private key'
+    description: 'Create a new X509 certificate and private key',
 )]
 class CreateCertificatCommand extends Command
 {
     public function __construct(
         protected ConfigurationServiceInterface $configurationService,
-    )
-    {
+    ) {
         parent::__construct();
     }
 
@@ -36,28 +35,28 @@ class CreateCertificatCommand extends Command
             ->addArgument(
                 'name',
                 InputOption::VALUE_REQUIRED,
-                'Name of the certificate'
+                'Name of the certificate',
             )
             ->addOption(
                 'days',
                 null,
                 InputOption::VALUE_OPTIONAL,
                 'Number of days the certificate is valid',
-                365
+                365,
             )
             ->addOption(
                 'keyname',
                 null,
                 InputOption::VALUE_OPTIONAL,
                 'Name of the private key file',
-                'saml.key'
+                'saml.key',
             )
             ->addOption(
                 'certname',
                 null,
                 InputOption::VALUE_OPTIONAL,
                 'Name of the certificate file',
-                'saml.crt'
+                'saml.crt',
             )
         ;
     }
@@ -94,7 +93,7 @@ class CreateCertificatCommand extends Command
             !mkdir($concurrentDirectory = $storagePath, 0755, true) &&
             !is_dir($concurrentDirectory)
         ) {
-            throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+            throw new RuntimeException(\sprintf('Directory "%s" was not created', $concurrentDirectory));
         }
 
         $keyStoragePath = $storagePath . DIRECTORY_SEPARATOR . $keyname;

@@ -16,7 +16,7 @@ class SendMessageService implements SendMessageServiceInterface
 {
     public function __construct(
         protected readonly ConfigurationServiceInterface $configurationService,
-        protected ?MessageContext $messageContext = null
+        protected ?MessageContext $messageContext = null,
     ) {
         $this->messageContext = new MessageContext();
     }
@@ -28,7 +28,7 @@ class SendMessageService implements SendMessageServiceInterface
 
         if ($this->messageContext->getMessage() instanceof SamlMessage) {
             $messageContext->getMessage()->setRelayState(
-                $this->messageContext->getMessage()->getRelayState()
+                $this->messageContext->getMessage()->getRelayState(),
             );
         }
 

@@ -24,7 +24,7 @@ use Symfony\Component\Security\Core\Exception\LogoutException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Umanit\SamlBundle\Validator\SloValidatorInterface;
 
-class SloService implements SloServiceInterface
+final readonly class SloService implements SloServiceInterface
 {
     public function __construct(
         protected SamlMessageServiceInterface $samlMessageService,
@@ -63,14 +63,14 @@ class SloService implements SloServiceInterface
         $logoutResponse = new LogoutResponse();
         $logoutResponse
             ->setStatus($status)
-            ->setId(Helper::generateID())
-            ->setInResponseTo($logoutRequest->getId())
+            ->setInResponseTo($logoutRequest->getID())
             ->setIssueInstant(new \DateTime())
             ->setDestination(
-                $remoteEntityDescriptor->getFirstSpSsoDescriptor()?->getFirstSingleLogoutService()?->getLocation()
+                $remoteEntityDescriptor->getFirstSpSsoDescriptor()?->getFirstSingleLogoutService()?->getLocation(),
             )
             ->setIssuer(new Issuer($this->metadataService->getOwnEntityDescriptor($provider)->getEntityID()))
             ->setSignature($this->x509CertificatService->getOwnSignature($provider))
+            ->setID(Helper::generateID())
         ;
 
         $bindingFactory = new BindingFactory();
@@ -84,11 +84,10 @@ class SloService implements SloServiceInterface
 
         $response = $postBinding->send($messageContext);
 
-        if ($bindingType === SamlConstants::BINDING_SAML2_HTTP_REDIRECT && !$response instanceof RedirectResponse) {
-            $class = get_class($response);
+        if (SamlConstants::BINDING_SAML2_HTTP_REDIRECT === $bindingType && !$response instanceof RedirectResponse) {
             throw new HttpException(
                 $response->getStatusCode(),
-                "Excepted RedirectResponse, $class obtained"
+                \sprintf('Excepted %s, %s obtained', RedirectResponse::class, $response::class),
             );
         }
 
@@ -162,7 +161,7 @@ class SloService implements SloServiceInterface
 
         $logoutRequest = new LogoutRequest();
         $logoutRequest
-            ->setId(Helper::generateID())
+            ->setID(Helper::generateID())
             ->setIssueInstant(new \DateTime())
             ->setDestination($idpSsoDescriptor->getFirstSingleLogoutService()?->getLocation())
             ->setIssuer($issuer)
@@ -179,11 +178,10 @@ class SloService implements SloServiceInterface
         $messageContext->setMessage($logoutRequest);
 
         $response = $postBinding->send($messageContext);
-        if ($bindingType === SamlConstants::BINDING_SAML2_HTTP_REDIRECT && !$response instanceof RedirectResponse) {
-            $class = get_class($response);
+        if (SamlConstants::BINDING_SAML2_HTTP_REDIRECT === $bindingType && !$response instanceof RedirectResponse) {
             throw new HttpException(
                 $response->getStatusCode(),
-                "Excepted RedirectResponse, $class obtained"
+                \sprintf('Excepted %s, %s obtained', RedirectResponse::class, $response::class),
             );
         }
 

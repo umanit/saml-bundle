@@ -13,13 +13,12 @@ class SloValidator implements SloValidatorInterface
 {
     public function __construct(
         protected SignatureValidatorInterface $signatureValidator,
-        protected LoggerInterface $logger
+        protected LoggerInterface $logger,
     ) {
     }
 
     public function validate(string $provider, LogoutResponse $samlMessage, bool $strict = true): void
     {
-
         $this->logger->info('Validating response status');
         $this->validateStatus($samlMessage);
 

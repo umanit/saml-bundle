@@ -16,7 +16,7 @@ class InboundService implements InboundServiceInterface
     public function __construct(
         protected readonly ConfigurationServiceInterface $configurationService,
         protected readonly SignatureValidatorInterface $signatureValidator,
-        protected readonly IssuerValidatorInterface $issuerValidator
+        protected readonly IssuerValidatorInterface $issuerValidator,
     ) {
     }
 

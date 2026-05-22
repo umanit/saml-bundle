@@ -20,7 +20,7 @@ class SloAction extends AbstractController
         string $provider,
         SloServiceInterface $sloService,
         Request $request,
-        ?LoggerInterface $umanitSamlLogger = null
+        ?LoggerInterface $umanitSamlLogger = null,
     ): Response {
         $response = null;
 

@@ -22,7 +22,7 @@ class MetadataAction extends AbstractController
         Request $request,
         MetadataServiceInterface $metadataService,
         SamlElementSerializerInterface $entityDescriptorSerializer,
-        BestContentTypeGuesserInterface $bestContentTypeGuesser
+        BestContentTypeGuesserInterface $bestContentTypeGuesser,
     ): Response {
         try {
             $entityDescriptor = $metadataService->getOwnEntityDescriptor($provider);
@@ -33,7 +33,7 @@ class MetadataAction extends AbstractController
         return new Response(
             $entityDescriptorSerializer->toXml($entityDescriptor),
             Response::HTTP_OK,
-            ['Content-Type' => $bestContentTypeGuesser->guessForMetadataRequest($request)]
+            ['Content-Type' => $bestContentTypeGuesser->guessForMetadataRequest($request)],
         );
     }
 }

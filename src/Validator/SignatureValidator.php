@@ -6,21 +6,23 @@ namespace Umanit\SamlBundle\Validator;
 
 use LightSaml\Credential\Context\CredentialContextSet;
 use LightSaml\Credential\Context\MetadataCredentialContext;
+use LightSaml\Credential\X509Certificate;
 use LightSaml\Credential\X509Credential;
 use LightSaml\Error\LightSamlSecurityException;
 use LightSaml\Error\LightSamlValidationException;
 use LightSaml\Model\Metadata\KeyDescriptor;
+use LightSaml\Model\Protocol\Response;
 use LightSaml\Model\Protocol\SamlMessage;
 use LightSaml\Model\XmlDSig\AbstractSignatureReader;
 use Umanit\SamlBundle\Enums\Mode;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\MetadataServiceInterface;
 
-class SignatureValidator implements SignatureValidatorInterface
+final readonly class SignatureValidator implements SignatureValidatorInterface
 {
     public function __construct(
-        protected readonly ConfigurationServiceInterface $configurationService,
-        protected readonly MetadataServiceInterface $metadataService
+        protected ConfigurationServiceInterface $configurationService,
+        protected MetadataServiceInterface $metadataService,
     ) {
     }
 
@@ -30,7 +32,7 @@ class SignatureValidator implements SignatureValidatorInterface
 
         $providerConfiguration = $this->configurationService->getByProvider($provider);
 
-        if ($providerConfiguration['type'] === Mode::SP_INITIATED) {
+        if (Mode::SP_INITIATED === $providerConfiguration['type']) {
             $ssoDescriptor = $entityDescriptor->getFirstIdpSsoDescriptor();
         } else {
             $ssoDescriptor = $entityDescriptor->getFirstSpSsoDescriptor();
@@ -40,7 +42,10 @@ class SignatureValidator implements SignatureValidatorInterface
             throw new LightSamlValidationException('No IdP/SP SSO descriptor found in entity descriptor');
         }
 
-        $signatureReader = $message->getSignature() ?: $message->getFirstAssertion()?->getSignature();
+        $signatureReader = $message->getSignature();
+        if (null === $signatureReader && $message instanceof Response) {
+            $signatureReader = $message->getFirstAssertion()?->getSignature();
+        }
 
         if (!$signatureReader instanceof AbstractSignatureReader) {
             throw new LightSamlValidationException('No signature found in response');
@@ -52,14 +57,16 @@ class SignatureValidator implements SignatureValidatorInterface
         $credentialCandidates = [];
 
         foreach ($keyDescriptors as $keyDescriptor) {
-            $credentialCandidates[] = (new X509Credential($keyDescriptor->getCertificate()))
+            /** @var X509Certificate $certificate */
+            $certificate = $keyDescriptor->getCertificate();
+            $credentialCandidates[] = new X509Credential($certificate)
                 ->setEntityId($entityDescriptor->getEntityID())
-                ->addKeyName($keyDescriptor->getCertificate()?->getName())
+                ->addKeyName($certificate->getName())
                 ->setUsageType($keyDescriptor->getUse())
                 ->setCredentialContext(
                     new CredentialContextSet([
                         new MetadataCredentialContext($keyDescriptor, $ssoDescriptor, $entityDescriptor),
-                    ])
+                    ]),
                 )
             ;
         }

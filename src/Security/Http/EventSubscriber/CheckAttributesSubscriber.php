@@ -9,8 +9,6 @@ use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Http\Event\CheckPassportEvent;
 use Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge\SamlAttributesBadge;
 
-use function in_array;
-
 class CheckAttributesSubscriber implements EventSubscriberInterface
 {
     public static function getSubscribedEvents(): array
@@ -36,21 +34,21 @@ class CheckAttributesSubscriber implements EventSubscriberInterface
 
             if (!isset($attributes[$attributeName])) {
                 throw new BadCredentialsException(
-                    sprintf('Attribute %s not found', $attributeName)
+                    \sprintf('Attribute %s not found', $attributeName),
                 );
             }
 
             $attribute = $attributes[$attributeName];
 
-            if (is_string($attribute) && $attribute !== $attributeNeeded) {
+            if (\is_string($attribute) && $attribute !== $attributeNeeded) {
                 throw new BadCredentialsException(
-                    sprintf('Attribute %s does not contain %s', $attributeName, $attributeNeeded)
+                    \sprintf('Attribute %s does not contain %s', $attributeName, $attributeNeeded),
                 );
             }
 
-            if (!in_array($attributeNeeded, $attribute, true)) {
+            if (!\in_array($attributeNeeded, $attribute, true)) {
                 throw new BadCredentialsException(
-                    sprintf('Attribute %s does not contain %s', $attributeName, $attributeNeeded)
+                    \sprintf('Attribute %s does not contain %s', $attributeName, $attributeNeeded),
                 );
             }
         }

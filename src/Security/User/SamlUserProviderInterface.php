@@ -12,6 +12,9 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
  */
 interface SamlUserProviderInterface extends UserProviderInterface
 {
+    /**
+     * @param array<string, string|array<string>> $attributes
+     */
     public function loadSamlUser(string $identifier, string $provider, array $attributes = []): UserInterface;
 
     public function loadUserByEmail(string $email): UserInterface;

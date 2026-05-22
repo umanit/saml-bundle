@@ -6,6 +6,7 @@ namespace Umanit\SamlBundle\DependencyInjection\Security\UserProvider;
 
 use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\UserProvider\UserProviderFactoryInterface;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
+use Symfony\Component\Config\Definition\Builder\ParentNodeDefinitionInterface;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -38,12 +39,11 @@ class SamlEntityUserProviderFactory implements UserProviderFactoryInterface
     }
 
     /**
-     * @suppress PhanUndeclaredMethod
+     * @param NodeDefinition&ParentNodeDefinitionInterface $builder
      */
     public function addConfiguration(NodeDefinition $builder): void
     {
         // @formatter:off
-        /** @phpstan-ignore-next-line */
         $builder
             ->children()
                 ->scalarNode('class')

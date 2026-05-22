@@ -11,13 +11,12 @@ use Umanit\SamlBundle\Security\Http\Authenticator\Token\SamlToken;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\SloServiceInterface;
 
-final class LogoutEventSubscriber implements EventSubscriberInterface
+final readonly class LogoutEventSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private readonly ConfigurationServiceInterface $configurationService,
-        private readonly SloServiceInterface $sloService
+        private ConfigurationServiceInterface $configurationService,
+        private SloServiceInterface $sloService,
     ) {
-
     }
 
     public static function getSubscribedEvents(): array
@@ -43,9 +42,10 @@ final class LogoutEventSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($configuration['type'] === Mode::SP_INITIATED) {
+        if (Mode::SP_INITIATED === $configuration['type']) {
             // SP initiated logout
             $response = $this->sloService->sendLogoutRequest($provider, $user);
+
             $event->setResponse($response);
             $event->stopPropagation();
 
@@ -53,7 +53,8 @@ final class LogoutEventSubscriber implements EventSubscriberInterface
         }
 
         // IDP initiated logout
-        $response = $this->sloService->sendLogoutResponse($provider, $user);
+        $response = $this->sloService->sendLogoutResponse($provider, $event->getRequest());
+
         $event->setResponse($response);
     }
 }

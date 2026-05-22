@@ -6,6 +6,7 @@ namespace Umanit\SamlBundle\DependencyInjection\Security\UserProvider;
 
 use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\UserProvider\UserProviderFactoryInterface;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
+use Symfony\Component\Config\Definition\Builder\ParentNodeDefinitionInterface;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -36,20 +37,24 @@ class SamlUserProviderFactory implements UserProviderFactoryInterface
     }
 
     /**
-     * @suppress PhanUndeclaredMethod
+     * @param NodeDefinition&ParentNodeDefinitionInterface $builder
      */
     public function addConfiguration(NodeDefinition $builder): void
     {
         // @formatter:off
-        /** @phpstan-ignore-next-line */
         $builder
             ->children()
                 ->scalarNode('user_class')
                     ->isRequired()
                     ->cannotBeEmpty()
                     ->validate()
-                        ->ifTrue(static fn ($value) => !is_a($value, UserInterface::class, true))
-                        ->thenInvalid('You should provide user class implementing ' . UserInterface::class . ' interface.')
+                        ->ifTrue(static fn($value) => !is_a($value, UserInterface::class, true))
+                        ->thenInvalid(
+                            \sprintf(
+                                'You should provide user class implementing %s interface.',
+                                UserInterface::class,
+                            ),
+                        )
                     ->end()
                 ->end()
                 ->arrayNode('default_roles')

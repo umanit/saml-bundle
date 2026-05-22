@@ -10,7 +10,6 @@ use LightSaml\Helper;
 use LightSaml\Model\Assertion\Issuer;
 use LightSaml\Model\Context\SerializationContext;
 use LightSaml\Model\Protocol\AuthnRequest;
-use LightSaml\Model\Protocol\NameIDPolicy;
 use LightSaml\SamlConstants;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -21,7 +20,7 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
         protected readonly ConfigurationServiceInterface $configurationService,
         protected readonly MetadataServiceInterface $metadataService,
         protected readonly X509CertificatServiceInterface $x509CertificatService,
-        protected readonly RequestStack $requestStack
+        protected readonly RequestStack $requestStack,
     ) {
     }
 
@@ -31,7 +30,7 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
         $acsBindingType = $config['sp']['acs']['binding'] ?? SamlConstants::BINDING_SAML2_HTTP_REDIRECT;
 
         if (!SamlConstants::isBindingValid($acsBindingType)) {
-            throw new InvalidArgumentException(sprintf('Invalid binding type "%s"', $acsBindingType));
+            throw new InvalidArgumentException(\sprintf('Invalid binding type "%s"', $acsBindingType));
         }
 
         $idpEntityDescriptor = $this->metadataService->getEntityDescriptor($provider);
@@ -65,19 +64,23 @@ class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
         $authnRequest = new AuthnRequest();
 
         $authnRequest
-            ->setID(Helper::generateID());
+            ->setID(Helper::generateID())
+        ;
 
         $authnRequest
             ->setProtocolBinding($acsBindingType)
             ->setIssueInstant(new DateTime())
-            ->setDestination($idpSsoService->getLocation());
+            ->setDestination($idpSsoService->getLocation())
+        ;
 
         $authnRequest
             // ->setNameIDPolicy((new NameIDPolicy())->setFormat($nameIdFormat))
-            ->setIssuer(new Issuer($spEntityDescriptor->getEntityID()));
+            ->setIssuer(new Issuer($spEntityDescriptor->getEntityID()))
+        ;
 
         $authnRequest
-            ->setAssertionConsumerServiceURL($acsService->getLocation());
+            ->setAssertionConsumerServiceURL($acsService->getLocation())
+        ;
 
         $isStateless = true === ($config['sp']['is_stateless'] ?? false);
 

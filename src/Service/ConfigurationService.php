@@ -26,11 +26,11 @@ class ConfigurationService implements ConfigurationServiceInterface
         $config = $this->config['providers'][$provider] ?? null;
 
         if (empty($config)) {
-            throw new \RuntimeException(sprintf('Provider "%s" not found', $provider));
+            throw new \RuntimeException(\sprintf('Provider "%s" not found', $provider));
         }
 
         if (isset($config['enabled']) && !$config['enabled']) {
-            throw new \RuntimeException(sprintf('Provider "%s" is disabled', $provider));
+            throw new \RuntimeException(\sprintf('Provider "%s" is disabled', $provider));
         }
 
         return $config;

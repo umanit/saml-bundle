@@ -25,11 +25,11 @@ trait UserProviderTrait
 
                 $attribute = $attributes[$attributeName];
 
-                if (is_string($attribute)) {
+                if (\is_string($attribute)) {
                     $attribute = explode(';', $attribute);
                 }
 
-                if ($config['type'] === 'memberof' && in_array($config['needed'], $attribute, true)) {
+                if ('memberof' === $config['type'] && \in_array($config['needed'], $attribute, true)) {
                     $roles[] = $config['role'];
                 }
             }

@@ -18,6 +18,6 @@ interface SamlScopedUserProviderInterface extends UserProviderInterface
     public function loadUserByIdentifierAndProvider(
         string $identifier,
         string $provider,
-        array $attributes = []
+        array $attributes = [],
     ): UserInterface;
 }

@@ -7,10 +7,10 @@ namespace Umanit\SamlBundle\Validator;
 use LightSaml\Model\Protocol\SamlMessage;
 use LightSaml\Validator\Model\NameId\NameIdValidatorInterface;
 
-class IssuerValidator implements IssuerValidatorInterface
+final readonly class IssuerValidator implements IssuerValidatorInterface
 {
     public function __construct(
-        protected readonly NameIdValidatorInterface $nameIdValidator
+        protected NameIdValidatorInterface $nameIdValidator,
     ) {
     }
 
@@ -22,7 +22,9 @@ class IssuerValidator implements IssuerValidatorInterface
             throw new \LogicException('Issuer is missing');
         }
 
-        if (null === $issuer->getValue()) {
+        /** @var ?string $value */
+        $value = $issuer->getValue();
+        if (null === $value) {
             throw new \LogicException('Issuer value is missing');
         }
 

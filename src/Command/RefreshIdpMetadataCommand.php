@@ -6,15 +6,15 @@ namespace Umanit\SamlBundle\Command;
 
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\MetadataServiceInterface;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
     name: 'umanit:saml:refresh-idp-metadata',
-    description: 'Refresh the IdP metadata from the configured File, String or URL'
+    description: 'Refresh the IdP metadata from the configured File, String or URL',
 )]
 class RefreshIdpMetadataCommand extends Command
 {
@@ -39,13 +39,13 @@ class RefreshIdpMetadataCommand extends Command
         $providers = $this->configurationService->getProviderNames();
 
         foreach ($providers as $provider) {
-            $io->comment(sprintf('Refreshing metadata for provider "%s"', $provider));
+            $io->comment(\sprintf('Refreshing metadata for provider "%s"', $provider));
 
             try {
                 $this->idpMetadataService->clearCache($provider);
                 $entityDescriptor = $this->idpMetadataService->getEntityDescriptor($provider);
 
-                $io->success(sprintf('Metadata refreshed %s => %s.', $provider, $entityDescriptor->getEntityID()));
+                $io->success(\sprintf('Metadata refreshed %s => %s.', $provider, $entityDescriptor->getEntityID()));
             } catch (\Throwable $e) {
                 $io->error($e->getMessage());
             }

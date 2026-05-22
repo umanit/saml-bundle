@@ -20,7 +20,7 @@ interface ConfigurationServiceInterface
      *
      * @return array<int, string>
      */
-    public function getProviderNames(array $tags): array;
+    public function getProviderNames(array $tags = []): array;
 
     public function getNameIdFormat(string $provider): string;
 

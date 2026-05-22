@@ -7,6 +7,7 @@ namespace Umanit\SamlBundle\Security\Http\Authenticator;
 use Exception;
 use LightSaml\Error\LightSamlValidationException;
 use LightSaml\Model\Assertion\Subject;
+use LightSaml\Model\Protocol\Response as SamlResponse;
 use LightSaml\SamlConstants;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -37,41 +38,34 @@ use Umanit\SamlBundle\Security\User\SamlUserInterface;
 use Umanit\SamlBundle\Security\User\SamlUserProviderInterface;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\ResponseServiceInterface;
-use LightSaml\Model\Protocol\Response as SamlResponse;
 
 #[AutoconfigureTag('monolog.logger', ['channel' => 'security'])]
-class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPointInterface
+final readonly class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPointInterface
 {
     /**
-     * @param HttpUtils                                 $httpUtils
-     * @param UserProviderInterface<UserInterface>|null $userProvider
-     * @param AuthenticationSuccessHandlerInterface     $successHandler
-     * @param AuthenticationFailureHandlerInterface     $failureHandler
-     * @param array<mixed>                              $options
-     * @param ConfigurationServiceInterface             $configurationService
-     * @param ResponseServiceInterface                  $responseService
-     * @param LoggerInterface|null                      $logger
+     * @param ?UserProviderInterface<UserInterface> $userProvider
+     * @param array<string, mixed>                  $options
      */
     public function __construct(
-        private readonly HttpUtils $httpUtils,
-        private readonly ?UserProviderInterface $userProvider,
-        private readonly AuthenticationSuccessHandlerInterface $successHandler,
-        private readonly AuthenticationFailureHandlerInterface $failureHandler,
-        private readonly array $options,
-        private readonly ConfigurationServiceInterface $configurationService,
-        private readonly ResponseServiceInterface $responseService,
-        private readonly ?LoggerInterface $logger,
+        private HttpUtils $httpUtils,
+        private ?UserProviderInterface $userProvider,
+        private AuthenticationSuccessHandlerInterface $successHandler,
+        private AuthenticationFailureHandlerInterface $failureHandler,
+        private array $options,
+        private ConfigurationServiceInterface $configurationService,
+        private ResponseServiceInterface $responseService,
+        private ?LoggerInterface $logger,
     ) {
     }
 
-    public function start(Request $request, AuthenticationException $authException = null): Response
+    public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
         $uri = $this->httpUtils->generateUri($request, (string) $this->options['login_path']);
 
         return new RedirectResponse($uri);
     }
 
-    public function supports(Request $request): ?bool
+    public function supports(Request $request): bool
     {
         if (!$request->isMethod('GET') && !$request->isMethod('POST')) {
             return false;
@@ -99,6 +93,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
 
             if (null === $samlResponse) {
                 $this->logger->error('SAML Authentication SAML message not found', ['provider' => $provider]);
+
                 throw new AuthenticationException('No SAML message found');
             }
 
@@ -117,118 +112,17 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
                 'query_params'   => $request->query->all(),
                 'request_params' => $request->request->all(),
             ]);
+
             throw new AuthenticationException($e->getMessage());
         }
 
         return $this->createPassport($provider, $samlResponse);
     }
 
-    private function createPassport(string $providerKey, SamlResponse $response): Passport
-    {
-        $assertion = $response->getFirstAssertion();
-
-        if (null === $assertion) {
-            throw new AuthenticationException('No assertion found');
-        }
-
-        /** @var Subject|null $subject */
-        $subject = $assertion->getSubject();
-
-        if (null === $subject) {
-            throw new LightSamlValidationException('No subject found in response');
-        }
-
-        /** @var string|null $nameIdValue */
-        $nameIdValue = $subject->getNameID()->getValue();
-
-        if (null === $nameIdValue) {
-            throw new LightSamlValidationException('No NameID value found in response');
-        }
-
-        $nameIdIsEmail = $subject->getNameID()->getFormat() === SamlConstants::NAME_ID_FORMAT_EMAIL;
-
-        $this->logger->info('SAML Authentication getting attributes', ['provider' => $providerKey]);
-        $attributesItems = $assertion->getFirstAttributeStatement()?->getAllAttributes() ?? [];
-
-        $attributes = [
-            '_provider' => $providerKey,
-        ];
-
-        foreach ($attributesItems as $attribute) {
-            $attributes[$attribute->getName()] = $attribute->getAllAttributeValues();
-        }
-
-        return new SelfValidatingPassport(
-            new UserBadge(
-                $nameIdValue,
-                function (string $identifier) use ($nameIdIsEmail, $attributes, $providerKey): UserInterface {
-                    try {
-                        if ($this->userProvider instanceof SamlScopedUserProviderInterface) {
-                            $this->logger->info('SAML Authentication loading user by identifier and provider', [
-                                'identifier'    => $identifier,
-                                'provider'      => $providerKey,
-                                'nameIdIsEmail' => $nameIdIsEmail,
-                            ]);
-                            $user = $this->userProvider->loadUserByIdentifierAndProvider(
-                                $identifier,
-                                $providerKey,
-                                $attributes
-                            );
-                        } else {
-                            if ($this->userProvider instanceof SamlUserProviderInterface) {
-                                $this->logger->info('SAML Authentication loading user by identifier', [
-                                    'provider'   => $providerKey,
-                                    'identifier' => $identifier,
-                                ]);
-
-                                $user = $this->userProvider->loadSamlUser($identifier, $providerKey, $attributes);
-                            } else {
-                                $this->logger->info('SAML Authentication loading user by identifier', [
-                                    'provider'   => $providerKey,
-                                    'identifier' => $identifier,
-                                ]);
-
-                                $user = $this->userProvider->loadUserByIdentifier($identifier);
-                            }
-                        }
-
-                        if ($user instanceof SamlUserInterface) {
-                            $this->logger->info('SAML Authentication set attributes', [
-                                'provider'   => $providerKey,
-                                'identifier' => $identifier,
-                            ]);
-                            $user->setSamlAttributes($attributes);
-                        }
-                    } catch (Throwable $exception) {
-                        $this->logger->error('SAML Authentication an error occurred while loading the user', [
-                            'exception'  => $exception,
-                            'identifier' => $identifier,
-                        ]);
-
-                        if ($exception instanceof UserNotFoundException) {
-                            throw $exception;
-                        }
-
-                        throw new AuthenticationException('The authentication failed.', 0, $exception);
-                    }
-
-                    return $user;
-                }
-            ),
-            [
-                new SamlAttributesBadge(
-                    $attributes,
-                    $this->options['saml_restrictions'] ?? [],
-                ),
-                new SamlProviderBadge($providerKey),
-            ]
-        );
-    }
-
     public function createToken(Passport $passport, string $firewallName): SamlToken
     {
         if (!$passport->hasBadge(SamlAttributesBadge::class)) {
-            throw new LogicException(sprintf('Passport should contains a "%s" badge.', SamlAttributesBadge::class));
+            throw new LogicException(\sprintf('Passport should contains a "%s" badge.', SamlAttributesBadge::class));
         }
 
         $badge = $passport->getBadge(SamlAttributesBadge::class);
@@ -255,7 +149,7 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
             $firewallName,
             $passport->getUser()->getRoles(),
             $attributes,
-            $providerKey
+            $providerKey,
         );
     }
 
@@ -264,8 +158,108 @@ class SamlAuthenticator implements AuthenticatorInterface, AuthenticationEntryPo
         return $this->successHandler->onAuthenticationSuccess($request, $token);
     }
 
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
     {
         return $this->failureHandler->onAuthenticationFailure($request, $exception);
+    }
+
+    private function createPassport(string $providerKey, SamlResponse $response): Passport
+    {
+        $assertion = $response->getFirstAssertion();
+
+        if (null === $assertion) {
+            throw new AuthenticationException('No assertion found');
+        }
+
+        /** @var Subject|null $subject */
+        $subject = $assertion->getSubject();
+
+        if (null === $subject) {
+            throw new LightSamlValidationException('No subject found in response');
+        }
+
+        /** @var string|null $nameIdValue */
+        $nameIdValue = $subject->getNameID()->getValue();
+
+        if (null === $nameIdValue) {
+            throw new LightSamlValidationException('No NameID value found in response');
+        }
+
+        $nameIdIsEmail = SamlConstants::NAME_ID_FORMAT_EMAIL === $subject->getNameID()->getFormat();
+
+        $this->logger->info('SAML Authentication getting attributes', ['provider' => $providerKey]);
+        $attributesItems = $assertion->getFirstAttributeStatement()?->getAllAttributes() ?? [];
+
+        $attributes = [
+            '_provider' => $providerKey,
+        ];
+
+        foreach ($attributesItems as $attribute) {
+            $attributes[$attribute->getName()] = $attribute->getAllAttributeValues();
+        }
+
+        return new SelfValidatingPassport(
+            new UserBadge(
+                $nameIdValue,
+                function (string $identifier) use ($nameIdIsEmail, $attributes, $providerKey): UserInterface {
+                    try {
+                        if ($this->userProvider instanceof SamlScopedUserProviderInterface) {
+                            $this->logger->info('SAML Authentication loading user by identifier and provider', [
+                                'identifier'    => $identifier,
+                                'provider'      => $providerKey,
+                                'nameIdIsEmail' => $nameIdIsEmail,
+                            ]);
+                            $user = $this->userProvider->loadUserByIdentifierAndProvider(
+                                $identifier,
+                                $providerKey,
+                                $attributes,
+                            );
+                        } elseif ($this->userProvider instanceof SamlUserProviderInterface) {
+                            $this->logger->info('SAML Authentication loading user by identifier', [
+                                'provider'   => $providerKey,
+                                'identifier' => $identifier,
+                            ]);
+
+                            $user = $this->userProvider->loadSamlUser($identifier, $providerKey, $attributes);
+                        } else {
+                            $this->logger->info('SAML Authentication loading user by identifier', [
+                                'provider'   => $providerKey,
+                                'identifier' => $identifier,
+                            ]);
+
+                            $user = $this->userProvider->loadUserByIdentifier($identifier);
+                        }
+
+                        if ($user instanceof SamlUserInterface) {
+                            $this->logger->info('SAML Authentication set attributes', [
+                                'provider'   => $providerKey,
+                                'identifier' => $identifier,
+                            ]);
+                            $user->setSamlAttributes($attributes);
+                        }
+                    } catch (Throwable $exception) {
+                        $this->logger->error('SAML Authentication an error occurred while loading the user', [
+                            'exception'  => $exception,
+                            'identifier' => $identifier,
+                        ]);
+
+                        if ($exception instanceof UserNotFoundException) {
+                            throw $exception;
+                        }
+
+                        throw new AuthenticationException('The authentication failed.', 0, $exception);
+                    }
+
+                    return $user;
+                },
+            ),
+            [
+                new SamlAttributesBadge(
+                    $attributes,
+                    $this->options['saml_restrictions'] ?? [],
+                ),
+                new SamlProviderBadge($providerKey),
+            ],
+        );
     }
 }

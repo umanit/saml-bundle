@@ -6,11 +6,10 @@ namespace Umanit\SamlBundle\Security\Http\Authentication;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Http\Authentication\DefaultAuthenticationSuccessHandler;
-use Symfony\Component\Security\Http\HttpUtils;
 
 class SamlAuthenticationSuccessHandler extends DefaultAuthenticationSuccessHandler
 {
-    public const RELAY_STATE = 'RelayState';
+    public const string RELAY_STATE = 'RelayState';
 
     protected function determineTargetUrl(Request $request): string
     {
@@ -27,7 +26,7 @@ class SamlAuthenticationSuccessHandler extends DefaultAuthenticationSuccessHandl
 
         $relayState = empty($relayState) ? null : $relayState;
 
-        if ($relayState !== null && $this->httpUtils instanceof HttpUtils) {
+        if (null !== $relayState) {
             $relayState = (string) $relayState;
 
             if ($relayState !== $this->httpUtils->generateUri($request, (string) $this->options['login_path'])) {

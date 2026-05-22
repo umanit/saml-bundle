@@ -30,7 +30,7 @@ class SamlResponseService implements SamlResponseServiceInterface
     public function __construct(
         private readonly ConfigurationServiceInterface $configurationService,
         private readonly MetadataServiceInterface $metadataService,
-        private readonly X509CertificatServiceInterface $x509CertificatService
+        private readonly X509CertificatServiceInterface $x509CertificatService,
     ) {
     }
 
@@ -63,9 +63,9 @@ class SamlResponseService implements SamlResponseServiceInterface
             ->setStatus(
                 new Status(
                     new StatusCode(
-                        SamlConstants::STATUS_SUCCESS
-                    )
-                )
+                        SamlConstants::STATUS_SUCCESS,
+                    ),
+                ),
             )
             ->setID(Helper::generateID())
             ->setIssueInstant(new DateTime())
@@ -85,7 +85,7 @@ class SamlResponseService implements SamlResponseServiceInterface
             ->setSubject(
                 (new Subject())
                     ->setNameID(
-                        $nameId
+                        $nameId,
                     )
                     ->addSubjectConfirmation(
                         (new SubjectConfirmation())
@@ -94,17 +94,17 @@ class SamlResponseService implements SamlResponseServiceInterface
                                 (new SubjectConfirmationData())
                                     ->setInResponseTo($authnRequestId)
                                     ->setNotOnOrAfter($notOnOrAfter)
-                                    ->setRecipient($acs?->getLocation())
-                            )
-                    )
+                                    ->setRecipient($acs?->getLocation()),
+                            ),
+                    ),
             )
             ->setConditions(
                 (new Conditions())
                     ->setNotBefore(new DateTime())
                     ->setNotOnOrAfter($notOnOrAfter)
                     ->addItem(
-                        new AudienceRestriction([$acs?->getLocation()])
-                    )
+                        new AudienceRestriction([$acs?->getLocation()]),
+                    ),
             )
             ->addItem(
                 (new AuthnStatement())
@@ -113,9 +113,9 @@ class SamlResponseService implements SamlResponseServiceInterface
                     ->setAuthnContext(
                         (new AuthnContext())
                             ->setAuthnContextClassRef(
-                                SamlConstants::AUTHN_CONTEXT_PASSWORD_PROTECTED_TRANSPORT
-                            )
-                    )
+                                SamlConstants::AUTHN_CONTEXT_PASSWORD_PROTECTED_TRANSPORT,
+                            ),
+                    ),
             )
         ;
 
@@ -139,8 +139,8 @@ class SamlResponseService implements SamlResponseServiceInterface
     }
 
     /**
-     * @param Assertion $assertion
-     * @param array<mixed>     $attributes
+     * @param Assertion    $assertion
+     * @param array<mixed> $attributes
      *
      * @return void
      */

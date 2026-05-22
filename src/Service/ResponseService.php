@@ -12,7 +12,7 @@ class ResponseService implements ResponseServiceInterface
 {
     public function __construct(
         protected SamlMessageServiceInterface $samlMessageService,
-        protected ResponseValidatorInterface $responseValidator
+        protected ResponseValidatorInterface $responseValidator,
     ) {
     }
 

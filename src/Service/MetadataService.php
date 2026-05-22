@@ -17,10 +17,9 @@ use LightSaml\Model\Metadata\SingleLogoutService;
 use LightSaml\Model\Metadata\SingleSignOnService;
 use LightSaml\Model\Metadata\SpSsoDescriptor;
 use LightSaml\SamlConstants;
-use Psr\Cache\InvalidArgumentException;
+use Psr\Cache\CacheItemInterface;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
-use Symfony\Component\Cache\CacheItem;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -28,16 +27,16 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Throwable;
 use Umanit\SamlBundle\Enums\Mode;
 
-class MetadataService implements MetadataServiceInterface
+final readonly class MetadataService implements MetadataServiceInterface
 {
     public function __construct(
-        protected readonly ConfigurationServiceInterface $configurationService,
-        protected readonly UrlGeneratorInterface $urlGenerator,
-        protected readonly RouterInterface $router,
-        protected readonly X509CertificatServiceInterface $x509CertificatService,
-        protected readonly HttpClientInterface $client,
-        protected readonly CacheInterface $cache,
-        protected readonly LoggerInterface $logger
+        protected ConfigurationServiceInterface $configurationService,
+        protected UrlGeneratorInterface $urlGenerator,
+        protected RouterInterface $router,
+        protected X509CertificatServiceInterface $x509CertificatService,
+        protected HttpClientInterface $client,
+        protected CacheInterface $cache,
+        protected LoggerInterface $logger,
     ) {
     }
 
@@ -45,7 +44,7 @@ class MetadataService implements MetadataServiceInterface
     {
         $providerConfiguration = $this->configurationService->getByProvider($provider);
 
-        if ($providerConfiguration['type'] === Mode::SP_INITIATED) {
+        if (Mode::SP_INITIATED === $providerConfiguration['type']) {
             $configuration = $providerConfiguration['sp'];
         } else {
             $configuration = $providerConfiguration['idp'];
@@ -54,14 +53,11 @@ class MetadataService implements MetadataServiceInterface
         return $this->buildOwnEntityDescriptor($provider, $configuration, $providerConfiguration['type']);
     }
 
-    /**
-     * @throws Exception
-     */
     public function getEntityDescriptor(string $provider): EntityDescriptor
     {
         $providerConfiguration = $this->configurationService->getByProvider($provider);
 
-        if ($providerConfiguration['type'] === Mode::SP_INITIATED) {
+        if (Mode::SP_INITIATED === $providerConfiguration['type']) {
             $configuration = $providerConfiguration['idp'];
         } else {
             $configuration = $providerConfiguration['sp'];
@@ -76,16 +72,13 @@ class MetadataService implements MetadataServiceInterface
         return $this->getEntityDescriptorFromXml($xml, $configuration['entity_id'] ?? null);
     }
 
-    /**
-     * @throws InvalidArgumentException
-     */
     public function clearCache(string $provider): void
     {
         $this->logger->debug('Clearing cache for provider {provider}', ['provider' => $provider]);
 
         $providerConfiguration = $this->configurationService->getByProvider($provider);
 
-        if ($providerConfiguration['type'] === Mode::SP_INITIATED) {
+        if (Mode::SP_INITIATED === $providerConfiguration['type']) {
             $configuration = $providerConfiguration['idp'];
         } else {
             $configuration = $providerConfiguration['sp'];
@@ -96,13 +89,7 @@ class MetadataService implements MetadataServiceInterface
         $this->cache->delete($tokenId);
     }
 
-    /**
-     * @param array<string, mixed> $config
-     *
-     * @return string|null
-     * @throws InvalidArgumentException
-     */
-    public function getMetadataXml(array $config): ?string
+    public function getMetadataXml(array $config): string
     {
         $metadata = $config['metadata'] ?? '';
 
@@ -125,17 +112,9 @@ class MetadataService implements MetadataServiceInterface
         $tokenId = $this->getTokenId($config);
         $metadataTtl = (int) floor($config['metadata_cache_duration'] ?? self::DEFAULT_METADATA_CACHE_DURATION);
 
-        if ($this->cache->hasItem($tokenId)) {
-            $this->logger->debug('Getting metadata from cache', [
-                'tokenId' => $tokenId,
-            ]);
-
-            return $this->cache->getItem($tokenId)->get();
-        }
-
         return $this->cache->get(
             $tokenId,
-            function (CacheItem $item) use ($metadata, $metadataTtl, $config): string {
+            function (CacheItemInterface $item) use ($metadata, $metadataTtl, $config): string {
                 $item->expiresAfter($metadataTtl);
 
                 $this->logger->debug('Getting metadata from url and save it to cache', [
@@ -156,7 +135,7 @@ class MetadataService implements MetadataServiceInterface
                 $item->set($xml);
 
                 return $xml;
-            }
+            },
         );
     }
 
@@ -165,6 +144,7 @@ class MetadataService implements MetadataServiceInterface
      * @param string|null $entityId
      *
      * @return EntityDescriptor
+     *
      * @throws Exception
      */
     protected function getEntityDescriptorFromXml(string $xml, ?string $entityId): EntityDescriptor
@@ -184,13 +164,16 @@ class MetadataService implements MetadataServiceInterface
             }
         }
 
-        $metadata = $metadata->getByEntityId($entityId);
+        $entityMetadata = null;
+        if ($metadata instanceof EntitiesDescriptor) {
+            $entityMetadata = $metadata->getByEntityId($entityId);
+        }
 
-        if (null === $metadata) {
+        if (null === $entityMetadata) {
             throw new RuntimeException('No entity descriptor found');
         }
 
-        return $metadata;
+        return $entityMetadata;
     }
 
     /**
@@ -218,7 +201,7 @@ class MetadataService implements MetadataServiceInterface
      */
     protected function buildOwnEntityDescriptor(string $provider, array $config, Mode $mode): EntityDescriptor
     {
-        if ($mode === Mode::SP_INITIATED) {
+        if (Mode::SP_INITIATED === $mode) {
             $descriptor = new SpSsoDescriptor();
             $descriptor->setWantAssertionsSigned(true);
         } else {
@@ -229,7 +212,7 @@ class MetadataService implements MetadataServiceInterface
         $descriptor->addNameIDFormat($this->getNameIDFormat($config));
 
         foreach ([SamlConstants::BINDING_SAML2_HTTP_REDIRECT, SamlConstants::BINDING_SAML2_HTTP_POST] as $bindingType) {
-            if (isset($config['acs'])) {
+            if ($descriptor instanceof SpSsoDescriptor && isset($config['acs'])) {
                 $acsRoute = $this->getAssertionConsumerServiceRoute($provider, $config, $bindingType);
 
                 if (null !== $acsRoute) {
@@ -241,7 +224,7 @@ class MetadataService implements MetadataServiceInterface
                 }
             }
 
-            if (isset($config['sso'])) {
+            if ($descriptor instanceof IdpSsoDescriptor && isset($config['sso'])) {
                 $ssoRoute = $this->getSingleSignOnServiceRoute($provider, $config, $bindingType);
 
                 if (null !== $ssoRoute) {
@@ -261,15 +244,15 @@ class MetadataService implements MetadataServiceInterface
 
         $entityDescriptor = new EntityDescriptor();
         $entityDescriptor->setID(Helper::generateID())
-            ->setEntityID($this->getEntityId($provider, $config))
-            ->addItem($descriptor)
+                         ->setEntityID($this->getEntityId($provider, $config))
+                         ->addItem($descriptor)
         ;
 
         $samlAlgorithmSignature = $config['saml_algorithm_signature']->value;
 
         if (null !== ($credential = $this->x509CertificatService->getX509Credentials($config))) {
             $entityDescriptor->setSignature(
-                $this->x509CertificatService->getSignature($credential, $samlAlgorithmSignature)
+                $this->x509CertificatService->getSignature($credential, $samlAlgorithmSignature),
             );
 
             if ($descriptor instanceof SpSsoDescriptor) {
@@ -278,10 +261,10 @@ class MetadataService implements MetadataServiceInterface
 
             $descriptor
                 ->addKeyDescriptor(
-                    new KeyDescriptor(KeyDescriptor::USE_SIGNING, $credential->getCertificate())
+                    new KeyDescriptor(KeyDescriptor::USE_SIGNING, $credential->getCertificate()),
                 )
                 ->addKeyDescriptor(
-                    new KeyDescriptor(KeyDescriptor::USE_ENCRYPTION, $credential->getCertificate())
+                    new KeyDescriptor(KeyDescriptor::USE_ENCRYPTION, $credential->getCertificate()),
                 )
             ;
         }
@@ -303,7 +286,7 @@ class MetadataService implements MetadataServiceInterface
         $nameIdFormat = $config['name_id_format'] ?? SamlConstants::NAME_ID_FORMAT_PERSISTENT;
 
         if (!SamlConstants::isNameIdFormatValid($nameIdFormat)) {
-            throw new \InvalidArgumentException(sprintf('Invalid NameID format "%s"', $nameIdFormat));
+            throw new \InvalidArgumentException(\sprintf('Invalid NameID format "%s"', $nameIdFormat));
         }
 
         return $nameIdFormat;
@@ -406,7 +389,7 @@ class MetadataService implements MetadataServiceInterface
             SamlConstants::BINDING_SAML2_HTTP_POST     => 'POST',
         ];
 
-        if (!array_key_exists($bindingType, $methods)) {
+        if (!\array_key_exists($bindingType, $methods)) {
             return false;
         }
 
@@ -423,7 +406,7 @@ class MetadataService implements MetadataServiceInterface
                 return true;
             }
 
-            return in_array($methods[$bindingType], $routeMethods);
+            return \in_array($methods[$bindingType], $routeMethods, true);
         } catch (Throwable) {
             return false;
         }
@@ -440,7 +423,7 @@ class MetadataService implements MetadataServiceInterface
 
         if (!SamlConstants::isBindingValid($acsBindingType)) {
             throw new \InvalidArgumentException(
-                sprintf('Invalid Assertion Consumer Service binding "%s"', $acsBindingType)
+                \sprintf('Invalid Assertion Consumer Service binding "%s"', $acsBindingType),
             );
         }
 
@@ -456,13 +439,13 @@ class MetadataService implements MetadataServiceInterface
     protected function getEntityId(string $provider, array $config): string
     {
         $context = $this->router->getContext();
-        $host = $context->getScheme().'://'.$context->getHost();
+        $host = $context->getScheme() . '://' . $context->getHost();
 
         if (empty($config['entity_id'])) {
             return $this->urlGenerator->generate(
                 'umanit_saml_metadata',
                 ['provider' => $provider],
-                UrlGeneratorInterface::ABSOLUTE_URL
+                UrlGeneratorInterface::ABSOLUTE_URL,
             );
         }
 

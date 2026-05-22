@@ -15,7 +15,7 @@ class SamlScopedUserProvider implements SamlScopedUserProviderInterface
      */
     public function __construct(
         protected readonly array $userProviders,
-        protected readonly ConfigurationServiceInterface $configurationService
+        protected readonly ConfigurationServiceInterface $configurationService,
     ) {
     }
 
@@ -32,10 +32,10 @@ class SamlScopedUserProvider implements SamlScopedUserProviderInterface
     public function loadUserByIdentifierAndProvider(
         string $identifier,
         string $provider,
-        array $attributes = []
+        array $attributes = [],
     ): UserInterface {
         if (!isset($this->userProviders[$provider])) {
-            throw new \RuntimeException(sprintf('No user provider found for provider "%s"', $provider));
+            throw new \RuntimeException(\sprintf('No user provider found for provider "%s"', $provider));
         }
 
         $userProvider = $this->userProviders[$provider];

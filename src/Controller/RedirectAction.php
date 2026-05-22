@@ -30,19 +30,19 @@ class RedirectAction extends AbstractController
         ConfigurationServiceInterface $configurationService,
         SamlResponseServiceInterface $samlResponseService,
         SamlElementSerializerInterface $samlElementSerializer,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ): Response {
         try {
             $config = $configurationService->getByProvider($provider);
 
-            if ($config['type'] === Mode::IDP_INITIATED) {
+            if (Mode::IDP_INITIATED === $config['type']) {
                 $event = new BeforeSamlResponseEvent($provider);
                 $dispatcher->dispatch($event);
 
                 $samlMessage = $samlResponseService->getSamlResponse(
                     $provider,
                     $event->nameIdFormat,
-                    $event->attributes
+                    $event->attributes,
                 );
                 $xml = $samlElementSerializer->toXml($samlMessage);
 
