@@ -2,54 +2,44 @@
 
 declare(strict_types=1);
 
-use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\CodeQuality\Rector\Class_\InlineConstructorDefaultToPropertyRector;
+use Rector\CodeQuality\Rector\Identical\FlipTypeControlToUseExclusiveTypeRector;
 use Rector\Config\RectorConfig;
-use Rector\Php73\Rector\FuncCall\JsonThrowOnErrorRector;
-use Rector\Php74\Rector\LNumber\AddLiteralSeparatorToNumberRector;
-use Rector\Set\ValueObject\LevelSetList;
-use Rector\Set\ValueObject\SetList;
-use Rector\Symfony\Set\SymfonyLevelSetList;
-use Rector\Symfony\Set\SymfonySetList;
+use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 use Rector\TypeDeclaration\Rector\Property\TypedPropertyFromAssignsRector;
+use Rector\ValueObject\PhpVersion;
 
-return static function (RectorConfig $rectorConfig): void {
-    // Chemins à analyser
-    $rectorConfig->paths([
-        __DIR__ . '/src',
-    ]);
+return RectorConfig
+    ::configure()
+    ->withPhpVersion(PhpVersion::PHP_84)
+    ->withPreparedSets(deadCode: true, instanceOf: true)
+    ->withComposerBased(twig: true, doctrine: true, phpunit: true, symfony: true)
+    ->withPhpSets(php84: true)
+    ->withAttributesSets(all: true)
+    ->withImportNames(importShortClasses: false, removeUnusedImports: true)
+    ->withRules([
+        InlineConstructorDefaultToPropertyRector::class,
+    ])
+    ->withConfiguredRule(TypedPropertyFromAssignsRector::class, [
+        'inline_public' => true,
+    ])
+    ->withSkip([
+        // Ne pas forcer l’utilisation de "if ($foo instanceof \Foo)" au lieu de "if (null !== $foo)"
+        FlipTypeControlToUseExclusiveTypeRector::class,
+        // Ne pas forcer la mise en place de l’attribut "#[Override]"
+        AddOverrideAttributeToOverriddenMethodsRector::class,
+    ])
+    // À incrémenter au fur et à mesure
+    ->withTypeCoverageLevel(5)
+    ->withTypeCoverageDocblockLevel(0)
+    ->withPaths([__DIR__ . '/src'])
 
-    // Cache de l'analyse
-    $rectorConfig->cacheClass(FileCacheStorage::class);
-    $rectorConfig->cacheDirectory('./var/cache/rector');
-
-    // Utilisation de toutes les règles jusqu'à PHP 8.2 ainsi que les règles de Symfony
-    $rectorConfig->sets([
-        SetList::DEAD_CODE,
-        SymfonyLevelSetList::UP_TO_SYMFONY_62,
-        SymfonySetList::ANNOTATIONS_TO_ATTRIBUTES,
-        SymfonySetList::SYMFONY_CONSTRUCTOR_INJECTION,
-        LevelSetList::UP_TO_PHP_82,
-        SymfonySetList::SYMFONY_CODE_QUALITY,
-    ]);
-
-    // Mise en place des imports "use Ma\Class\Fqcn;"
-    $rectorConfig->importNames();
-    $rectorConfig->ruleWithConfiguration(TypedPropertyFromAssignsRector::class, [
-        TypedPropertyFromAssignsRector::INLINE_PUBLIC => true,
-    ]);
-
-    // Pas d'import des classes de PHP (\DateTime par exemple)
-    $rectorConfig->importShortClasses(false);
-
-    // Move property default from constructor to property default: https://github.com/rectorphp/rector/blob/main/docs/rector_rules_overview.md#inlineconstructordefaulttopropertyrector
-    $rectorConfig->rule(InlineConstructorDefaultToPropertyRector::class);
-
-    // Règles à ignorer
-    $rectorConfig->skip([
-        // Ne pas throw d'exception sur des "json_decode" -> Nécessite des vérifications manuelles
-        JsonThrowOnErrorRector::class,
-        // Ne pas utiliser les numeric_literal_separator
-        AddLiteralSeparatorToNumberRector::class,
-    ]);
-};
+    // ->withSets([
+    //     SymfonySetList::SYMFONY_CODE_QUALITY,
+    //     SymfonySetList::SYMFONY_CONSTRUCTOR_INJECTION,
+    // ])
+    // ->withSkip([
+    //     JsonThrowOnErrorRector::class,
+    //     AddLiteralSeparatorToNumberRector::class,
+    // ])
+    ;

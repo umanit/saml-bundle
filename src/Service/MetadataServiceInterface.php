@@ -12,10 +12,6 @@ interface MetadataServiceInterface
 
     /**
      * Générer l'EntityDescriptor pour l'application.
-     *
-     * @param string $provider
-     *
-     * @return EntityDescriptor
      */
     public function getOwnEntityDescriptor(string $provider): EntityDescriptor;
 

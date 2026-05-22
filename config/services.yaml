@@ -187,7 +187,7 @@ services:
             - '@umanit_saml.service.configuration_service'
             - '@umanit_saml.service.saml_response_service'
             - '@umanit_saml.serializer.saml_element_serializer'
-        tags: ['twig.extension']
+        tags: ['twig.attribute_extension']
 
     umanit_saml.security.http.authentication.saml_authentication_success_handler:
         class: Umanit\SamlBundle\Security\Http\Authentication\SamlAuthenticationSuccessHandler

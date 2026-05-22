@@ -52,7 +52,7 @@ final readonly class SloService implements SloServiceInterface
             try {
                 $this->security->logout(false);
                 $success = true;
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 throw new LogoutException("Unable to log out user");
             }
         }

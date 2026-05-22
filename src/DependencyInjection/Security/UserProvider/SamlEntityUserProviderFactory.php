@@ -13,11 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 class SamlEntityUserProviderFactory implements UserProviderFactoryInterface
 {
     /**
-     * @param ContainerBuilder     $container
-     * @param string               $id
      * @param array<string, mixed> $config
-     *
-     * @return void
      */
     public function create(ContainerBuilder $container, string $id, array $config): void
     {

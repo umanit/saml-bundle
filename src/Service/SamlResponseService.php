@@ -76,15 +76,15 @@ final readonly class SamlResponseService implements SamlResponseServiceInterface
             ->setIssueInstant(new DateTime())
             ->setIssuer(new Issuer($issuer))
             ->setSubject(
-                (new Subject())
+                new Subject()
                     ->setNameID(
                         $nameId,
                     )
                     ->addSubjectConfirmation(
-                        (new SubjectConfirmation())
+                        new SubjectConfirmation()
                             ->setMethod(SamlConstants::CONFIRMATION_METHOD_BEARER)
                             ->setSubjectConfirmationData(
-                                (new SubjectConfirmationData())
+                                new SubjectConfirmationData()
                                     ->setInResponseTo($authnRequestId)
                                     ->setNotOnOrAfter($notOnOrAfter)
                                     ->setRecipient($acs?->getLocation()),
@@ -92,7 +92,7 @@ final readonly class SamlResponseService implements SamlResponseServiceInterface
                     ),
             )
             ->setConditions(
-                (new Conditions())
+                new Conditions()
                     ->setNotBefore(new DateTime())
                     ->setNotOnOrAfter($notOnOrAfter)
                     ->addItem(
@@ -100,11 +100,11 @@ final readonly class SamlResponseService implements SamlResponseServiceInterface
                     ),
             )
             ->addItem(
-                (new AuthnStatement())
+                new AuthnStatement()
                     ->setAuthnInstant($authnInstant)
                     ->setSessionIndex(Helper::generateID())
                     ->setAuthnContext(
-                        (new AuthnContext())
+                        new AuthnContext()
                             ->setAuthnContextClassRef(
                                 SamlConstants::AUTHN_CONTEXT_PASSWORD_PROTECTED_TRANSPORT,
                             ),
@@ -146,10 +146,7 @@ final readonly class SamlResponseService implements SamlResponseServiceInterface
     }
 
     /**
-     * @param Assertion    $assertion
      * @param array<mixed> $attributes
-     *
-     * @return void
      */
     private function addAttributesStatement(Assertion $assertion, array $attributes = []): void
     {

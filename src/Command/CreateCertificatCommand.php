@@ -17,6 +17,7 @@ use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 #[AsCommand(
     name: 'umanit:saml:create-certificat',
     description: 'Create a new X509 certificate and private key',
+    help: 'This command allows you to create a new X509 certificate and private key',
 )]
 class CreateCertificatCommand extends Command
 {
@@ -29,9 +30,6 @@ class CreateCertificatCommand extends Command
     protected function configure(): void
     {
         $this
-            // the full command description shown when running the command with
-            // the "--help" option
-            ->setHelp('This command allows you to create a new X509 certificate and private key')
             ->addArgument(
                 'name',
                 InputOption::VALUE_REQUIRED,

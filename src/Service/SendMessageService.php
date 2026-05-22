@@ -32,6 +32,6 @@ class SendMessageService implements SendMessageServiceInterface
             );
         }
 
-        return (new BindingFactory())->create($bindingType)->send($messageContext);
+        return new BindingFactory()->create($bindingType)->send($messageContext);
     }
 }

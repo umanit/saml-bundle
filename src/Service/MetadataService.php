@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Service;
 
-use Exception;
 use LightSaml\Helper;
 use LightSaml\Model\Context\DeserializationContext;
 use LightSaml\Model\Metadata\AssertionConsumerService;
@@ -19,12 +18,10 @@ use LightSaml\Model\Metadata\SpSsoDescriptor;
 use LightSaml\SamlConstants;
 use Psr\Cache\CacheItemInterface;
 use Psr\Log\LoggerInterface;
-use RuntimeException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Throwable;
 use Umanit\SamlBundle\Enums\Mode;
 
 final readonly class MetadataService implements MetadataServiceInterface
@@ -66,7 +63,7 @@ final readonly class MetadataService implements MetadataServiceInterface
         $xml = $this->getMetadataXml($configuration);
 
         if (empty($xml)) {
-            throw new RuntimeException('No metadata found');
+            throw new \RuntimeException('No metadata found');
         }
 
         return $this->getEntityDescriptorFromXml($xml, $configuration['entity_id'] ?? null);
@@ -100,7 +97,7 @@ final readonly class MetadataService implements MetadataServiceInterface
                 $metadata = file_get_contents($metadata);
 
                 if (false === $metadata) {
-                    throw new RuntimeException('Impossible to read metadata file');
+                    throw new \RuntimeException('Impossible to read metadata file');
                 }
             }
 
@@ -139,14 +136,6 @@ final readonly class MetadataService implements MetadataServiceInterface
         );
     }
 
-    /**
-     * @param string      $xml
-     * @param string|null $entityId
-     *
-     * @return EntityDescriptor
-     *
-     * @throws Exception
-     */
     protected function getEntityDescriptorFromXml(string $xml, ?string $entityId): EntityDescriptor
     {
         /** @var EntitiesDescriptor|EntityDescriptor $metadata */
@@ -160,7 +149,7 @@ final readonly class MetadataService implements MetadataServiceInterface
             $metadata = current($metadata->getAllEntityDescriptors());
 
             if (false === $metadata) {
-                throw new RuntimeException('No entity descriptor found');
+                throw new \RuntimeException('No entity descriptor found');
             }
         }
 
@@ -170,7 +159,7 @@ final readonly class MetadataService implements MetadataServiceInterface
         }
 
         if (null === $entityMetadata) {
-            throw new RuntimeException('No entity descriptor found');
+            throw new \RuntimeException('No entity descriptor found');
         }
 
         return $entityMetadata;
@@ -178,26 +167,20 @@ final readonly class MetadataService implements MetadataServiceInterface
 
     /**
      * @param array<string, mixed> $config
-     *
-     * @return string
      */
     protected function getTokenId(array $config = []): string
     {
         $str = $config['metadata'] ?? '';
 
         if (empty($str)) {
-            throw new RuntimeException('Impossible to generate token ID, for metadata');
+            throw new \RuntimeException('Impossible to generate token ID, for metadata');
         }
 
         return sha1((string) $str);
     }
 
     /**
-     * @param string               $provider
      * @param array<string, mixed> $config
-     * @param Mode                 $mode
-     *
-     * @return EntityDescriptor
      */
     protected function buildOwnEntityDescriptor(string $provider, array $config, Mode $mode): EntityDescriptor
     {
@@ -280,8 +263,6 @@ final readonly class MetadataService implements MetadataServiceInterface
 
     /**
      * @param array<string, mixed> $config
-     *
-     * @return string
      */
     protected function getNameIDFormat(array $config): string
     {
@@ -295,11 +276,7 @@ final readonly class MetadataService implements MetadataServiceInterface
     }
 
     /**
-     * @param string               $provider
      * @param array<string, mixed> $config
-     * @param string               $bindindType
-     *
-     * @return string|null
      */
     protected function getSingleSignOnServiceRoute(string $provider, array $config, string $bindindType): ?string
     {
@@ -325,11 +302,7 @@ final readonly class MetadataService implements MetadataServiceInterface
     }
 
     /**
-     * @param string               $provider
      * @param array<string, mixed> $config
-     * @param string               $bindindType
-     *
-     * @return string|null
      */
     protected function getAssertionConsumerServiceRoute(string $provider, array $config, string $bindindType): ?string
     {
@@ -355,11 +328,7 @@ final readonly class MetadataService implements MetadataServiceInterface
     }
 
     /**
-     * @param string               $provider
      * @param array<string, mixed> $config
-     * @param string               $bindindType
-     *
-     * @return string|null
      */
     protected function getSingleLogoutServiceRoute(string $provider, array $config, string $bindindType): ?string
     {
@@ -409,15 +378,13 @@ final readonly class MetadataService implements MetadataServiceInterface
             }
 
             return \in_array($methods[$bindingType], $routeMethods, true);
-        } catch (Throwable) {
+        } catch (\Throwable) {
             return false;
         }
     }
 
     /**
      * @param array<string, mixed> $config
-     *
-     * @return string
      */
     protected function getDefaultAssertionConsumerServiceBinding(array $config): string
     {
@@ -433,10 +400,7 @@ final readonly class MetadataService implements MetadataServiceInterface
     }
 
     /**
-     * @param string               $provider
      * @param array<string, mixed> $config
-     *
-     * @return string
      */
     protected function getEntityId(string $provider, array $config): string
     {

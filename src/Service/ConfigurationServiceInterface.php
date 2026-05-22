@@ -9,8 +9,6 @@ interface ConfigurationServiceInterface
     public function getCertificatePath(): string;
 
     /**
-     * @param string $provider
-     *
      * @return array<string, mixed>
      */
     public function getByProvider(string $provider): array;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Umanit\SamlBundle\Security\Http\Authenticator;
 
-use Exception;
 use LightSaml\Error\LightSamlValidationException;
 use LightSaml\Model\Assertion\Subject;
 use LightSaml\Model\Protocol\Response as SamlResponse;
@@ -29,7 +28,6 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 use Symfony\Component\Security\Http\HttpUtils;
-use Throwable;
 use Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge\SamlAttributesBadge;
 use Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge\SamlProviderBadge;
 use Umanit\SamlBundle\Security\Http\Authenticator\Token\SamlToken;
@@ -103,7 +101,7 @@ final readonly class SamlAuthenticator implements AuthenticatorInterface, Authen
                 'strict'   => $isStrict ? 'true' : 'false',
             ]);
             $this->responseService->validate($provider, $samlResponse, $isStrict);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->error('SAML Authentication message validation error', [
                 'exception'      => $e,
                 'provider'       => $provider,
@@ -237,7 +235,7 @@ final readonly class SamlAuthenticator implements AuthenticatorInterface, Authen
                             ]);
                             $user->setSamlAttributes($attributes);
                         }
-                    } catch (Throwable $exception) {
+                    } catch (\Throwable $exception) {
                         $this->logger->error('SAML Authentication an error occurred while loading the user', [
                             'exception'  => $exception,
                             'identifier' => $identifier,

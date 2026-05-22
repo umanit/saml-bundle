@@ -17,8 +17,6 @@ interface X509CertificatServiceInterface
 
     /**
      * @param array<string, mixed> $config
-     *
-     * @return X509Credential|null
      */
     public function getX509Credentials(array $config): ?X509Credential;
 

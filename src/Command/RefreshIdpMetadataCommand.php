@@ -15,6 +15,7 @@ use Umanit\SamlBundle\Service\MetadataServiceInterface;
 #[AsCommand(
     name: 'umanit:saml:refresh-idp-metadata',
     description: 'Refresh the IdP metadata from the configured File, String or URL',
+    help: 'This command allows you to refresh the IdP metadata from the configured File, String or URL',
 )]
 class RefreshIdpMetadataCommand extends Command
 {
@@ -23,13 +24,6 @@ class RefreshIdpMetadataCommand extends Command
         protected ConfigurationServiceInterface $configurationService,
     ) {
         parent::__construct();
-    }
-
-    protected function configure(): void
-    {
-        $this
-            ->setHelp('This command allows you to refresh the IdP metadata from the configured File, String or URL')
-        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
