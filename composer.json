@@ -61,8 +61,7 @@
   },
   "require-dev": {
     "symfony/dotenv": "^7.4",
-    "umanit/dev-bundle": "^3.0",
-    "rector/rector": "^2.4"
+    "umanit/dev-bundle": "^3.1"
   },
   "config": {
     "allow-plugins": {
