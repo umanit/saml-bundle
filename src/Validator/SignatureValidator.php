@@ -10,6 +10,7 @@ use LightSaml\Credential\X509Credential;
 use LightSaml\Error\LightSamlSecurityException;
 use LightSaml\Error\LightSamlValidationException;
 use LightSaml\Model\Metadata\KeyDescriptor;
+use LightSaml\Model\Protocol\Response;
 use LightSaml\Model\Protocol\SamlMessage;
 use LightSaml\Model\XmlDSig\AbstractSignatureReader;
 use Umanit\SamlBundle\Enums\Mode;
@@ -20,7 +21,7 @@ class SignatureValidator implements SignatureValidatorInterface
 {
     public function __construct(
         protected readonly ConfigurationServiceInterface $configurationService,
-        protected readonly MetadataServiceInterface $metadataService
+        protected readonly MetadataServiceInterface $metadataService,
     ) {
     }
 
@@ -40,7 +41,10 @@ class SignatureValidator implements SignatureValidatorInterface
             throw new LightSamlValidationException('No IdP/SP SSO descriptor found in entity descriptor');
         }
 
-        $signatureReader = $message->getSignature() ?: $message->getFirstAssertion()?->getSignature();
+        $signatureReader = $message->getSignature();
+        if (null === $signatureReader && $message instanceof Response) {
+            $signatureReader = $message->getFirstAssertion()?->getSignature();
+        }
 
         if (!$signatureReader instanceof AbstractSignatureReader) {
             throw new LightSamlValidationException('No signature found in response');
@@ -59,7 +63,7 @@ class SignatureValidator implements SignatureValidatorInterface
                 ->setCredentialContext(
                     new CredentialContextSet([
                         new MetadataCredentialContext($keyDescriptor, $ssoDescriptor, $entityDescriptor),
-                    ])
+                    ]),
                 )
             ;
         }
