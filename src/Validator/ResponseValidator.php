@@ -168,10 +168,14 @@ final readonly class ResponseValidator implements ResponseValidatorInterface
             throw new LightSamlValidationException('No assertion found in response');
         }
 
-        $id = $assertion->getID();
+        $id = $assertion->getId();
         $issuerValue = $samlMessage->getIssuer()?->getValue();
 
-        $key = \sprintf('%s-%s', $issuerValue, $id);
+        $key = preg_replace(
+            '/[^A-Za-z0-9_.]/u',
+            '_',
+            \sprintf('%s-%s', $issuerValue, $id),
+        );
 
         if ($this->cache->hasItem($key)) {
             throw new LightSamlValidationException('Repeated ID found in response');
