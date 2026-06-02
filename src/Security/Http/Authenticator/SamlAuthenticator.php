@@ -28,6 +28,8 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 use Symfony\Component\Security\Http\HttpUtils;
+use Umanit\SamlBundle\Exception\ProviderDisabledException;
+use Umanit\SamlBundle\Exception\ProviderNotFoundException;
 use Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge\SamlAttributesBadge;
 use Umanit\SamlBundle\Security\Http\Authenticator\Passport\Badge\SamlProviderBadge;
 use Umanit\SamlBundle\Security\Http\Authenticator\Token\SamlToken;
@@ -90,7 +92,7 @@ final readonly class SamlAuthenticator implements AuthenticatorInterface, Authen
             $samlResponse = $this->responseService->getResponseSamlMessage($request);
 
             if (null === $samlResponse) {
-                $this->logger->error('SAML Authentication SAML message not found', ['provider' => $provider]);
+                $this->logger->warning('SAML Authentication SAML message not found', ['provider' => $provider]);
 
                 throw new AuthenticationException('No SAML message found');
             }
@@ -101,8 +103,12 @@ final readonly class SamlAuthenticator implements AuthenticatorInterface, Authen
                 'strict'   => $isStrict ? 'true' : 'false',
             ]);
             $this->responseService->validate($provider, $samlResponse, $isStrict);
+            // @formatter:off
+        } catch (ProviderNotFoundException | ProviderDisabledException $e) {
+            // @formatter:on
+            throw new AuthenticationException('Incorrect provider', previous: $e);
         } catch (\Throwable $e) {
-            $this->logger->error('SAML Authentication message validation error', [
+            $this->logger->warning('SAML Authentication message validation error', [
                 'exception'      => $e,
                 'provider'       => $provider,
                 'method'         => $request->getMethod(),
@@ -236,7 +242,7 @@ final readonly class SamlAuthenticator implements AuthenticatorInterface, Authen
                             $user->setSamlAttributes($attributes);
                         }
                     } catch (\Throwable $exception) {
-                        $this->logger->error('SAML Authentication an error occurred while loading the user', [
+                        $this->logger->warning('SAML Authentication an error occurred while loading the user', [
                             'exception'  => $exception,
                             'identifier' => $identifier,
                         ]);

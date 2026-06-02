@@ -12,6 +12,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Umanit\SamlBundle\Enums\Mode;
 use Umanit\SamlBundle\Event\BeforeSamlResponseEvent;
+use Umanit\SamlBundle\Exception\ProviderDisabledException;
+use Umanit\SamlBundle\Exception\ProviderNotFoundException;
 use Umanit\SamlBundle\Serializer\SamlElementSerializerInterface;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\SamlAuthnRequestServiceInterface;
@@ -51,8 +53,13 @@ class RedirectAction extends AbstractController
 
                 $type = 'SAMLRequest';
             }
+
+            // @formatter:off
+        } catch (ProviderNotFoundException | ProviderDisabledException) {
+            // @formatter:on
+            throw $this->createNotFoundException();
         } catch (\Throwable $e) {
-            $logger->error('SSO redirect error : ' . $e->getMessage());
+            $logger->error('SSO redirect error', ['exception' => $e]);
 
             throw $this->createNotFoundException();
         }
