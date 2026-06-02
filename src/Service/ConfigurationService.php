@@ -6,6 +6,8 @@ namespace Umanit\SamlBundle\Service;
 
 use LightSaml\SamlConstants;
 use Umanit\SamlBundle\Enums\Mode;
+use Umanit\SamlBundle\Exception\ProviderDisabledException;
+use Umanit\SamlBundle\Exception\ProviderNotFoundException;
 
 class ConfigurationService implements ConfigurationServiceInterface
 {
@@ -26,11 +28,11 @@ class ConfigurationService implements ConfigurationServiceInterface
         $config = $this->config['providers'][$provider] ?? null;
 
         if (empty($config)) {
-            throw new \RuntimeException(sprintf('Provider "%s" not found', $provider));
+            throw new ProviderNotFoundException($provider);
         }
 
         if (isset($config['enabled']) && !$config['enabled']) {
-            throw new \RuntimeException(sprintf('Provider "%s" is disabled', $provider));
+            throw new ProviderDisabledException($provider);
         }
 
         return $config;
@@ -45,7 +47,7 @@ class ConfigurationService implements ConfigurationServiceInterface
                 continue;
             }
 
-            if (!empty($tags) && !array_intersect($tags, $provider['tags'])) {
+            if ([] !== $tags && !array_intersect($tags, $provider['tags'])) {
                 continue;
             }
 
@@ -59,7 +61,7 @@ class ConfigurationService implements ConfigurationServiceInterface
     {
         $config = $this->getByProvider($provider);
 
-        if ($config['type'] === Mode::SP_INITIATED) {
+        if (Mode::SP_INITIATED === $config['type']) {
             return $config['sp']['name_id_format'] ?? SamlConstants::NAME_ID_FORMAT_UNSPECIFIED;
         }
 

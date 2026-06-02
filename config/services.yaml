@@ -205,4 +205,5 @@ services:
         arguments:
             - '@umanit_saml.service.configuration_service'
             - '@umanit_saml.service.slo_service'
+            - '@monolog.logger.umanit_saml'
         tags: ['kernel.event_subscriber']

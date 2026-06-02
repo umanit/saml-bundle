@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Exception spécifique en cas de provider introuvable ou désactivé
+
+### Changed
+
+- Un provider introuvable ou désactivé ne logue plus d’erreur
+
 ## [1.0.32] - 2026-04-23
 
 ### Changed

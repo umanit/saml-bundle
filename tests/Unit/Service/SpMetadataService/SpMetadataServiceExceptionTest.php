@@ -4,40 +4,72 @@ declare(strict_types=1);
 
 namespace Unit\Service\SpMetadataService;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
-use RuntimeException;
 use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Umanit\SamlBundle\Enums\Mode;
+use Umanit\SamlBundle\Exception\ProviderNotFoundException;
 use Umanit\SamlBundle\Service\ConfigurationService;
 use Umanit\SamlBundle\Service\MetadataService;
 use Unit\Service\MetadataServiceTrait;
 
-class SpMetadataServiceExceptionTest extends TestCase
+final class SpMetadataServiceExceptionTest extends TestCase
 {
     use MetadataServiceTrait;
 
-    public static function getEntityDescriptorExceptionDataProvider(): array
+    /**
+     * @param array<string, array<string, array<string, string>>> $config
+     */
+    #[DataProvider('getEntityDescriptorExceptionDataProvider')]
+    public function testGetEntityDescriptorException(string $provider, array $config, string $expected): void
     {
-        $dataset = [];
+        $spMetadataService = new MetadataService(
+            new ConfigurationService($config),
+            $this->getMockUrlGenerator(),
+            $this->getMockRouter(),
+            $this->getX509Service(),
+            new MockHttpClient(
+                new MockResponse(
+                    '',
+                    [
+                        'http_code' => Response::HTTP_OK,
+                    ],
+                ),
+            ),
+            new NullAdapter(),
+            new NullLogger(),
+        );
 
-        $dataset[] = [
+        $this->expectException($expected);
+
+        $spMetadataService->getEntityDescriptor($provider);
+    }
+
+    /**
+     * @return \Iterator<int, array<string, mixed>>
+     */
+    public static function getEntityDescriptorExceptionDataProvider(): \Iterator
+    {
+        yield [
             'provider' => 'test',
             'config'   => [
                 'providers' => [
                     'test' => [
-                        'sp' => [
+                        'type' => Mode::IDP_INITIATED,
+                        'sp'   => [
                             'entity_id' => 'https://test-entity-id.wip',
                         ],
                     ],
                 ],
             ],
-            'expected' => RuntimeException::class,
+            'expected' => \RuntimeException::class,
         ];
 
-        $dataset[] = [
+        yield [
             'provider' => 'test_1',
             'config'   => [
                 'providers' => [
@@ -45,45 +77,7 @@ class SpMetadataServiceExceptionTest extends TestCase
                     ],
                 ],
             ],
-            'expected' => RuntimeException::class,
+            'expected' => ProviderNotFoundException::class,
         ];
-
-        return $dataset;
-    }
-
-    /**
-     * @dataProvider getEntityDescriptorExceptionDataProvider
-     */
-    public function testGetEntityDescriptorException(
-        string $provider,
-        array $config,
-        string $expected
-    ): void {
-        $mockedHttpClient = new MockHttpClient(
-            new MockResponse(
-                '',
-                [
-                    'http_code' => Response::HTTP_OK,
-                ]
-            )
-        );
-        $configurationService = new ConfigurationService($config);
-        $urlGenerator = $this->getMockUrlGenerator();
-        $router = $this->getMockRouter();
-        $X509CertificatService = $this->getX509Service();
-
-        $spMetadataService = new MetadataService(
-            $configurationService,
-            $urlGenerator,
-            $router,
-            $X509CertificatService,
-            $mockedHttpClient,
-            new NullAdapter(),
-            new NullLogger()
-        );
-
-        $this->expectException($expected);
-
-        $spMetadataService->getEntityDescriptor($provider);
     }
 }

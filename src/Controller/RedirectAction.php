@@ -6,13 +6,14 @@ namespace Umanit\SamlBundle\Controller;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Umanit\SamlBundle\Enums\Mode;
 use Umanit\SamlBundle\Event\BeforeSamlResponseEvent;
+use Umanit\SamlBundle\Exception\ProviderDisabledException;
+use Umanit\SamlBundle\Exception\ProviderNotFoundException;
 use Umanit\SamlBundle\Serializer\SamlElementSerializerInterface;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\SamlAuthnRequestServiceInterface;
@@ -24,25 +25,24 @@ class RedirectAction extends AbstractController
 {
     public function __invoke(
         string $provider,
-        Request $request,
         EventDispatcherInterface $dispatcher,
         SamlAuthnRequestServiceInterface $authnRequestService,
         ConfigurationServiceInterface $configurationService,
         SamlResponseServiceInterface $samlResponseService,
         SamlElementSerializerInterface $samlElementSerializer,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ): Response {
         try {
             $config = $configurationService->getByProvider($provider);
 
-            if ($config['type'] === Mode::IDP_INITIATED) {
+            if (Mode::IDP_INITIATED === $config['type']) {
                 $event = new BeforeSamlResponseEvent($provider);
                 $dispatcher->dispatch($event);
 
                 $samlMessage = $samlResponseService->getSamlResponse(
                     $provider,
                     $event->nameIdFormat,
-                    $event->attributes
+                    $event->attributes,
                 );
                 $xml = $samlElementSerializer->toXml($samlMessage);
 
@@ -53,8 +53,14 @@ class RedirectAction extends AbstractController
 
                 $type = 'SAMLRequest';
             }
+
+            // @formatter:off
+        } catch (ProviderNotFoundException | ProviderDisabledException) {
+            // @formatter:on
+            throw $this->createNotFoundException();
         } catch (\Throwable $e) {
-            $logger->error('SSO redirect error : ' . $e->getMessage());
+            $logger->error('SSO redirect error', ['exception' => $e]);
+
             throw $this->createNotFoundException();
         }
 
