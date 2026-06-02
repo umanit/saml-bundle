@@ -6,6 +6,8 @@ namespace Umanit\SamlBundle\Service;
 
 use LightSaml\SamlConstants;
 use Umanit\SamlBundle\Enums\Mode;
+use Umanit\SamlBundle\Exception\ProviderDisabledException;
+use Umanit\SamlBundle\Exception\ProviderNotFoundException;
 
 class ConfigurationService implements ConfigurationServiceInterface
 {
@@ -26,11 +28,11 @@ class ConfigurationService implements ConfigurationServiceInterface
         $config = $this->config['providers'][$provider] ?? null;
 
         if (empty($config)) {
-            throw new \RuntimeException(\sprintf('Provider "%s" not found', $provider));
+            throw new ProviderNotFoundException($provider);
         }
 
         if (isset($config['enabled']) && !$config['enabled']) {
-            throw new \RuntimeException(\sprintf('Provider "%s" is disabled', $provider));
+            throw new ProviderDisabledException($provider);
         }
 
         return $config;

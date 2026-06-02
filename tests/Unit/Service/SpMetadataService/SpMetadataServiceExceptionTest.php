@@ -7,12 +7,12 @@ namespace Unit\Service\SpMetadataService;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
-use RuntimeException;
 use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Umanit\SamlBundle\Enums\Mode;
+use Umanit\SamlBundle\Exception\ProviderNotFoundException;
 use Umanit\SamlBundle\Service\ConfigurationService;
 use Umanit\SamlBundle\Service\MetadataService;
 use Unit\Service\MetadataServiceTrait;
@@ -66,7 +66,7 @@ final class SpMetadataServiceExceptionTest extends TestCase
                     ],
                 ],
             ],
-            'expected' => RuntimeException::class,
+            'expected' => \RuntimeException::class,
         ];
 
         yield [
@@ -77,7 +77,7 @@ final class SpMetadataServiceExceptionTest extends TestCase
                     ],
                 ],
             ],
-            'expected' => RuntimeException::class,
+            'expected' => ProviderNotFoundException::class,
         ];
     }
 }

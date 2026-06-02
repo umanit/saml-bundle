@@ -7,7 +7,7 @@ namespace Unit\Service;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
+use Umanit\SamlBundle\Exception\ProviderNotFoundException;
 use Umanit\SamlBundle\Service\ConfigurationService;
 
 #[Group('unit')]
@@ -93,7 +93,7 @@ final class ConfigurationTest extends TestCase
                     'KO' => [],
                 ],
             ],
-            'expected' => RuntimeException::class,
+            'expected' => ProviderNotFoundException::class,
         ];
 
         yield [
@@ -101,7 +101,7 @@ final class ConfigurationTest extends TestCase
             'config'   => [
                 'providers' => [],
             ],
-            'expected' => RuntimeException::class,
+            'expected' => ProviderNotFoundException::class,
         ];
     }
 
