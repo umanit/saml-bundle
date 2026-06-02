@@ -150,7 +150,7 @@ final readonly class SamlResponseService implements SamlResponseServiceInterface
      */
     private function addAttributesStatement(Assertion $assertion, array $attributes = []): void
     {
-        if (empty($attributes)) {
+        if ([] === $attributes) {
             return;
         }
 

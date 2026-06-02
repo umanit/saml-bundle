@@ -13,7 +13,7 @@ use Umanit\SamlBundle\Enums\Mode;
 final readonly class X509CertificatService implements X509CertificatServiceInterface
 {
     public function __construct(
-        protected ConfigurationServiceInterface $configurationService,
+        private ConfigurationServiceInterface $configurationService,
     ) {
     }
 
@@ -84,7 +84,7 @@ final readonly class X509CertificatService implements X509CertificatServiceInter
         );
     }
 
-    protected function makeCertificate(?string $data): X509Certificate
+    private function makeCertificate(?string $data): X509Certificate
     {
         $cert = new X509Certificate();
 

@@ -17,10 +17,13 @@ use Umanit\SamlBundle\Service\ConfigurationService;
 use Umanit\SamlBundle\Service\MetadataService;
 use Unit\Service\MetadataServiceTrait;
 
-class SpMetadataServiceExceptionTest extends TestCase
+final class SpMetadataServiceExceptionTest extends TestCase
 {
     use MetadataServiceTrait;
 
+    /**
+     * @param array<string, array<string, array<string, string>>> $config
+     */
     #[DataProvider('getEntityDescriptorExceptionDataProvider')]
     public function testGetEntityDescriptorException(string $provider, array $config, string $expected): void
     {
@@ -46,11 +49,12 @@ class SpMetadataServiceExceptionTest extends TestCase
         $spMetadataService->getEntityDescriptor($provider);
     }
 
-    public static function getEntityDescriptorExceptionDataProvider(): array
+    /**
+     * @return \Iterator<int, array<string, mixed>>
+     */
+    public static function getEntityDescriptorExceptionDataProvider(): \Iterator
     {
-        $dataset = [];
-
-        $dataset[] = [
+        yield [
             'provider' => 'test',
             'config'   => [
                 'providers' => [
@@ -65,7 +69,7 @@ class SpMetadataServiceExceptionTest extends TestCase
             'expected' => RuntimeException::class,
         ];
 
-        $dataset[] = [
+        yield [
             'provider' => 'test_1',
             'config'   => [
                 'providers' => [
@@ -75,7 +79,5 @@ class SpMetadataServiceExceptionTest extends TestCase
             ],
             'expected' => RuntimeException::class,
         ];
-
-        return $dataset;
     }
 }

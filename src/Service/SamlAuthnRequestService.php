@@ -17,10 +17,10 @@ use Symfony\Component\HttpFoundation\RequestStack;
 final readonly class SamlAuthnRequestService implements SamlAuthnRequestServiceInterface
 {
     public function __construct(
-        protected ConfigurationServiceInterface $configurationService,
-        protected MetadataServiceInterface $metadataService,
-        protected X509CertificatServiceInterface $x509CertificatService,
-        protected RequestStack $requestStack,
+        private ConfigurationServiceInterface $configurationService,
+        private MetadataServiceInterface $metadataService,
+        private X509CertificatServiceInterface $x509CertificatService,
+        private RequestStack $requestStack,
     ) {
     }
 

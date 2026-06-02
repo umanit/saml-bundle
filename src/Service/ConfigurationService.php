@@ -45,7 +45,7 @@ class ConfigurationService implements ConfigurationServiceInterface
                 continue;
             }
 
-            if (!empty($tags) && !array_intersect($tags, $provider['tags'])) {
+            if ([] !== $tags && !array_intersect($tags, $provider['tags'])) {
                 continue;
             }
 

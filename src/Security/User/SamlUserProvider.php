@@ -14,7 +14,7 @@ class SamlUserProvider implements SamlUserProviderInterface
 
     /**
      * @param class-string<SamlUserInterface> $userClass
-     * @param list<string>                   $defaultRoles
+     * @param list<string>                    $defaultRoles
      * @param array<mixed>                    $restrictions
      * @param array<mixed>                    $rolesMapping
      */

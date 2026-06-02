@@ -20,13 +20,7 @@ class ResponseService implements ResponseServiceInterface
     {
         $messageContext = $this->samlMessageService->getSamlMessage($request);
 
-        $response = $messageContext->asResponse();
-
-        if (!$response instanceof Response) {
-            return null;
-        }
-
-        return $response;
+        return $messageContext->asResponse();
     }
 
     public function validate(string $provider, Response $samlMessage, bool $strict = true): void

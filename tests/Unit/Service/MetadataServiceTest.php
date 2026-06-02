@@ -19,7 +19,7 @@ use Umanit\SamlBundle\Service\ConfigurationService;
 use Umanit\SamlBundle\Service\MetadataService;
 
 #[Group('unit')]
-class MetadataServiceTest extends TestCase
+final class MetadataServiceTest extends TestCase
 {
     use MetadataServiceTrait;
 
@@ -54,6 +54,9 @@ class MetadataServiceTest extends TestCase
         $this->assertEquals($expected['entityId'], $result->getEntityID());
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public static function getEntityDescriptorDataProvider(): array
     {
         $dataset = [];

@@ -27,13 +27,13 @@ use Umanit\SamlBundle\Enums\Mode;
 final readonly class MetadataService implements MetadataServiceInterface
 {
     public function __construct(
-        protected ConfigurationServiceInterface $configurationService,
-        protected UrlGeneratorInterface $urlGenerator,
-        protected RouterInterface $router,
-        protected X509CertificatServiceInterface $x509CertificatService,
-        protected HttpClientInterface $client,
-        protected CacheInterface $cache,
-        protected LoggerInterface $logger,
+        private ConfigurationServiceInterface $configurationService,
+        private UrlGeneratorInterface $urlGenerator,
+        private RouterInterface $router,
+        private X509CertificatServiceInterface $x509CertificatService,
+        private HttpClientInterface $client,
+        private CacheInterface $cache,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -62,7 +62,7 @@ final readonly class MetadataService implements MetadataServiceInterface
 
         $xml = $this->getMetadataXml($configuration);
 
-        if (empty($xml)) {
+        if ('' === $xml || '0' === $xml) {
             throw new \RuntimeException('No metadata found');
         }
 
@@ -136,7 +136,7 @@ final readonly class MetadataService implements MetadataServiceInterface
         );
     }
 
-    protected function getEntityDescriptorFromXml(string $xml, ?string $entityId): EntityDescriptor
+    private function getEntityDescriptorFromXml(string $xml, ?string $entityId): EntityDescriptor
     {
         /** @var EntitiesDescriptor|EntityDescriptor $metadata */
         $metadata = Metadata::fromXML($xml, new DeserializationContext());
@@ -168,7 +168,7 @@ final readonly class MetadataService implements MetadataServiceInterface
     /**
      * @param array<string, mixed> $config
      */
-    protected function getTokenId(array $config = []): string
+    private function getTokenId(array $config = []): string
     {
         $str = $config['metadata'] ?? '';
 
@@ -182,7 +182,7 @@ final readonly class MetadataService implements MetadataServiceInterface
     /**
      * @param array<string, mixed> $config
      */
-    protected function buildOwnEntityDescriptor(string $provider, array $config, Mode $mode): EntityDescriptor
+    private function buildOwnEntityDescriptor(string $provider, array $config, Mode $mode): EntityDescriptor
     {
         if (Mode::SP_INITIATED === $mode) {
             $descriptor = new SpSsoDescriptor();
@@ -264,7 +264,7 @@ final readonly class MetadataService implements MetadataServiceInterface
     /**
      * @param array<string, mixed> $config
      */
-    protected function getNameIDFormat(array $config): string
+    private function getNameIDFormat(array $config): string
     {
         $nameIdFormat = $config['name_id_format'] ?? SamlConstants::NAME_ID_FORMAT_PERSISTENT;
 
@@ -278,7 +278,7 @@ final readonly class MetadataService implements MetadataServiceInterface
     /**
      * @param array<string, mixed> $config
      */
-    protected function getSingleSignOnServiceRoute(string $provider, array $config, string $bindindType): ?string
+    private function getSingleSignOnServiceRoute(string $provider, array $config, string $bindindType): ?string
     {
         $route = $config['sso']['route'] ?? null;
 
@@ -304,7 +304,7 @@ final readonly class MetadataService implements MetadataServiceInterface
     /**
      * @param array<string, mixed> $config
      */
-    protected function getAssertionConsumerServiceRoute(string $provider, array $config, string $bindindType): ?string
+    private function getAssertionConsumerServiceRoute(string $provider, array $config, string $bindindType): ?string
     {
         $route = $config['acs']['route'] ?? null;
 
@@ -330,7 +330,7 @@ final readonly class MetadataService implements MetadataServiceInterface
     /**
      * @param array<string, mixed> $config
      */
-    protected function getSingleLogoutServiceRoute(string $provider, array $config, string $bindindType): ?string
+    private function getSingleLogoutServiceRoute(string $provider, array $config, string $bindindType): ?string
     {
         $route = $config['slo']['route'] ?? null;
 
@@ -353,7 +353,7 @@ final readonly class MetadataService implements MetadataServiceInterface
         return $url;
     }
 
-    protected function hasRouteBindingType(string $route, string $bindingType): bool
+    private function hasRouteBindingType(string $route, string $bindingType): bool
     {
         $methods = [
             SamlConstants::BINDING_SAML2_HTTP_REDIRECT => 'GET',
@@ -373,7 +373,7 @@ final readonly class MetadataService implements MetadataServiceInterface
 
             $routeMethods = $sfRoute->getMethods();
 
-            if (empty($routeMethods)) {
+            if ([] === $routeMethods) {
                 return true;
             }
 
@@ -386,7 +386,7 @@ final readonly class MetadataService implements MetadataServiceInterface
     /**
      * @param array<string, mixed> $config
      */
-    protected function getDefaultAssertionConsumerServiceBinding(array $config): string
+    private function getDefaultAssertionConsumerServiceBinding(array $config): string
     {
         $acsBindingType = $config['acs']['binding'] ?? SamlConstants::BINDING_SAML2_HTTP_POST;
 
@@ -402,7 +402,7 @@ final readonly class MetadataService implements MetadataServiceInterface
     /**
      * @param array<string, mixed> $config
      */
-    protected function getEntityId(string $provider, array $config): string
+    private function getEntityId(string $provider, array $config): string
     {
         $context = $this->router->getContext();
         $host = $context->getScheme() . '://' . $context->getHost();

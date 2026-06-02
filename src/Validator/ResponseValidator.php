@@ -21,7 +21,6 @@ use LightSaml\Resolver\Endpoint\DescriptorTypeEndpointResolver;
 use LightSaml\Validator\Model\Assertion\AssertionValidatorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
-use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\MetadataServiceInterface;
 use Umanit\SamlBundle\Service\X509CertificatServiceInterface;
 
@@ -30,15 +29,14 @@ final readonly class ResponseValidator implements ResponseValidatorInterface
     private const int MAX_VALIDATION_TIME_FOR_ID = 120;
 
     public function __construct(
-        protected ConfigurationServiceInterface $configurationService,
-        protected MetadataServiceInterface $metadataService,
-        protected X509CertificatServiceInterface $x509CertificatService,
-        protected AdapterInterface $cache,
-        protected AssertionValidatorInterface $assertionValidator,
-        protected SignatureValidatorInterface $signatureValidator,
-        protected IssuerValidatorInterface $issuerValidator,
-        protected TimeValidatorInterface $timeValidator,
-        protected LoggerInterface $logger,
+        private MetadataServiceInterface $metadataService,
+        private X509CertificatServiceInterface $x509CertificatService,
+        private AdapterInterface $cache,
+        private AssertionValidatorInterface $assertionValidator,
+        private SignatureValidatorInterface $signatureValidator,
+        private IssuerValidatorInterface $issuerValidator,
+        private TimeValidatorInterface $timeValidator,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -77,7 +75,7 @@ final readonly class ResponseValidator implements ResponseValidatorInterface
         $this->signatureValidator->validate($provider, $samlMessage);
     }
 
-    protected function validateStatus(StatusResponse $samlMessage): void
+    private function validateStatus(StatusResponse $samlMessage): void
     {
         /** @var ?Status $status */
         $status = $samlMessage->getStatus();
@@ -91,7 +89,7 @@ final readonly class ResponseValidator implements ResponseValidatorInterface
         }
     }
 
-    protected function decryptAssertions(string $provider, Response $samlMessage): void
+    private function decryptAssertions(string $provider, Response $samlMessage): void
     {
         $credentials = $this->x509CertificatService->getSpCredential($provider);
 
@@ -183,6 +181,7 @@ final readonly class ResponseValidator implements ResponseValidatorInterface
 
         $item = $this->cache->getItem($key);
         $item->expiresAfter($time);
+
         $this->cache->save($item);
     }
 }

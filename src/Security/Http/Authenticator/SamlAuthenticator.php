@@ -56,7 +56,7 @@ final readonly class SamlAuthenticator implements AuthenticatorInterface, Authen
     ) {
     }
 
-    public function start(Request $request, ?AuthenticationException $authException = null): Response
+    public function start(Request $request, ?AuthenticationException $authException = null): RedirectResponse
     {
         $uri = $this->httpUtils->generateUri($request, (string) $this->options['login_path']);
 
@@ -72,7 +72,7 @@ final readonly class SamlAuthenticator implements AuthenticatorInterface, Authen
         return 'umanit_saml_acs' === $request->attributes->get('_route');
     }
 
-    public function authenticate(Request $request): Passport
+    public function authenticate(Request $request): SelfValidatingPassport
     {
         if (!$request->hasSession()) {
             throw new SessionUnavailableException('Session is not available');
@@ -111,7 +111,7 @@ final readonly class SamlAuthenticator implements AuthenticatorInterface, Authen
                 'request_params' => $request->request->all(),
             ]);
 
-            throw new AuthenticationException($e->getMessage());
+            throw new AuthenticationException($e->getMessage(), $e->getCode(), $e);
         }
 
         return $this->createPassport($provider, $samlResponse);
@@ -161,7 +161,7 @@ final readonly class SamlAuthenticator implements AuthenticatorInterface, Authen
         return $this->failureHandler->onAuthenticationFailure($request, $exception);
     }
 
-    private function createPassport(string $providerKey, SamlResponse $response): Passport
+    private function createPassport(string $providerKey, SamlResponse $response): SelfValidatingPassport
     {
         $assertion = $response->getFirstAssertion();
 

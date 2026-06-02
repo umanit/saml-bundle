@@ -27,11 +27,11 @@ use Umanit\SamlBundle\Validator\SloValidatorInterface;
 final readonly class SloService implements SloServiceInterface
 {
     public function __construct(
-        protected SamlMessageServiceInterface $samlMessageService,
-        protected SloValidatorInterface $sloValidator,
-        protected Security $security,
-        protected MetadataServiceInterface $metadataService,
-        protected X509CertificatServiceInterface $x509CertificatService,
+        private SamlMessageServiceInterface $samlMessageService,
+        private SloValidatorInterface $sloValidator,
+        private Security $security,
+        private MetadataServiceInterface $metadataService,
+        private X509CertificatServiceInterface $x509CertificatService,
     ) {
     }
 
@@ -98,13 +98,7 @@ final readonly class SloService implements SloServiceInterface
     {
         $messageContext = $this->samlMessageService->getSamlMessage($request);
 
-        $response = $messageContext->asLogoutRequest();
-
-        if (!$response instanceof LogoutRequest) {
-            return null;
-        }
-
-        return $response;
+        return $messageContext->asLogoutRequest();
     }
 
     public function logout(Request $request, string $provider): ?Response
@@ -128,13 +122,7 @@ final readonly class SloService implements SloServiceInterface
     {
         $messageContext = $this->samlMessageService->getSamlMessage($request);
 
-        $response = $messageContext->asLogoutResponse();
-
-        if (!$response instanceof LogoutResponse) {
-            return null;
-        }
-
-        return $response;
+        return $messageContext->asLogoutResponse();
     }
 
     public function validate(string $provider, LogoutResponse $samlMessage, bool $strict = true): void

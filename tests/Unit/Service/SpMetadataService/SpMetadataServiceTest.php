@@ -19,16 +19,17 @@ use Umanit\SamlBundle\Service\ConfigurationService;
 use Umanit\SamlBundle\Service\MetadataService;
 use Unit\Service\MetadataServiceTrait;
 
-class SpMetadataServiceTest extends TestCase
+final class SpMetadataServiceTest extends TestCase
 {
     use MetadataServiceTrait;
 
+    /**
+     * @param array<string, array<string, array<string, string>>> $config
+     * @param array<string, mixed>                                $expected
+     */
     #[DataProvider('getEntityDescriptorDataProvider')]
-    public function testGetEntityDescriptor(
-        string $provider,
-        array $config,
-        array $expected,
-    ): void {
+    public function testGetEntityDescriptor(string $provider, array $config, array $expected): void
+    {
         $contactPerson = new ContactPerson();
         $contactPerson->setContactType('test2');
         $contactPerson->setCompany('test2');
@@ -76,11 +77,12 @@ class SpMetadataServiceTest extends TestCase
         );
     }
 
-    public static function getEntityDescriptorDataProvider(): array
+    /**
+     * @return \Iterator<int, array<string, mixed>>
+     */
+    public static function getEntityDescriptorDataProvider(): \Iterator
     {
-        $dataset = [];
-
-        $dataset[] = [
+        yield [
             'provider' => 'test',
             'config'   => [
                 'providers' => [
@@ -112,7 +114,5 @@ class SpMetadataServiceTest extends TestCase
                 ],
             ],
         ];
-
-        return $dataset;
     }
 }

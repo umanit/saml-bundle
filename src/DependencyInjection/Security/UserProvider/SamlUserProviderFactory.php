@@ -44,7 +44,7 @@ class SamlUserProviderFactory implements UserProviderFactoryInterface
                     ->isRequired()
                     ->cannotBeEmpty()
                     ->validate()
-                        ->ifTrue(static fn($value) => !is_a($value, UserInterface::class, true))
+                        ->ifTrue(static fn($value): bool => !is_a($value, UserInterface::class, true))
                         ->thenInvalid(
                             \sprintf(
                                 'You should provide user class implementing %s interface.',

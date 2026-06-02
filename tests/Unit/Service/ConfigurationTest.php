@@ -11,8 +11,12 @@ use RuntimeException;
 use Umanit\SamlBundle\Service\ConfigurationService;
 
 #[Group('unit')]
-class ConfigurationTest extends TestCase
+final class ConfigurationTest extends TestCase
 {
+    /**
+     * @param array<string, array<string, array<string, string>>> $config
+     * @param ?array<string, mixed>                               $expected
+     */
     #[DataProvider('getByProviderDataProvider')]
     public function testGetByProvider(string $provider, array $config, ?array $expected): void
     {
@@ -20,6 +24,10 @@ class ConfigurationTest extends TestCase
         $this->assertSame($expected, $configurationService->getByProvider($provider));
     }
 
+    /**
+     * @param array<string, array<string, list<mixed>>> $config
+     * @param list<string>                              $expected
+     */
     #[DataProvider('getProviderNamesDataProvider')]
     public function testGetProviderNames(array $config, array $expected): void
     {
@@ -27,6 +35,9 @@ class ConfigurationTest extends TestCase
         $this->assertSame($expected, $configurationService->getProviderNames());
     }
 
+    /**
+     * @param array<string, array<string, list<mixed>>> $config
+     */
     #[DataProvider('getByProviderExceptionDataProvider')]
     public function testGetByProviderException(string $provider, array $config, string $expected): void
     {
@@ -35,6 +46,9 @@ class ConfigurationTest extends TestCase
         $configurationService->getByProvider($provider);
     }
 
+    /**
+     * @param array<string, array<string, list<mixed>>> $config
+     */
     #[DataProvider('getRedirectTemplateDataProvider')]
     public function testGetRedirectionTemplate(array $config, string $expected): void
     {
@@ -42,12 +56,12 @@ class ConfigurationTest extends TestCase
         $this->assertSame($expected, $configurationService->getRedirectTemplate());
     }
 
-    public static function getProviderNamesDataProvider(): array
+    /**
+     * @return \Iterator<int, array<string, mixed>>
+     */
+    public static function getProviderNamesDataProvider(): \Iterator
     {
-        $dataset = [];
-
-        # Dataset 0
-        $dataset[] = [
+        yield [
             'config'   => [
                 'providers' => [
                     'test' => [],
@@ -56,8 +70,7 @@ class ConfigurationTest extends TestCase
             'expected' => ['test'],
         ];
 
-        # Dataset 1
-        $dataset[] = [
+        yield [
             'config'   => [
                 'providers' => [
                     'test1' => [],
@@ -66,16 +79,14 @@ class ConfigurationTest extends TestCase
             ],
             'expected' => ['test1', 'test2'],
         ];
-
-        return $dataset;
     }
 
-    public static function getByProviderExceptionDataProvider(): array
+    /**
+     * @return \Iterator<int, array<string, mixed>>
+     */
+    public static function getByProviderExceptionDataProvider(): \Iterator
     {
-        $dataset = [];
-
-        # Dataset 0
-        $dataset[] = [
+        yield [
             'provider' => 'test',
             'config'   => [
                 'providers' => [
@@ -85,24 +96,21 @@ class ConfigurationTest extends TestCase
             'expected' => RuntimeException::class,
         ];
 
-        # Dataset 1
-        $dataset[] = [
+        yield [
             'provider' => 'test2',
             'config'   => [
                 'providers' => [],
             ],
             'expected' => RuntimeException::class,
         ];
-
-        return $dataset;
     }
 
-    public static function getByProviderDataProvider(): array
+    /**
+     * @return \Iterator<int, array<string, mixed>>
+     */
+    public static function getByProviderDataProvider(): \Iterator
     {
-        $dataset = [];
-
-        # Dataset 1
-        $dataset[] = [
+        yield [
             'provider' => 'test',
             'config'   => [
                 'providers' => [
@@ -114,8 +122,7 @@ class ConfigurationTest extends TestCase
             'expected' => ['test' => 'test'],
         ];
 
-        # Dataset 2
-        $dataset[] = [
+        yield [
             'provider' => 'test2',
             'config'   => [
                 'providers' => [
@@ -129,13 +136,14 @@ class ConfigurationTest extends TestCase
             ],
             'expected' => ['test' => 'test'],
         ];
-
-        return $dataset;
     }
 
-    public static function getRedirectTemplateDataProvider(): array
+    /**
+     * @return \Iterator<int, array<string, mixed>>
+     */
+    public static function getRedirectTemplateDataProvider(): \Iterator
     {
-        $dataset[] = [
+        yield [
             'config'   => [
                 'twig_templates' => [
                     'redirect' => '@UmanitSaml/redirect.html.twig',
@@ -143,7 +151,5 @@ class ConfigurationTest extends TestCase
             ],
             'expected' => '@UmanitSaml/redirect.html.twig',
         ];
-
-        return $dataset;
     }
 }

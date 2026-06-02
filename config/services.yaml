@@ -136,7 +136,6 @@ services:
     umanit_saml.validator.response_validator:
         class: Umanit\SamlBundle\Validator\ResponseValidator
         arguments:
-            - '@umanit_saml.service.configuration_service'
             - '@umanit_saml.service.metadata_service'
             - '@umanit_saml.service.x509_certificat_service'
             - '@cache.app.taggable'

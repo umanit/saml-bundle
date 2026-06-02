@@ -6,7 +6,6 @@ namespace Umanit\SamlBundle\Controller;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -24,7 +23,6 @@ class RedirectAction extends AbstractController
 {
     public function __invoke(
         string $provider,
-        Request $request,
         EventDispatcherInterface $dispatcher,
         SamlAuthnRequestServiceInterface $authnRequestService,
         ConfigurationServiceInterface $configurationService,

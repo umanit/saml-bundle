@@ -115,7 +115,11 @@ class SamlEntityUserProvider implements SamlEntityUserProviderInterface
 
     public function supportsClass(string $class): bool
     {
-        return $class === $this->getClass() || is_subclass_of($class, $this->getClass());
+        if ($class === $this->getClass()) {
+            return true;
+        }
+
+        return is_subclass_of($class, $this->getClass());
     }
 
     public function getObjectManager(): ObjectManager

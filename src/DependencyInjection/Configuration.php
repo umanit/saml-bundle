@@ -61,7 +61,9 @@ class Configuration implements ConfigurationInterface
                                     ->scalarNode('name_id_format')->info('NameIDFormat')
                                         ->defaultValue(SamlConstants::NAME_ID_FORMAT_PERSISTENT)
                                         ->validate()
-                                            ->ifTrue(static fn(string $v) => !SamlConstants::isNameIdFormatValid($v))
+                                            ->ifTrue(
+                                                static fn(string $v): bool => !SamlConstants::isNameIdFormatValid($v),
+                                            )
                                             ->thenInvalid('Invalid NameIDFormat %s')->end()
                                         ->end()
                                     ->arrayNode('acs')->info('Assertion Consumer Service')->addDefaultsIfNotSet()
@@ -118,7 +120,9 @@ class Configuration implements ConfigurationInterface
                                     ->scalarNode('name_id_format')->info('NameIDFormat')
                                         ->defaultValue(SamlConstants::NAME_ID_FORMAT_PERSISTENT)
                                         ->validate()
-                                            ->ifTrue(static fn(string $v) => !SamlConstants::isNameIdFormatValid($v))
+                                            ->ifTrue(
+                                                static fn(string $v): bool => !SamlConstants::isNameIdFormatValid($v),
+                                            )
                                             ->thenInvalid('Invalid NameIDFormat %s')->end()
                                         ->end()
                                     ->arrayNode('sso')->info('Single Sign On Service')->addDefaultsIfNotSet()
@@ -157,7 +161,7 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                     ->validate()
-                    ->ifTrue(static function (array $providers) {
+                    ->ifTrue(static function (array $providers): bool {
                         foreach ($providers as $data) {
                             $isSpInitiated = Mode::SP_INITIATED === $data['type'];
 

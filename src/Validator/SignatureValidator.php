@@ -20,8 +20,8 @@ use Umanit\SamlBundle\Service\MetadataServiceInterface;
 final readonly class SignatureValidator implements SignatureValidatorInterface
 {
     public function __construct(
-        protected ConfigurationServiceInterface $configurationService,
-        protected MetadataServiceInterface $metadataService,
+        private ConfigurationServiceInterface $configurationService,
+        private MetadataServiceInterface $metadataService,
     ) {
     }
 
@@ -84,7 +84,7 @@ final readonly class SignatureValidator implements SignatureValidatorInterface
             $credentialCandidates = $result;
         }
 
-        if (empty($credentialCandidates)) {
+        if ([] === $credentialCandidates) {
             throw new LightSamlValidationException('No valid credential found for signature');
         }
 
