@@ -16,11 +16,11 @@ use LightSaml\Resolver\Endpoint\Criteria\DescriptorTypeCriteria;
 use LightSaml\Resolver\Endpoint\Criteria\LocationCriteria;
 use LightSaml\Resolver\Endpoint\Criteria\ServiceTypeCriteria;
 use LightSaml\Resolver\Endpoint\DescriptorTypeEndpointResolver;
+use LightSaml\Validator\Model\Assertion\AssertionValidatorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Umanit\SamlBundle\Service\ConfigurationServiceInterface;
 use Umanit\SamlBundle\Service\MetadataServiceInterface;
-use LightSaml\Validator\Model\Assertion\AssertionValidatorInterface;
 use Umanit\SamlBundle\Service\X509CertificatServiceInterface;
 
 class ResponseValidator implements ResponseValidatorInterface
@@ -36,7 +36,7 @@ class ResponseValidator implements ResponseValidatorInterface
         protected readonly SignatureValidatorInterface $signatureValidator,
         protected readonly IssuerValidatorInterface $issuerValidator,
         protected readonly TimeValidatorInterface $timeValidator,
-        protected readonly LoggerInterface $logger
+        protected readonly LoggerInterface $logger,
     ) {
     }
 
@@ -153,7 +153,7 @@ class ResponseValidator implements ResponseValidatorInterface
 
         if (empty($endpoints)) {
             throw new LightSamlValidationException(
-                sprintf('No endpoint found for recipient "%s"', $recipient)
+                \sprintf('No endpoint found for recipient "%s"', $recipient),
             );
         }
     }
@@ -166,10 +166,14 @@ class ResponseValidator implements ResponseValidatorInterface
             throw new LightSamlValidationException('No assertion found in response');
         }
 
-        $id = $assertion->getID();
+        $id = $assertion->getId();
         $issuerValue = $samlMessage->getIssuer()?->getValue();
 
-        $key = sprintf('%s-%s', $issuerValue, $id);
+        $key = preg_replace(
+            '/[^A-Za-z0-9_.]/u',
+            '_',
+            \sprintf('%s-%s', $issuerValue, $id),
+        );
 
         if ($this->cache->hasItem($key)) {
             throw new LightSamlValidationException('Repeated ID found in response');
