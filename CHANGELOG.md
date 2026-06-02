@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.33] - 2026-06-02
+
 ### Added
 
 - Exception spécifique en cas de provider introuvable ou désactivé
@@ -85,7 +87,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [Authentication] Meilleur gestion du RelayState si vide.
 
-[Unreleased]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.32...HEAD
+[Unreleased]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.33...HEAD
+
+[1.0.33]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.32...1.0.33
 
 [1.0.32]: https://holygit.umanit.fr/umanit/saml-bundle/compare/1.0.31...1.0.32
 
