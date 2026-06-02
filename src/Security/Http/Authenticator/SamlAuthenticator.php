@@ -108,14 +108,18 @@ final readonly class SamlAuthenticator implements AuthenticatorInterface, Authen
             // @formatter:on
             throw new AuthenticationException('Incorrect provider', previous: $e);
         } catch (\Throwable $e) {
-            $this->logger->warning('SAML Authentication message validation error', [
-                'exception'      => $e,
-                'provider'       => $provider,
-                'method'         => $request->getMethod(),
-                'uri'            => $request->getRequestUri(),
-                'query_params'   => $request->query->all(),
-                'request_params' => $request->request->all(),
-            ]);
+            if ($e instanceof LightSamlValidationException) {
+                $this->logger->warning('SAML Authentication message validation error', [
+                    'exception'      => $e,
+                    'provider'       => $provider,
+                    'method'         => $request->getMethod(),
+                    'uri'            => $request->getRequestUri(),
+                    'query_params'   => $request->query->all(),
+                    'request_params' => $request->request->all(),
+                ]);
+            } else {
+                $this->logger->error('Unknown error in SamlAuthenticator', ['exception' => $e]);
+            }
 
             throw new AuthenticationException($e->getMessage(), $e->getCode(), $e);
         }
@@ -179,14 +183,14 @@ final readonly class SamlAuthenticator implements AuthenticatorInterface, Authen
         $subject = $assertion->getSubject();
 
         if (null === $subject) {
-            throw new LightSamlValidationException('No subject found in response');
+            throw new AuthenticationException('No subject found in response');
         }
 
         /** @var string|null $nameIdValue */
         $nameIdValue = $subject->getNameID()->getValue();
 
         if (null === $nameIdValue) {
-            throw new LightSamlValidationException('No NameID value found in response');
+            throw new AuthenticationException('No NameID value found in response');
         }
 
         $nameIdIsEmail = SamlConstants::NAME_ID_FORMAT_EMAIL === $subject->getNameID()->getFormat();
