@@ -10,6 +10,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Umanit\SamlBundle\Exception\ProviderDisabledException;
+use Umanit\SamlBundle\Exception\ProviderNotFoundException;
 use Umanit\SamlBundle\Service\SloServiceInterface;
 
 #[Route('slo/{provider<\w+>}', name: 'umanit_saml_slo', methods: ['GET', 'POST'])]
@@ -22,16 +24,18 @@ class SloAction extends AbstractController
         Request $request,
         ?LoggerInterface $umanitSamlLogger = null
     ): Response {
-        $response = null;
-
         try {
             if ($request->query->has('SAMLResponse') || $request->request->has('SAMLResponse')) {
-                $response = $sloService->logout($request, $provider);
+                return $sloService->logout($request, $provider);
             }
 
             if ($request->query->has('SAMLRequest') || $request->request->has('SAMLRequest')) {
-                $response = $sloService->sendLogoutResponse($provider, $request);
+                return $sloService->sendLogoutResponse($provider, $request);
             }
+            // @formatter:off
+        } catch (ProviderNotFoundException | ProviderDisabledException) {
+            // @formatter:on
+            return $this->redirect('/');
         } catch (\Throwable $e) {
             $umanitSamlLogger?->error('SAML SloAction', [
                 'exception'      => $e,
@@ -43,6 +47,6 @@ class SloAction extends AbstractController
             ]);
         }
 
-        return $response ?? $this->redirect('/');
+        return $this->redirect('/');
     }
 }
