@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Un provider introuvable ou désactivé ne logue plus d’erreur
+- La valeur par défaut des clefs de configuration de `binding` pour `sp.acs`, `sp.slo`, `idp.sso` et `idp.slo` est
+  maintenant `urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST`
 
 ### Fixed
 
